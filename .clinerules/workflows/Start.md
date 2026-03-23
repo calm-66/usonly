@@ -1,0 +1,1 @@
+每次Act模式执行完成所有任务后，先检查"C:\Users\xuebe\Desktop\UsOnly\run-dev.bat"是否在运行。如果在运行，先结束。然后再打开服务，最后打开网页。
