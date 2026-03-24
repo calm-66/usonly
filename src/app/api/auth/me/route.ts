@@ -56,13 +56,30 @@ export async function PUT(request: NextRequest) {
     const body = await request.json()
     const { avatarUrl } = body
 
+    console.log('[PUT /api/auth/me] 收到请求:', { userId, avatarUrl })
+
     if (!userId) {
+      console.error('[PUT /api/auth/me] 缺少用户 ID')
       return NextResponse.json(
         { error: '未授权访问' },
         { status: 401 }
       )
     }
 
+    // 验证用户是否存在
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+    })
+
+    if (!existingUser) {
+      console.error('[PUT /api/auth/me] 用户不存在:', userId)
+      return NextResponse.json(
+        { error: '用户不存在' },
+        { status: 404 }
+      )
+    }
+
+    // 更新用户头像
     const user = await prisma.user.update({
       where: { id: userId },
       data: {
@@ -76,14 +93,19 @@ export async function PUT(request: NextRequest) {
       },
     })
 
+    console.log('[PUT /api/auth/me] 更新成功:', user.id)
     return NextResponse.json({
       message: '更新成功',
       user,
     })
-  } catch (error) {
-    console.error('更新用户信息错误:', error)
+  } catch (error: any) {
+    console.error('[PUT /api/auth/me] 更新用户信息错误:', {
+      message: error?.message,
+      stack: error?.stack,
+      code: error?.code,
+    })
     return NextResponse.json(
-      { error: '更新失败' },
+      { error: error?.message || '更新失败' },
       { status: 500 }
     )
   }
