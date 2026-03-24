@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户表
+model User {
+  id          String   @id @default(uuid())
+  username    String   @unique // 用户名（支持中文）
+  email       String   @unique
+  password    String
+  avatarUrl   String?  // 头像 URL（可选）
+  partnerId   String?  @unique
+  partner     User?    @relation("PartnerRelation", fields: [partnerId], references: [id])
+  partnerOf   User?    @relation("PartnerRelation")
+  sentRequests     PairRequest[] @relation("SentRequests")
+  receivedRequests PairRequest[] @relation("ReceivedRequests")
+  posts       Post[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// 配对请求表
+model PairRequest {
+  id          String   @id @default(uuid())
+  senderId    String
+  receiverId  String
+  status      String   @default("pending") // pending, accepted, rejected
+  sender      User     @relation("SentRequests", fields: [senderId], references: [id])
+  receiver    User     @relation("ReceivedRequests", fields: [receiverId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([senderId, receiverId]) // 同一对用户之间只能有一个请求
+}
+
+// 分享表 - 移除唯一约束，允许多次分享
+model Post {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  date      String   // 日期格式：YYYY-MM-DD
+  theme     String   // 当日主题
+  imageUrl  String?  // 图片 URL（可选）
+  text      String?  // 文字内容（可选）
+  isLatePost Boolean @default(false) // 是否补传
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, date]) // 添加索引以便查询
+}
+
+// 主题表
+model Theme {
+  id        String   @id @default(uuid())
+  text      String   // 主题文字
+  category  String   // 主题分类：daily/memory/fun
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
