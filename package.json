@@ -10,7 +10,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
-    "postinstall": "prisma generate"
+"postinstall": "prisma generate && prisma migrate deploy --skip-generate"
   },
   "dependencies": {
     "@vercel/postgres": "^0.10.0",
