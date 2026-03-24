@@ -3,7 +3,15 @@
  * 使用 ImgBB 或其他免费图床服务上传图片
  */
 
-// ImgBB API 配置（可以通过环境变量设置）
+// ImgBB API 配置（通过环境变量设置）
+// NEXT_PUBLIC_前缀确保环境变量在客户端可用
+// 在 Next.js 中，NEXT_PUBLIC_ 前缀的环境变量会在构建时嵌入到客户端代码中
+declare const process: {
+  env: {
+    NEXT_PUBLIC_IMGBB_API_KEY: string
+  }
+}
+
 const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY || ''
 
 /**
