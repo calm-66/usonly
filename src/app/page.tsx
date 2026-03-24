@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { uploadImage, validateImageFile } from '@/lib/imageUpload'
 
 // 生成默认头像颜色（根据用户 ID 哈希）
 function getDefaultAvatarColor(id: string): string {
@@ -37,6 +38,9 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [showAvatarEdit, setShowAvatarEdit] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState('')
+  const [avatarUploading, setAvatarUploading] = useState(false)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const avatarInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     // 检查是否已登录
@@ -112,11 +116,52 @@ export default function Home() {
       setUser(updatedUser)
       localStorage.setItem('user', JSON.stringify(updatedUser))
       setShowAvatarEdit(false)
+      setAvatarPreview(null)
       alert('头像更新成功！')
     } catch (err: any) {
       alert(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleAvatarFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // 验证文件
+    const validation = validateImageFile(file)
+    if (!validation.valid) {
+      alert(validation.error!)
+      return
+    }
+
+    setAvatarUploading(true)
+
+    try {
+      // 创建预览
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        setAvatarPreview(event.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+
+      // 上传图片
+      const imageUrl = await uploadImage(file)
+      setAvatarUrl(imageUrl)
+    } catch (err: any) {
+      alert(err.message || '头像上传失败')
+      setAvatarPreview(null)
+    } finally {
+      setAvatarUploading(false)
+    }
+  }
+
+  const handleRemoveAvatar = () => {
+    setAvatarUrl('')
+    setAvatarPreview(null)
+    if (avatarInputRef.current) {
+      avatarInputRef.current.value = ''
     }
   }
 
@@ -163,18 +208,68 @@ export default function Home() {
             {/* 头像编辑 */}
             {showAvatarEdit && (
               <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    头像 URL
-                  </label>
-                  <input
-                    type="url"
-                    value={avatarUrl}
-                    onChange={(e) => setAvatarUrl(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                    placeholder="https://example.com/avatar.jpg"
-                  />
+                {/* 当前头像预览 */}
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-pink-300 flex-shrink-0">
+                    {avatarPreview || avatarUrl ? (
+                      <img
+                        src={avatarPreview || avatarUrl}
+                        alt="头像预览"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className={`w-full h-full bg-gradient-to-br ${userColor} flex items-center justify-center text-white text-xl font-bold`}>
+                        {getInitial(user.username || user.email)}
+                      </div>
+                    )}
+                  </div>
+                  {avatarUrl && !avatarPreview && (
+                    <button
+                      onClick={handleRemoveAvatar}
+                      className="text-red-500 hover:text-red-700 text-sm"
+                    >
+                      移除头像
+                    </button>
+                  )}
                 </div>
+
+                {/* 上传按钮 */}
+                <div className="space-y-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarFileSelect}
+                    className="hidden"
+                    ref={avatarInputRef}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={avatarUploading}
+                    className="w-full px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {avatarUploading ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        上传中...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        选择图片
+                      </>
+                    )}
+                  </button>
+                  <p className="text-xs text-gray-500 text-center">
+                    支持 JPG、PNG、GIF、WebP 格式，最大 5MB
+                  </p>
+                </div>
+
                 <div className="flex gap-2">
                   <button
                     onClick={handleSaveAvatar}
@@ -186,6 +281,7 @@ export default function Home() {
                   <button
                     onClick={() => {
                       setAvatarUrl(user.avatarUrl || '')
+                      setAvatarPreview(null)
                       setShowAvatarEdit(false)
                     }}
                     className="flex-1 py-2 bg-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-400"
