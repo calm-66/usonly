@@ -157,6 +157,25 @@ export default function TimelinePage() {
     )
   }
 
+  // 渲染标签页小头像组件（w-5 h-5）
+  const renderTabAvatar = (avatarUrl: string | null, name: string) => {
+    if (avatarUrl) {
+      return (
+        <img
+          src={avatarUrl}
+          alt={name}
+          className="w-5 h-5 rounded-full object-cover border border-gray-200"
+        />
+      )
+    }
+    const color = getDefaultAvatarColor(name)
+    return (
+      <div className="w-5 h-5 rounded-full bg-gradient-to-br ${color} flex items-center justify-center text-white text-[10px] font-bold">
+        {getInitial(name)}
+      </div>
+    )
+  }
+
   // 检查是否可以删除评论
   const canDeleteComment = (comment: Comment, postOwnerId: string): boolean => {
     // 评论者可以删除自己的评论
@@ -649,31 +668,45 @@ export default function TimelinePage() {
 
       {/* 标签页 */}
       <div className="max-w-3xl mx-auto px-4 py-4">
-        <div className="flex bg-white rounded-lg shadow-sm p-1">
+        <div className={`flex bg-white rounded-lg shadow-sm p-1 ${!user.partnerId ? 'justify-center' : ''}`}>
+          {/* 我的标签 - 始终显示 */}
           <button
             onClick={() => setActiveTab('mine')}
-            className={`flex-1 py-2 text-sm font-medium rounded-md transition ${
+            className={`flex items-center justify-center gap-1.5 py-2 text-sm font-medium rounded-md transition ${
               activeTab === 'mine' ? 'bg-pink-100 text-pink-600' : 'text-gray-500'
-            }`}
+            } ${user.partnerId ? 'flex-1' : 'w-full'}`}
           >
-            我的
+            {renderTabAvatar(user.avatarUrl, user.username)}
+            <span>{user.username}</span>
           </button>
-          <button
-            onClick={() => setActiveTab('both')}
-            className={`flex-1 py-2 text-sm font-medium rounded-md transition ${
-              activeTab === 'both' ? 'bg-pink-100 text-pink-600' : 'text-gray-500'
-            }`}
-          >
-            我们的
-          </button>
-          <button
-            onClick={() => setActiveTab('partner')}
-            className={`flex-1 py-2 text-sm font-medium rounded-md transition ${
-              activeTab === 'partner' ? 'bg-pink-100 text-pink-600' : 'text-gray-500'
-            }`}
-          >
-            TA 的
-          </button>
+          
+          {/* 配对后才显示另外两个标签 */}
+          {user.partnerId && user.partner && (
+            <>
+              {/* 我们的标签 - 显示双方头像 + 心形符号 */}
+              <button
+                onClick={() => setActiveTab('both')}
+                className={`flex items-center justify-center gap-1 py-2 text-sm font-medium rounded-md transition ${
+                  activeTab === 'both' ? 'bg-pink-100 text-pink-600' : 'text-gray-500'
+                } flex-1`}
+              >
+                {renderTabAvatar(user.avatarUrl, user.username)}
+                <span className="text-pink-500">❤️</span>
+                {renderTabAvatar(user.partner.avatarUrl, user.partner.username)}
+              </button>
+              
+              {/* TA 的标签 - 显示对方头像 + 对方用户名 */}
+              <button
+                onClick={() => setActiveTab('partner')}
+                className={`flex items-center justify-center gap-1.5 py-2 text-sm font-medium rounded-md transition ${
+                  activeTab === 'partner' ? 'bg-pink-100 text-pink-600' : 'text-gray-500'
+                } flex-1`}
+              >
+                {renderTabAvatar(user.partner.avatarUrl, user.partner.username)}
+                <span>{user.partner.username}</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
