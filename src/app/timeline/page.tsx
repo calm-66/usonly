@@ -80,9 +80,12 @@ export default function TimelinePage() {
   
   // 评论相关状态
   const [comments, setComments] = useState<Record<string, Comment[]>>({})
-  const [showComments, setShowComments] = useState<Record<string, boolean>>({})
-  const [newComment, setNewComment] = useState<Record<string, string>>({})
-  const [replyTo, setReplyTo] = useState<Record<string, ReplyToState | undefined>>({})
+  const [newComment, setNewComment] = useState<string>('')
+  const [replyTo, setReplyTo] = useState<ReplyToState | undefined>(undefined)
+  
+  // 评论弹窗状态
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null)
+  const [showCommentModal, setShowCommentModal] = useState(false)
   
   // 通知相关状态
   const [showNotifications, setShowNotifications] = useState(false)
@@ -250,7 +253,6 @@ export default function TimelinePage() {
       const res = await fetch(`/api/comment?postId=${postId}`)
       const data = await res.json()
       if (data.comments) {
-        // 只更新评论数据，不展开评论列表
         setComments(prev => ({ ...prev, [postId]: data.comments }))
       }
     } catch (error) {
@@ -286,7 +288,7 @@ export default function TimelinePage() {
   }
 
   const handleSendComment = async (postId: string) => {
-    const content = newComment[postId]?.trim()
+    const content = newComment.trim()
     if (!content) return
 
     try {
@@ -294,8 +296,8 @@ export default function TimelinePage() {
         postId,
         content,
       }
-      if (replyTo[postId]) {
-        body.parentId = replyTo[postId]!.commentId
+      if (replyTo) {
+        body.parentId = replyTo.commentId
       }
 
       const res = await fetch('/api/comment', {
@@ -310,12 +312,8 @@ export default function TimelinePage() {
       const data = await res.json()
       if (data.success) {
         await loadComments(postId)
-        setNewComment(prev => ({ ...prev, [postId]: '' }))
-        setReplyTo(prev => {
-          const newPrev = { ...prev }
-          delete newPrev[postId]
-          return newPrev
-        })
+        setNewComment('')
+        setReplyTo(undefined)
       }
     } catch (error) {
       console.error('发表评论失败:', error)
@@ -359,25 +357,31 @@ export default function TimelinePage() {
     }
   }
 
-  const toggleComments = (postId: string) => {
-    setShowComments(prev => ({ ...prev, [postId]: !prev[postId] }))
-    if (!showComments[postId]) {
-      loadComments(postId)
-    }
+  // 打开评论弹窗
+  const openCommentModal = (post: Post) => {
+    setSelectedPost(post)
+    setShowCommentModal(true)
+    setNewComment('')
+    setReplyTo(undefined)
+    loadComments(post.id)
   }
 
-  const handleReplyClick = (postId: string, commentId: string, username: string) => {
-    setReplyTo(prev => ({ ...prev, [postId]: { commentId, username } }))
-    setNewComment(prev => ({ ...prev, [postId]: `@${username} ` }))
+  // 关闭评论弹窗
+  const closeCommentModal = () => {
+    setShowCommentModal(false)
+    setSelectedPost(null)
+    setNewComment('')
+    setReplyTo(undefined)
   }
 
-  const cancelReply = (postId: string) => {
-    setReplyTo(prev => {
-      const newPrev = { ...prev }
-      delete newPrev[postId]
-      return newPrev
-    })
-    setNewComment(prev => ({ ...prev, [postId]: '' }))
+  const handleReplyClick = (commentId: string, username: string) => {
+    setReplyTo({ commentId, username })
+    setNewComment(`@${username} `)
+  }
+
+  const cancelReply = () => {
+    setReplyTo(undefined)
+    setNewComment('')
   }
 
   // 按日期分组
@@ -426,15 +430,16 @@ export default function TimelinePage() {
       if (e.key === 'Escape') {
         setSelectedImage(null)
         setShowNotifications(false)
+        closeCommentModal()
       }
     }
-    if (selectedImage || showNotifications) {
+    if (selectedImage || showNotifications || showCommentModal) {
       window.addEventListener('keydown', handleEsc)
     }
     return () => {
       window.removeEventListener('keydown', handleEsc)
     }
-  }, [selectedImage, showNotifications])
+  }, [selectedImage, showNotifications, showCommentModal])
 
   if (!user) {
     return (
@@ -453,7 +458,6 @@ export default function TimelinePage() {
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00')
     
-    // 使用本地时间而不是 UTC 时间，避免时区问题
     const today = new Date()
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
     
@@ -484,102 +488,146 @@ export default function TimelinePage() {
     }
   }
 
-  // 渲染评论列表组件
-  const renderComments = (postId: string, postOwnerId: string, isMyPost: boolean) => {
+  // 渲染评论列表组件（弹窗内使用）
+  const renderCommentList = (postId: string, postOwnerId: string) => {
     const postComments = comments[postId] || []
     
     return (
-      <div className="mt-3 space-y-2 w-full min-w-0">
-        {/* 评论列表 */}
-        <div className="space-y-2 max-h-48 overflow-y-auto">
-          {postComments.map((comment) => (
-            <div key={comment.id} className="bg-white rounded p-2 text-sm w-full min-w-0">
-              <div className="flex items-center justify-between mb-1 gap-2">
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  {renderAvatar(comment.user.avatarUrl, comment.user.username, 'w-5 h-5 shrink-0')}
-                  <span className="font-medium text-gray-700 truncate max-w-[120px] sm:max-w-none">{comment.user.username}</span>
+      <div className="flex-1 overflow-y-auto space-y-3 p-3">
+        {postComments.length === 0 ? (
+          <div className="text-center py-8 text-gray-400">暂无评论，快来抢沙发吧～</div>
+        ) : (
+          postComments.map((comment) => (
+            <div key={comment.id} className="bg-white rounded-lg">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  {renderAvatar(comment.user.avatarUrl, comment.user.username, 'w-7 h-7 shrink-0')}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-gray-700">{comment.user.username}</span>
+                      <span className="text-xs text-gray-400">{formatRelativeTime(comment.createdAt)}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs text-gray-400 whitespace-nowrap">{formatRelativeTime(comment.createdAt)}</span>
-                  {canDeleteComment(comment, postOwnerId) && (
-                    <button
-                      onClick={() => handleDeleteComment(comment.id, postId)}
-                      className="text-xs text-gray-400 hover:text-red-500 shrink-0"
-                    >
-                      删除
-                    </button>
-                  )}
-                </div>
+                {canDeleteComment(comment, postOwnerId) && (
+                  <button
+                    onClick={() => handleDeleteComment(comment.id, postId)}
+                    className="text-xs text-gray-400 hover:text-red-500 shrink-0 ml-2"
+                  >
+                    删除
+                  </button>
+                )}
               </div>
-              <p className="text-gray-700 break-words">{comment.content}</p>
+              <p className="text-gray-700 break-words text-sm mb-2">{comment.content}</p>
               <button
-                onClick={() => handleReplyClick(postId, comment.id, comment.user.username)}
-                className="text-xs text-pink-600 hover:underline mt-1"
+                onClick={() => handleReplyClick(comment.id, comment.user.username)}
+                className="text-xs text-pink-600 hover:underline"
               >
                 回复
               </button>
               {/* 回复列表 */}
               {comment.replies && comment.replies.length > 0 && (
-                <div className="mt-2 space-y-2 ml-3 sm:ml-4 border-l-2 border-pink-100 pl-2">
+                <div className="mt-3 space-y-2 ml-4 border-l-2 border-pink-100 pl-3">
                   {comment.replies.map((reply) => (
-                    <div key={reply.id} className="bg-pink-50 rounded p-2 text-sm w-full min-w-0">
-                      <div className="flex items-center justify-between mb-1 gap-2">
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                          {renderAvatar(reply.user.avatarUrl, reply.user.username, 'w-5 h-5 shrink-0')}
-                          <span className="font-medium text-gray-700 truncate max-w-[120px] sm:max-w-none">{reply.user.username}</span>
+                    <div key={reply.id} className="bg-pink-50 rounded-lg p-3">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          {renderAvatar(reply.user.avatarUrl, reply.user.username, 'w-6 h-6 shrink-0')}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-medium text-gray-700">{reply.user.username}</span>
+                              <span className="text-xs text-gray-400">{formatRelativeTime(reply.createdAt)}</span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-xs text-gray-400 whitespace-nowrap">{formatRelativeTime(reply.createdAt)}</span>
-                          {canDeleteComment(reply, postOwnerId) && (
-                            <button
-                              onClick={() => handleDeleteComment(reply.id, postId)}
-                              className="text-xs text-gray-400 hover:text-red-500 shrink-0"
-                            >
-                              删除
-                            </button>
-                          )}
-                        </div>
+                        {canDeleteComment(reply, postOwnerId) && (
+                          <button
+                            onClick={() => handleDeleteComment(reply.id, postId)}
+                            className="text-xs text-gray-400 hover:text-red-500 shrink-0 ml-2"
+                          >
+                            删除
+                          </button>
+                        )}
                       </div>
-                      <p className="text-gray-700 break-words">{reply.content}</p>
+                      <p className="text-gray-700 break-words text-sm">{reply.content}</p>
                     </div>
                   ))}
                 </div>
               )}
             </div>
-          ))}
-        </div>
-        
-        {/* 评论输入框 */}
-        <div className="flex flex-col sm:flex-row gap-2 w-full min-w-0">
-          <div className="flex items-center gap-2 shrink-0">
-            {renderAvatar(user.avatarUrl, user.username, 'w-6 h-6')}
-          </div>
-          <div className="flex-1 flex flex-col sm:flex-row gap-2 min-w-0">
-            <input
-              type="text"
-              value={newComment[postId] || ''}
-              onChange={(e) => setNewComment(prev => ({ ...prev, [postId]: e.target.value }))}
-              onKeyDown={(e) => e.key === 'Enter' && handleSendComment(postId)}
-              placeholder={replyTo[postId] ? `回复 @${replyTo[postId]?.username}` : '发表评论...'}
-              className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-full focus:outline-none focus:border-pink-300 min-w-0"
-            />
+          ))
+        )}
+      </div>
+    )
+  }
+
+  // 渲染评论输入框组件
+  const renderCommentInput = (postId: string) => (
+    <div className="flex items-center gap-2 border-t border-gray-200 p-3 bg-white">
+      {renderAvatar(user.avatarUrl, user.username, 'w-8 h-8')}
+      <div className="flex-1 flex gap-2">
+        <input
+          type="text"
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSendComment(postId)}
+          placeholder={replyTo ? `回复 @${replyTo.username}` : '发表评论...'}
+          className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-full focus:outline-none focus:border-pink-300"
+        />
+        <button
+          onClick={() => handleSendComment(postId)}
+          disabled={!newComment.trim()}
+          className="px-4 py-2 text-sm bg-pink-500 text-white rounded-full hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+        >
+          发送
+        </button>
+      </div>
+    </div>
+  )
+
+  // 评论弹窗组件
+  const renderCommentModal = () => {
+    if (!selectedPost) return null
+    
+    return (
+      <div
+        className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center"
+        onClick={closeCommentModal}
+      >
+        <div
+          className="bg-white w-full sm:max-w-lg sm:rounded-xl sm:max-h-[80vh] flex flex-col animate-slideUp"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* 顶部栏 */}
+          <div className="flex items-center justify-between p-3 border-b border-gray-200">
+            <h3 className="font-semibold text-gray-800">评论</h3>
             <button
-              onClick={() => handleSendComment(postId)}
-              disabled={!newComment[postId]?.trim()}
-              className="px-4 py-1.5 text-sm bg-pink-500 text-white rounded-full hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed shrink-0 whitespace-nowrap"
+              onClick={closeCommentModal}
+              className="text-gray-400 hover:text-gray-600 text-xl w-8 h-8 flex items-center justify-center"
             >
-              发送
+              ×
             </button>
           </div>
+          
+          {/* 帖子信息 */}
+          <div className="p-3 border-b border-gray-100 bg-gray-50">
+            <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+              <span>{selectedPost.date}</span>
+              <span>•</span>
+              <span>{formatTime(selectedPost.createdAt)}</span>
+            </div>
+            <p className="text-sm text-gray-600 truncate">主题：{selectedPost.theme}</p>
+            {selectedPost.text && (
+              <p className="text-xs text-gray-500 mt-1 line-clamp-2">{selectedPost.text}</p>
+            )}
+          </div>
+          
+          {/* 评论列表 */}
+          {renderCommentList(selectedPost.id, selectedPost.userId)}
+          
+          {/* 评论输入框 */}
+          {renderCommentInput(selectedPost.id)}
         </div>
-        {replyTo[postId] && (
-          <button
-            onClick={() => cancelReply(postId)}
-            className="text-xs text-gray-500 hover:text-gray-700"
-          >
-            取消回复
-          </button>
-        )}
       </div>
     )
   }
@@ -735,6 +783,9 @@ export default function TimelinePage() {
         </div>
       )}
 
+      {/* 评论弹窗 */}
+      {showCommentModal && selectedPost && renderCommentModal()}
+
       {/* 时间轴 */}
       <div className="max-w-3xl mx-auto px-4 pb-8">
         {loading ? (
@@ -807,9 +858,9 @@ export default function TimelinePage() {
                     </div>
                   </div>
 
-                  {/* 并排内容 - 移动端改为垂直堆叠，桌面端并排显示 */}
-                  <div className="p-3 sm:p-4">
-                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  {/* 并排内容 - 保持并排布局 */}
+                  <div className="p-4">
+                    <div className="flex gap-4">
                       {/* 我的分享列 */}
                       <div className="flex-1 space-y-3 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
@@ -843,7 +894,7 @@ export default function TimelinePage() {
                               {/* 评论按钮 */}
                               <div className="mt-2 flex items-center gap-4">
                                 <button
-                                  onClick={() => toggleComments(post.id)}
+                                  onClick={() => openCommentModal(post)}
                                   className="text-xs text-gray-500 hover:text-pink-600 flex items-center gap-1"
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -857,16 +908,13 @@ export default function TimelinePage() {
                                   )}
                                 </button>
                               </div>
-
-                              {/* 评论区 */}
-                              {showComments[post.id] && renderComments(post.id, user.id, true)}
                             </div>
                           ))
                         )}
                       </div>
 
-                      {/* 分隔线 - 移动端横线，桌面端竖线 */}
-                      <div className="h-px sm:h-auto sm:w-px bg-gradient-to-r sm:bg-gradient-to-b from-pink-200 via-purple-200 to-pink-200" />
+                      {/* 分隔线 */}
+                      <div className="w-px bg-gradient-to-b from-pink-200 via-purple-200 to-pink-200" />
 
                       {/* TA 的分享列 */}
                       <div className="flex-1 space-y-3 min-w-0">
@@ -903,7 +951,7 @@ export default function TimelinePage() {
                               {/* 评论按钮 */}
                               <div className="mt-2 flex items-center gap-4">
                                 <button
-                                  onClick={() => toggleComments(post.id)}
+                                  onClick={() => openCommentModal(post)}
                                   className="text-xs text-gray-500 hover:text-purple-600 flex items-center gap-1"
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -917,9 +965,6 @@ export default function TimelinePage() {
                                   )}
                                 </button>
                               </div>
-
-                              {/* 评论区 */}
-                              {showComments[post.id] && renderComments(post.id, post.userId, false)}
                             </div>
                           ))
                         )}
