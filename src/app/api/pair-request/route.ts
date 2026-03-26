@@ -130,6 +130,16 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // 创建通知记录，通知接收者有新的配对请求
+    await prisma.notification.create({
+      data: {
+        receiverId: receiverId,
+        senderId: userId,
+        type: 'pair_request',
+        content: `${pairRequest.sender.username} 向你发送了配对请求`,
+      },
+    })
+
     return NextResponse.json({
       message: '配对请求已发送',
       request: pairRequest,
