@@ -126,9 +126,10 @@ export default function PairPage() {
       }
       setMessage('配对成功！')
       setRequests([])
-      // 更新本地存储的用户信息
-      const updatedUser = { ...user!, partnerId: 'pending' }
-      localStorage.setItem('user', JSON.stringify(updatedUser))
+      // 更新本地存储的用户信息（使用 API 返回的完整用户数据，包含 partner 对象）
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user))
+      }
       setTimeout(() => {
         window.location.href = '/'
       }, 1500)
