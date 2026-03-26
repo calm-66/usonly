@@ -404,13 +404,18 @@ export default function TimelinePage() {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00')
+    
+    // 使用本地时间而不是 UTC 时间，避免时区问题
     const today = new Date()
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+    
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
+    const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`
 
-    if (dateStr === today.toISOString().split('T')[0]) {
+    if (dateStr === todayStr) {
       return '今天'
-    } else if (dateStr === yesterday.toISOString().split('T')[0]) {
+    } else if (dateStr === yesterdayStr) {
       return '昨天'
     } else {
       return date.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' })
