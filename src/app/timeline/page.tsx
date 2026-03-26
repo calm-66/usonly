@@ -194,10 +194,6 @@ export default function TimelinePage() {
       if (myData.posts) {
         const postsWithOwner = myData.posts.map((p: Post) => ({ ...p, owner: '我' as const }))
         setPosts(postsWithOwner)
-        // 加载所有帖子的评论数量
-        postsWithOwner.forEach((post: Post) => {
-          loadCommentCount(post.id)
-        })
       }
 
       if (partnerRes) {
@@ -205,10 +201,6 @@ export default function TimelinePage() {
         if (partnerData.posts) {
           const postsWithOwner = partnerData.posts.map((p: Post) => ({ ...p, owner: 'TA' as const }))
           setPartnerPosts(postsWithOwner)
-          // 加载所有帖子的评论数量
-          postsWithOwner.forEach((post: Post) => {
-            loadCommentCount(post.id)
-          })
         }
       }
     } catch (error) {
@@ -218,17 +210,32 @@ export default function TimelinePage() {
     }
   }
 
-  // 只加载评论数量，不加载完整评论
+  // 当帖子列表加载完成后，加载所有帖子的评论数据
+  useEffect(() => {
+    if (posts.length === 0 && partnerPosts.length === 0) return
+
+    const allPostIds = [...posts, ...partnerPosts].map(p => p.id)
+    const loadedPostIds = Object.keys(comments)
+
+    // 只加载尚未加载的帖子评论
+    const postsToLoad = allPostIds.filter(id => !loadedPostIds.includes(id))
+
+    if (postsToLoad.length === 0) return
+
+    postsToLoad.forEach(postId => loadCommentCount(postId))
+  }, [posts, partnerPosts])
+
+  // 只加载评论数据（包含完整评论列表，用于显示数量）
   const loadCommentCount = async (postId: string) => {
     try {
       const res = await fetch(`/api/comment?postId=${postId}`)
       const data = await res.json()
       if (data.comments) {
-        // 只更新评论数量，不展开评论列表
+        // 只更新评论数据，不展开评论列表
         setComments(prev => ({ ...prev, [postId]: data.comments }))
       }
     } catch (error) {
-      console.error('加载评论数量失败:', error)
+      console.error('加载评论失败:', error)
     }
   }
 
