@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json(
-        { error: '未授权访问' },
+        { error: 'Unauthorized' },
         { status: 401 }
       )
     }
@@ -29,9 +29,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ posts })
   } catch (error) {
-    console.error('获取分享失败:', error)
+    console.error('Error fetching posts:', error)
     return NextResponse.json(
-      { error: '获取分享失败' },
+      { error: 'Failed to fetch posts' },
       { status: 500 }
     )
   }
@@ -46,17 +46,23 @@ export async function POST(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json(
-        { error: '未授权访问' },
+        { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
     if (!date || !theme) {
       return NextResponse.json(
-        { error: '日期和主题为必填项' },
+        { error: 'Date and theme are required' },
         { status: 400 }
       )
     }
+
+    // 获取用户信息
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { partnerId: true },
+    })
 
     const post = await prisma.post.create({
       data: {
@@ -69,14 +75,27 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // 如果有配对对象，创建通知
+    if (user?.partnerId) {
+      await prisma.notification.create({
+        data: {
+          receiverId: user.partnerId,
+          senderId: userId,
+          type: 'new_post',
+          content: '发布了新的分享',
+          postId: post.id,
+        },
+      })
+    }
+
     return NextResponse.json({
-      message: '分享成功',
+      message: 'Post created successfully',
       post,
     })
   } catch (error) {
-    console.error('创建分享失败:', error)
+    console.error('Error creating post:', error)
     return NextResponse.json(
-      { error: '创建分享失败' },
+      { error: 'Failed to create post' },
       { status: 500 }
     )
   }
@@ -91,14 +110,14 @@ export async function DELETE(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json(
-        { error: '未授权访问' },
+        { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
     if (!id) {
       return NextResponse.json(
-        { error: '请指定分享 ID' },
+        { error: 'Post ID is required' },
         { status: 400 }
       )
     }
@@ -110,14 +129,14 @@ export async function DELETE(request: NextRequest) {
 
     if (!post) {
       return NextResponse.json(
-        { error: '分享不存在' },
+        { error: 'Post not found' },
         { status: 404 }
       )
     }
 
     if (post.userId !== userId) {
       return NextResponse.json(
-        { error: '无权删除此分享' },
+        { error: 'Forbidden' },
         { status: 403 }
       )
     }
@@ -126,7 +145,7 @@ export async function DELETE(request: NextRequest) {
     const today = new Date().toISOString().split('T')[0]
     if (post.date !== today) {
       return NextResponse.json(
-        { error: '只能删除今日的分享' },
+        { error: 'Can only delete today\'s post' },
         { status: 400 }
       )
     }
@@ -136,12 +155,12 @@ export async function DELETE(request: NextRequest) {
     })
 
     return NextResponse.json({
-      message: '删除成功',
+      message: 'Post deleted successfully',
     })
   } catch (error) {
-    console.error('删除分享失败:', error)
+    console.error('Error deleting post:', error)
     return NextResponse.json(
-      { error: '删除分享失败' },
+      { error: 'Failed to delete post' },
       { status: 500 }
     )
   }
