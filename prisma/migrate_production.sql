@@ -1,57 +1,74 @@
--- UsOnly 生产数据库迁移脚本
--- 在 Neon 控制台运行此 SQL 创建所有表
-
--- 创建 User 表
-CREATE TABLE IF NOT EXISTS "User" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "username" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
-    "avatarUrl" TEXT,
-    "partnerId" TEXT,
-    "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP NOT NULL,
-    CONSTRAINT "User_partnerId_fkey" FOREIGN KEY ("partnerId") REFERENCES "User" ("id") ON DELETE SET NULL ON UPDATE CASCADE
-);
-
--- 创建 PairRequest 表
-CREATE TABLE IF NOT EXISTS "PairRequest" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "senderId" TEXT NOT NULL,
-    "receiverId" TEXT NOT NULL,
-    "status" TEXT NOT NULL DEFAULT 'pending',
-    "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP NOT NULL,
-    CONSTRAINT "PairRequest_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "PairRequest_receiverId_fkey" FOREIGN KEY ("receiverId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
-);
-
--- 创建 Post 表
-CREATE TABLE IF NOT EXISTS "Post" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+-- 创建评论表
+CREATE TABLE IF NOT EXISTS "Comment" (
+    id TEXT NOT NULL,
+    "postId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "date" TEXT NOT NULL,
-    "theme" TEXT NOT NULL,
+    "parentId" TEXT,
+    content TEXT NOT NULL,
     "imageUrl" TEXT,
-    "text" TEXT,
-    "isLatePost" BOOLEAN NOT NULL DEFAULT false,
-    "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP NOT NULL,
-    CONSTRAINT "Post_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Comment_pkey" PRIMARY KEY (id)
 );
 
--- 创建 Theme 表
-CREATE TABLE IF NOT EXISTS "Theme" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "text" TEXT NOT NULL,
-    "category" TEXT NOT NULL,
-    "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+-- 创建通知表
+CREATE TABLE IF NOT EXISTS "Notification" (
+    id TEXT NOT NULL,
+    "receiverId" TEXT NOT NULL,
+    "senderId" TEXT,
+    type TEXT NOT NULL,
+    content TEXT NOT NULL,
+    "postId" TEXT,
+    "commentId" TEXT,
+    "isRead" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Notification_pkey" PRIMARY KEY (id)
 );
 
--- 创建索引
-CREATE UNIQUE INDEX IF NOT EXISTS "User_username_key" ON "User"("username");
-CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");
-CREATE UNIQUE INDEX IF NOT EXISTS "User_partnerId_key" ON "User"("partnerId");
-CREATE UNIQUE INDEX IF NOT EXISTS "PairRequest_senderId_receiverId_key" ON "PairRequest"("senderId", "receiverId");
-CREATE INDEX IF NOT EXISTS "Post_userId_date_idx" ON "Post"("userId", "date");
+-- 添加外键约束
+ALTER TABLE "Comment" 
+ADD CONSTRAINT "Comment_postId_fkey" 
+FOREIGN KEY ("postId") 
+REFERENCES "Post"(id) 
+ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "Comment" 
+ADD CONSTRAINT "Comment_userId_fkey" 
+FOREIGN KEY ("userId") 
+REFERENCES "User"(id) 
+ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "Comment" 
+ADD CONSTRAINT "Comment_parentId_fkey" 
+FOREIGN KEY ("parentId") 
+REFERENCES "Comment"(id) 
+ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- 添加通知表外键约束
+ALTER TABLE "Notification" 
+ADD CONSTRAINT "Notification_receiverId_fkey" 
+FOREIGN KEY ("receiverId") 
+REFERENCES "User"(id) 
+ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "Notification" 
+ADD CONSTRAINT "Notification_senderId_fkey" 
+FOREIGN KEY ("senderId") 
+REFERENCES "User"(id) 
+ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "Notification" 
+ADD CONSTRAINT "Notification_postId_fkey" 
+FOREIGN KEY ("postId") 
+REFERENCES "Post"(id) 
+ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- 添加索引
+CREATE INDEX "Comment_postId_createdAt_idx" ON "Comment"("postId", "createdAt");
+CREATE INDEX "Comment_parentId_idx" ON "Comment"("parentId");
+CREATE INDEX "Notification_receiverId_isRead_createdAt_idx" ON "Notification"("receiverId", "isRead", "createdAt");
+
+-- 更新 Post 表添加关联（Prisma 会自动处理，不需要额外操作）
+-- 更新 User 表添加关联（Prisma 会自动处理，不需要额外操作）
