@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 
 interface Post {
   id: string
+  userId: string
   date: string
   theme: string
   imageUrl: string | null
@@ -34,6 +35,41 @@ interface User {
   } | null
 }
 
+interface Comment {
+  id: string
+  content: string
+  imageUrl: string | null
+  createdAt: string
+  user: {
+    id: string
+    username: string
+    avatarUrl: string | null
+  }
+  replies: Comment[]
+}
+
+interface Notification {
+  id: string
+  type: string
+  content: string
+  isRead: boolean
+  createdAt: string
+  sender: {
+    id: string
+    username: string
+    avatarUrl: string | null
+  } | null
+  post: {
+    id: string
+    imageUrl: string | null
+  } | null
+}
+
+interface ReplyToState {
+  commentId: string
+  username: string
+}
+
 export default function TimelinePage() {
   const [user, setUser] = useState<User | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
@@ -41,6 +77,17 @@ export default function TimelinePage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'mine' | 'partner' | 'both'>('both')
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  
+  // 评论相关状态
+  const [comments, setComments] = useState<Record<string, Comment[]>>({})
+  const [showComments, setShowComments] = useState<Record<string, boolean>>({})
+  const [newComment, setNewComment] = useState<Record<string, string>>({})
+  const [replyTo, setReplyTo] = useState<Record<string, ReplyToState | undefined>>({})
+  
+  // 通知相关状态
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [unreadCount, setUnreadCount] = useState(0)
 
   // 生成默认头像颜色（根据用户 ID 哈希）
   const getDefaultAvatarColor = (id: string): string => {
@@ -75,6 +122,22 @@ export default function TimelinePage() {
     return `${hours}:${minutes}`
   }
 
+  // 格式化相对时间
+  const formatRelativeTime = (dateStr: string): string => {
+    const date = new Date(dateStr)
+    const now = new Date()
+    const diff = now.getTime() - date.getTime()
+    const minutes = Math.floor(diff / 60000)
+    const hours = Math.floor(diff / 3600000)
+    const days = Math.floor(diff / 86400000)
+
+    if (minutes < 1) return '刚刚'
+    if (minutes < 60) return `${minutes}分钟前`
+    if (hours < 24) return `${hours}小时前`
+    if (days < 7) return `${days}天前`
+    return date.toLocaleDateString('zh-CN')
+  }
+
   // 渲染头像组件
   const renderAvatar = (avatarUrl: string | null, name: string, size: string = 'w-8 h-8') => {
     if (avatarUrl) {
@@ -94,12 +157,22 @@ export default function TimelinePage() {
     )
   }
 
+  // 检查是否可以删除评论
+  const canDeleteComment = (comment: Comment, postOwnerId: string): boolean => {
+    // 评论者可以删除自己的评论
+    if (comment.user.id === user?.id) return true
+    // 分享作者可以删除他人对自己分享的评论
+    if (postOwnerId === user?.id) return true
+    return false
+  }
+
   useEffect(() => {
     const userData = localStorage.getItem('user')
     if (userData) {
       const parsedUser = JSON.parse(userData)
       setUser(parsedUser)
       loadPosts(parsedUser)
+      loadNotifications(parsedUser)
     }
   }, [])
 
@@ -118,17 +191,145 @@ export default function TimelinePage() {
       ])
 
       const myData = await myRes.json()
-      if (myData.posts) setPosts(myData.posts)
+      if (myData.posts) {
+        const postsWithOwner = myData.posts.map((p: Post) => ({ ...p, owner: '我' as const }))
+        setPosts(postsWithOwner)
+      }
 
       if (partnerRes) {
         const partnerData = await partnerRes.json()
-        if (partnerData.posts) setPartnerPosts(partnerData.posts)
+        if (partnerData.posts) {
+          const postsWithOwner = partnerData.posts.map((p: Post) => ({ ...p, owner: 'TA' as const }))
+          setPartnerPosts(postsWithOwner)
+        }
       }
     } catch (error) {
       console.error('加载分享失败:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const loadNotifications = async (userData: User) => {
+    try {
+      const res = await fetch('/api/notification', {
+        headers: { 'x-user-id': userData.id },
+      })
+      const data = await res.json()
+      if (data.notifications) {
+        setNotifications(data.notifications)
+        setUnreadCount(data.unreadCount)
+      }
+    } catch (error) {
+      console.error('加载通知失败:', error)
+    }
+  }
+
+  const loadComments = async (postId: string) => {
+    try {
+      const res = await fetch(`/api/comment?postId=${postId}`)
+      const data = await res.json()
+      if (data.comments) {
+        setComments(prev => ({ ...prev, [postId]: data.comments }))
+      }
+    } catch (error) {
+      console.error('加载评论失败:', error)
+    }
+  }
+
+  const handleSendComment = async (postId: string) => {
+    const content = newComment[postId]?.trim()
+    if (!content) return
+
+    try {
+      const body: { postId: string; content: string; parentId?: string } = {
+        postId,
+        content,
+      }
+      if (replyTo[postId]) {
+        body.parentId = replyTo[postId]!.commentId
+      }
+
+      const res = await fetch('/api/comment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user!.id,
+        },
+        body: JSON.stringify(body),
+      })
+
+      const data = await res.json()
+      if (data.success) {
+        await loadComments(postId)
+        setNewComment(prev => ({ ...prev, [postId]: '' }))
+        setReplyTo(prev => {
+          const newPrev = { ...prev }
+          delete newPrev[postId]
+          return newPrev
+        })
+      }
+    } catch (error) {
+      console.error('发表评论失败:', error)
+    }
+  }
+
+  const handleDeleteComment = async (commentId: string, postId: string) => {
+    if (!confirm('确定要删除这条评论吗？')) return
+
+    try {
+      const res = await fetch(`/api/comment/delete?id=${commentId}`, {
+        method: 'DELETE',
+        headers: {
+          'x-user-id': user!.id,
+        },
+      })
+
+      const data = await res.json()
+      if (data.success) {
+        await loadComments(postId)
+      }
+    } catch (error) {
+      console.error('删除评论失败:', error)
+    }
+  }
+
+  const handleMarkAllNotificationsAsRead = async () => {
+    try {
+      await fetch('/api/notification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user!.id,
+        },
+        body: JSON.stringify({ markAllAsRead: true }),
+      })
+      setUnreadCount(0)
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
+    } catch (error) {
+      console.error('标记已读失败:', error)
+    }
+  }
+
+  const toggleComments = (postId: string) => {
+    setShowComments(prev => ({ ...prev, [postId]: !prev[postId] }))
+    if (!showComments[postId]) {
+      loadComments(postId)
+    }
+  }
+
+  const handleReplyClick = (postId: string, commentId: string, username: string) => {
+    setReplyTo(prev => ({ ...prev, [postId]: { commentId, username } }))
+    setNewComment(prev => ({ ...prev, [postId]: `@${username} ` }))
+  }
+
+  const cancelReply = (postId: string) => {
+    setReplyTo(prev => {
+      const newPrev = { ...prev }
+      delete newPrev[postId]
+      return newPrev
+    })
+    setNewComment(prev => ({ ...prev, [postId]: '' }))
   }
 
   // 按日期分组
@@ -138,7 +339,6 @@ export default function TimelinePage() {
       ...partnerPosts.map(p => ({ ...p, owner: 'TA' as const })),
     ]
 
-    // 按日期分组
     const grouped: Record<string, { myPosts: Post[]; partnerPosts: Post[]; theme: string }> = {}
     
     allPosts.forEach(post => {
@@ -152,7 +352,6 @@ export default function TimelinePage() {
       }
     })
 
-    // 转换为数组并按日期排序
     return Object.entries(grouped)
       .map(([date, data]) => ({
         date,
@@ -174,20 +373,20 @@ export default function TimelinePage() {
     window.location.href = '/'
   }
 
-  // 处理 ESC 键关闭图片
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setSelectedImage(null)
+        setShowNotifications(false)
       }
     }
-    if (selectedImage) {
+    if (selectedImage || showNotifications) {
       window.addEventListener('keydown', handleEsc)
     }
     return () => {
       window.removeEventListener('keydown', handleEsc)
     }
-  }, [selectedImage])
+  }, [selectedImage, showNotifications])
 
   if (!user) {
     return (
@@ -203,7 +402,6 @@ export default function TimelinePage() {
   const dayPosts = groupByDate()
   const displayPosts = getDisplayPosts()
 
-  // 格式化日期显示
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00')
     const today = new Date()
@@ -219,13 +417,188 @@ export default function TimelinePage() {
     }
   }
 
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'new_post':
+        return '📝'
+      case 'comment':
+      case 'comment_reply':
+        return '💬'
+      case 'pair_accepted':
+        return '💕'
+      default:
+        return '🔔'
+    }
+  }
+
+  // 渲染评论列表组件
+  const renderComments = (postId: string, postOwnerId: string, isMyPost: boolean) => {
+    const postComments = comments[postId] || []
+    
+    return (
+      <div className="mt-3 space-y-2">
+        {/* 评论列表 */}
+        <div className="space-y-2 max-h-48 overflow-y-auto">
+          {postComments.map((comment) => (
+            <div key={comment.id} className="bg-white rounded p-2 text-sm">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  {renderAvatar(comment.user.avatarUrl, comment.user.username, 'w-5 h-5')}
+                  <span className="font-medium text-gray-700">{comment.user.username}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400">{formatRelativeTime(comment.createdAt)}</span>
+                  {canDeleteComment(comment, postOwnerId) && (
+                    <button
+                      onClick={() => handleDeleteComment(comment.id, postId)}
+                      className="text-xs text-gray-400 hover:text-red-500"
+                    >
+                      删除
+                    </button>
+                  )}
+                </div>
+              </div>
+              <p className="text-gray-700">{comment.content}</p>
+              <button
+                onClick={() => handleReplyClick(postId, comment.id, comment.user.username)}
+                className="text-xs text-pink-600 hover:underline mt-1"
+              >
+                回复
+              </button>
+              {/* 回复列表 */}
+              {comment.replies && comment.replies.length > 0 && (
+                <div className="mt-2 space-y-2 ml-4 border-l-2 border-pink-100 pl-2">
+                  {comment.replies.map((reply) => (
+                    <div key={reply.id} className="bg-pink-50 rounded p-2 text-sm">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          {renderAvatar(reply.user.avatarUrl, reply.user.username, 'w-5 h-5')}
+                          <span className="font-medium text-gray-700">{reply.user.username}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-400">{formatRelativeTime(reply.createdAt)}</span>
+                          {canDeleteComment(reply, postOwnerId) && (
+                            <button
+                              onClick={() => handleDeleteComment(reply.id, postId)}
+                              className="text-xs text-gray-400 hover:text-red-500"
+                            >
+                              删除
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-gray-700">{reply.content}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        
+        {/* 评论输入框 */}
+        <div className="flex gap-2">
+          {renderAvatar(user.avatarUrl, user.username, 'w-6 h-6')}
+          <div className="flex-1 flex gap-2">
+            <input
+              type="text"
+              value={newComment[postId] || ''}
+              onChange={(e) => setNewComment(prev => ({ ...prev, [postId]: e.target.value }))}
+              onKeyDown={(e) => e.key === 'Enter' && handleSendComment(postId)}
+              placeholder={replyTo[postId] ? `回复 @${replyTo[postId]?.username}` : '发表评论...'}
+              className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-full focus:outline-none focus:border-pink-300"
+            />
+            <button
+              onClick={() => handleSendComment(postId)}
+              disabled={!newComment[postId]?.trim()}
+              className="px-3 py-1.5 text-sm bg-pink-500 text-white rounded-full hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              发送
+            </button>
+          </div>
+        </div>
+        {replyTo[postId] && (
+          <button
+            onClick={() => cancelReply(postId)}
+            className="text-xs text-gray-500 hover:text-gray-700"
+          >
+            取消回复
+          </button>
+        )}
+      </div>
+    )
+  }
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100">
       {/* 顶部导航 */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
+      <header className="bg-white shadow-sm sticky top-0 z-40">
         <div className="max-w-3xl mx-auto px-4 py-3 flex justify-between items-center">
           <h1 className="text-xl font-bold text-gray-800">UsOnly</h1>
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
+            {/* 通知图标 */}
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative p-1 hover:bg-gray-100 rounded-full transition"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* 通知下拉面板 */}
+              {showNotifications && (
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border z-50 max-h-96 overflow-y-auto">
+                  <div className="p-3 border-b flex justify-between items-center">
+                    <h3 className="font-semibold text-gray-800">通知</h3>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={handleMarkAllNotificationsAsRead}
+                        className="text-xs text-pink-600 hover:underline"
+                      >
+                        全部标记为已读
+                      </button>
+                    )}
+                  </div>
+                  {notifications.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500 text-sm">
+                      暂无通知
+                    </div>
+                  ) : (
+                    <div>
+                      {notifications.map(notification => (
+                        <div
+                          key={notification.id}
+                          className={`p-3 border-b last:border-b-0 hover:bg-gray-50 transition ${
+                            !notification.isRead ? 'bg-pink-50' : ''
+                          }`}
+                        >
+                          <div className="flex gap-2">
+                            <span className="text-lg">{getNotificationIcon(notification.type)}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-gray-800 truncate">
+                                {notification.sender && (
+                                  <span className="font-medium">{notification.sender.username}</span>
+                                )}
+                                {' '}{notification.content}
+                              </p>
+                              <p className="text-xs text-gray-500">{formatRelativeTime(notification.createdAt)}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <a href="/post" className="text-pink-600 hover:text-pink-700">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -298,7 +671,6 @@ export default function TimelinePage() {
         {loading ? (
           <div className="text-center py-8 text-gray-500">加载中...</div>
         ) : activeTab !== 'both' ? (
-          /* 单列模式 */
           <div className="space-y-4">
             {displayPosts.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
@@ -307,10 +679,7 @@ export default function TimelinePage() {
               </div>
             ) : (
               displayPosts.map((post) => (
-                <div
-                  key={post.id}
-                  className="bg-white rounded-xl shadow-sm overflow-hidden"
-                >
+                <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
                   <div className="p-4">
                     <div className="flex justify-between items-start mb-2">
                       <div>
@@ -340,7 +709,6 @@ export default function TimelinePage() {
             )}
           </div>
         ) : (
-          /* 并排模式 */
           <div className="space-y-4">
             {dayPosts.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
@@ -349,10 +717,7 @@ export default function TimelinePage() {
               </div>
             ) : (
               dayPosts.map((day) => (
-                <div
-                  key={day.date}
-                  className="bg-white rounded-xl shadow-sm overflow-hidden"
-                >
+                <div key={day.date} className="bg-white rounded-xl shadow-sm overflow-hidden">
                   {/* 日期和主题头部 */}
                   <div className="bg-gradient-to-r from-pink-50 to-purple-50 px-4 py-3 border-b">
                     <div className="flex items-center justify-between">
@@ -388,10 +753,7 @@ export default function TimelinePage() {
                           </div>
                         ) : (
                           day.myPosts.map((post) => (
-                            <div
-                              key={post.id}
-                              className="bg-pink-50 rounded-lg p-3 border border-pink-100"
-                            >
+                            <div key={post.id} className="bg-pink-50 rounded-lg p-3 border border-pink-100">
                               <div className="flex justify-between items-center mb-2">
                                 <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
                               </div>
@@ -408,6 +770,27 @@ export default function TimelinePage() {
                               {post.text && (
                                 <p className="text-sm text-gray-700 whitespace-pre-wrap">{post.text}</p>
                               )}
+                              
+                              {/* 评论按钮 */}
+                              <div className="mt-2 flex items-center gap-4">
+                                <button
+                                  onClick={() => toggleComments(post.id)}
+                                  className="text-xs text-gray-500 hover:text-pink-600 flex items-center gap-1"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                  </svg>
+                                  评论
+                                  {comments[post.id] && comments[post.id].length > 0 && (
+                                    <span className="bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full text-xs">
+                                      {comments[post.id].length}
+                                    </span>
+                                  )}
+                                </button>
+                              </div>
+
+                              {/* 评论区 */}
+                              {showComments[post.id] && renderComments(post.id, user.id, true)}
                             </div>
                           ))
                         )}
@@ -430,10 +813,7 @@ export default function TimelinePage() {
                           </div>
                         ) : (
                           day.partnerPosts.map((post) => (
-                            <div
-                              key={post.id}
-                              className="bg-purple-50 rounded-lg p-3 border border-purple-100"
-                            >
+                            <div key={post.id} className="bg-purple-50 rounded-lg p-3 border border-purple-100">
                               <div className="flex justify-between items-center mb-2">
                                 <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
                               </div>
@@ -450,6 +830,27 @@ export default function TimelinePage() {
                               {post.text && (
                                 <p className="text-sm text-gray-700 whitespace-pre-wrap">{post.text}</p>
                               )}
+                              
+                              {/* 评论按钮 */}
+                              <div className="mt-2 flex items-center gap-4">
+                                <button
+                                  onClick={() => toggleComments(post.id)}
+                                  className="text-xs text-gray-500 hover:text-purple-600 flex items-center gap-1"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                  </svg>
+                                  评论
+                                  {comments[post.id] && comments[post.id].length > 0 && (
+                                    <span className="bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full text-xs">
+                                      {comments[post.id].length}
+                                    </span>
+                                  )}
+                                </button>
+                              </div>
+
+                              {/* 评论区 */}
+                              {showComments[post.id] && renderComments(post.id, post.userId, false)}
                             </div>
                           ))
                         )}
