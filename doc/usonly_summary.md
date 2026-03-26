@@ -183,16 +183,17 @@ window.location.href = '/timeline'
 
 ---
 
-### 流程 2：发送配对请求
+### 流程 2：配对互动
 
 **用户操作**：
 1. 用户进入"配对中心"页面
-2. 在搜索框输入用户名
-3. 点击"搜索"按钮
-4. 在搜索结果中找到目标用户
-5. 点击"发送请求"按钮
+2. 在搜索框输入用户名，点击"搜索"
+3. 在搜索结果中找到目标用户，点击"发送请求"
+4. 或者切换到"收到的请求"标签，点击"接受"按钮
 
 **技术流转**：
+
+**发送配对请求**：
 ```
 前端页面 (/pair)
     ↓ 用户输入搜索内容
@@ -223,23 +224,7 @@ prisma.pairRequest.create() → 写入 PairRequest 表
 前端显示"配对请求已发送"提示
 ```
 
-**涉及模块**：
-- **前端**：`src/app/pair/page.tsx` - 配对中心页面，包含搜索和请求管理
-- **API**：
-  - `src/app/api/user/search/route.ts` - 用户搜索接口
-  - `src/app/api/pair-request/route.ts` - 发送配对请求接口
-- **数据库**：`PairRequest` 表 - 记录配对请求
-
----
-
-### 流程 3：确认配对请求
-
-**用户操作**：
-1. 用户进入"配对中心"，切换到"收到的请求"标签
-2. 看到待处理的配对请求
-3. 点击"接受"按钮
-
-**技术流转**：
+**接受配对请求**：
 ```
 前端页面 (/pair)
     ↓ 页面加载时
@@ -278,18 +263,21 @@ localStorage 更新用户 partnerId
 setTimeout → window.location.href = '/'
 ```
 
-**关键技术点**：
-- **数据库事务**：确保三个更新操作要么全部成功，要么全部失败，避免数据不一致
-- **乐观更新**：前端先更新 localStorage，提升用户体验
-
 **涉及模块**：
-- **前端**：`src/app/pair/page.tsx` - handleAcceptRequest 函数
-- **API**：`src/app/api/pair-request/accept/route.ts` - 接受请求接口
-- **数据库**：`PairRequest` 表 + `User` 表 - 事务更新
+- **前端**：`src/app/pair/page.tsx` - 配对中心页面，包含搜索和请求管理
+- **API**：
+  - `src/app/api/user/search/route.ts` - 用户搜索接口
+  - `src/app/api/pair-request/route.ts` - 发送/获取配对请求接口
+  - `src/app/api/pair-request/accept/route.ts` - 接受请求接口
+- **数据库**：`PairRequest` 表 + `User` 表
+
+**关键技术点**：
+- **数据库事务**：接受请求时三个更新操作原子执行，避免数据不一致
+- **乐观更新**：前端先更新 localStorage，提升用户体验
 
 ---
 
-### 流程 4：获取每日主题
+### 流程 3：获取每日主题
 
 **用户操作**：
 1. 用户进入"发布"页面
@@ -331,7 +319,7 @@ function simpleHash(str):
 
 ---
 
-### 流程 5：发布每日分享
+### 流程 4：发布每日分享
 
 **用户操作**：
 1. 用户在发布页面看到今日主题
@@ -374,7 +362,7 @@ setTimeout → window.location.href = '/timeline'
 
 ---
 
-### 流程 6：查看时间轴
+### 流程 5：查看时间轴
 
 **用户操作**：
 1. 用户进入"时间轴"页面
@@ -409,6 +397,117 @@ groupByDate() 函数：
 - **前端**：`src/app/timeline/page.tsx` - 时间轴页面，核心展示逻辑
 - **API**：`src/app/api/post/route.ts` - 获取分享接口
 - **数据库**：`Post` 表 - 读取分享内容
+
+---
+
+### 流程 6：评论互动
+
+**用户操作**：
+1. 用户在时间轴看到某条分享
+2. 点击"评论"按钮展开评论区
+3. 输入评论内容，点击"发送"
+4. 或者点击评论右上角"删除"按钮删除评论
+
+**技术流转**：
+
+**发表评论**：
+```
+前端页面 (/timeline)
+    ↓ 用户输入评论内容
+React 状态管理：newComment useState
+    ↓ 点击发送
+handleSendComment(postId) 触发
+    ↓ 调用 fetch()
+POST /api/comment
+    Body: { postId, content, parentId? }
+    Headers: { 'x-user-id': userId }
+    ↓ API 验证
+src/app/api/comment/route.ts
+    ↓ 验证帖子存在
+prisma.post.findUnique({ where: { id: postId } })
+    ↓ Prisma 创建评论
+prisma.comment.create({
+  data: { postId, userId, content, parentId }
+})
+    ↓ 创建通知（如果是评论他人）
+prisma.notification.create({
+  data: { receiverId: postOwnerId, senderId: userId,
+          type: 'comment', content: '评论了你的分享', postId }
+})
+    ↓ 返回成功
+前端重新加载评论列表 → 显示新评论
+```
+
+**删除评论**：
+```
+前端页面 (/timeline)
+    ↓ 点击删除
+handleDeleteComment(commentId, postId) 触发
+    ↓ 调用 fetch()
+DELETE /api/comment/delete?id=commentId
+    ↓ API 验证权限
+src/app/api/comment/delete/route.ts
+    - 检查是否是评论者本人
+    - 检查是否是分享作者
+    ↓ Prisma 删除
+prisma.comment.delete({ where: { id: commentId } })
+    - 级联删除所有回复
+    ↓ 返回成功
+前端重新加载评论列表
+```
+
+**涉及模块**：
+- **前端**：`src/app/timeline/page.tsx` - handleSendComment / handleDeleteComment 函数
+- **API**：
+  - `src/app/api/comment/route.ts` - 发表评论接口
+  - `src/app/api/comment/delete/route.ts` - 删除评论接口
+- **数据库**：`Comment` 表 + `Notification` 表
+
+---
+
+### 流程 7：查看通知
+
+**用户操作**：
+1. 用户看到顶部铃铛图标有红点
+2. 点击铃铛图标展开通知列表
+3. 查看通知内容
+4. 可点击"全部标记为已读"
+
+**技术流转**：
+```
+前端页面 (/timeline)
+    ↓ 页面加载时
+useEffect 触发 → loadNotifications()
+    ↓ 调用 fetch()
+GET /api/notification
+    Headers: { 'x-user-id': userId }
+    ↓ API 查询
+src/app/api/notification/route.ts
+    ↓ Prisma 查询
+prisma.notification.findMany({
+  where: { receiverId: userId },
+  include: { sender: true, post: true },
+  orderBy: { createdAt: 'desc' }
+})
+    ↓ 前端渲染
+- 未读通知高亮显示
+- 显示通知图标、内容、时间
+    ↓ 点击"全部标记为已读"
+handleMarkAllNotificationsAsRead() 触发
+    ↓ 调用 fetch()
+POST /api/notification
+    Body: { markAllAsRead: true }
+    ↓ Prisma 更新
+prisma.notification.updateMany({
+  where: { receiverId: userId },
+  data: { isRead: true }
+})
+```
+
+**涉及模块**：
+- **前端**：`src/app/timeline/page.tsx` - 通知面板组件
+- **API**：`src/app/api/notification/route.ts` - 获取/标记通知接口
+- **数据库**：`Notification` 表
 
 ---
 
@@ -577,14 +676,39 @@ groupByDate() 函数：
   - 使用 ImgBB 图床服务
   - 支持 Base64 降级方案
 
+### V1.4 - 评论与通知系统 ✨
+- [x] 评论功能
+  - 支持嵌套评论（回复）
+  - 评论者头像显示
+  - 相对时间显示（刚刚/分钟前/小时前）
+  - 评论删除（评论者或分享作者）
+  - 评论数量徽章显示
+- [x] 通知系统
+  - 新分享通知（new_post）
+  - 评论通知（comment）
+  - 回复通知（comment_reply）
+  - 配对成功通知（pair_accepted）
+  - 全部标记为已读功能
+  - 未读消息计数徽章
+- [x] 数据库设计
+  - Comment 表：支持嵌套评论
+  - Notification 表：完整通知记录
+  - 外键级联删除
+  - 索引优化查询性能
+- [x] 用户体验优化
+  - 页面加载时预加载评论数量
+  - 评论按钮展开/收起动画
+  - 通知下拉面板
+  - 时区问题修复（使用本地时间）
+
 ---
 
 ## 十、未来迭代方向（产品思路）
 
 ### 短期迭代
-1. **通知系统** - 对方发布新内容时提醒
-2. **评论互动** - 可以在对方分享下留言
-3. **表情反应** - 快速表达感受
+1. ~~**通知系统**~~ ✅ 已实现
+2. ~~**评论互动**~~ ✅ 已实现
+3. **表情反应** - 快速表达感受（点赞、爱心等）
 
 ### 中期迭代
 1. **更多主题分类** - 情感、生活、工作等
@@ -598,31 +722,7 @@ groupByDate() 函数：
 
 ---
 
-## 十一、技术边界（评估工作量）
-
-### 容易实现的功能（1-2 天）
-- 修改 UI 样式（Tailwind 类名调整）
-- 添加新的表单字段（React useState + 数据库字段）
-- 简单的数据展示（Prisma 查询 + 前端渲染）
-
-### 中等工作量（3-5 天）
-- 添加新的数据表（Schema 定义 + 迁移 + API）
-- 第三方服务集成（如邮件通知）
-- 复杂的列表筛选（多条件查询）
-
-### 工作量较大（1-2 周）
-- 实时通信（WebSocket / Server-Sent Events）
-- 复杂的权限系统（角色管理 + 权限校验）
-- 大量数据处理（分页 + 缓存优化）
-
-### 工作量大（2 周+）
-- 完整的即时通讯系统
-- 视频/音频功能
-- 复杂的推荐算法
-
----
-
-## 十二、关键指标（产品数据）
+## 十一、关键指标（产品数据）
 
 ### 可以追踪的指标
 | 指标 | 含义 | 怎么算 |
@@ -634,7 +734,7 @@ groupByDate() 函数：
 
 ---
 
-## 十三、部署流程
+## 十二、部署流程
 
 ```
 1. 本地开发完成
@@ -653,7 +753,7 @@ groupByDate() 函数：
 
 ---
 
-## 十四、核心代码文件清单
+## 十三、核心代码文件清单
 
 ### 前端页面
 | 文件路径 | 功能 | 关键函数 |
@@ -686,6 +786,13 @@ groupByDate() 函数：
 |---------|------|
 | `prisma/schema.prisma` | 数据库 Schema 定义 |
 
+### 新增 API（V1.4）
+| 文件路径 | 功能 | HTTP 方法 |
+|---------|------|---------|
+| `src/app/api/comment/route.ts` | 获取/发表评论 | GET/POST |
+| `src/app/api/comment/delete/route.ts` | 删除评论 | DELETE |
+| `src/app/api/notification/route.ts` | 获取/标记通知 | GET/POST |
+
 ---
 
 ## 总结
@@ -710,5 +817,6 @@ UsOnly 是一个典型的**全栈 Web 应用**，包含：
 
 ---
 
-*文档版本：1.2*  
-*最后更新：2026-03-24*
+*文档版本：1.4*  
+*最后更新：2026-03-26*  
+*本次更新：V1.4 评论通知系统 + 时区问题修复*
