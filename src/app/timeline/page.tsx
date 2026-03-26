@@ -489,29 +489,29 @@ export default function TimelinePage() {
     const postComments = comments[postId] || []
     
     return (
-      <div className="mt-3 space-y-2">
+      <div className="mt-3 space-y-2 w-full min-w-0">
         {/* 评论列表 */}
         <div className="space-y-2 max-h-48 overflow-y-auto">
           {postComments.map((comment) => (
-            <div key={comment.id} className="bg-white rounded p-2 text-sm">
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-2">
-                  {renderAvatar(comment.user.avatarUrl, comment.user.username, 'w-5 h-5')}
-                  <span className="font-medium text-gray-700">{comment.user.username}</span>
+            <div key={comment.id} className="bg-white rounded p-2 text-sm w-full min-w-0">
+              <div className="flex items-center justify-between mb-1 gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  {renderAvatar(comment.user.avatarUrl, comment.user.username, 'w-5 h-5 shrink-0')}
+                  <span className="font-medium text-gray-700 truncate max-w-[120px] sm:max-w-none">{comment.user.username}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-400">{formatRelativeTime(comment.createdAt)}</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs text-gray-400 whitespace-nowrap">{formatRelativeTime(comment.createdAt)}</span>
                   {canDeleteComment(comment, postOwnerId) && (
                     <button
                       onClick={() => handleDeleteComment(comment.id, postId)}
-                      className="text-xs text-gray-400 hover:text-red-500"
+                      className="text-xs text-gray-400 hover:text-red-500 shrink-0"
                     >
                       删除
                     </button>
                   )}
                 </div>
               </div>
-              <p className="text-gray-700">{comment.content}</p>
+              <p className="text-gray-700 break-words">{comment.content}</p>
               <button
                 onClick={() => handleReplyClick(postId, comment.id, comment.user.username)}
                 className="text-xs text-pink-600 hover:underline mt-1"
@@ -520,27 +520,27 @@ export default function TimelinePage() {
               </button>
               {/* 回复列表 */}
               {comment.replies && comment.replies.length > 0 && (
-                <div className="mt-2 space-y-2 ml-4 border-l-2 border-pink-100 pl-2">
+                <div className="mt-2 space-y-2 ml-3 sm:ml-4 border-l-2 border-pink-100 pl-2">
                   {comment.replies.map((reply) => (
-                    <div key={reply.id} className="bg-pink-50 rounded p-2 text-sm">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          {renderAvatar(reply.user.avatarUrl, reply.user.username, 'w-5 h-5')}
-                          <span className="font-medium text-gray-700">{reply.user.username}</span>
+                    <div key={reply.id} className="bg-pink-50 rounded p-2 text-sm w-full min-w-0">
+                      <div className="flex items-center justify-between mb-1 gap-2">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          {renderAvatar(reply.user.avatarUrl, reply.user.username, 'w-5 h-5 shrink-0')}
+                          <span className="font-medium text-gray-700 truncate max-w-[120px] sm:max-w-none">{reply.user.username}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-400">{formatRelativeTime(reply.createdAt)}</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-xs text-gray-400 whitespace-nowrap">{formatRelativeTime(reply.createdAt)}</span>
                           {canDeleteComment(reply, postOwnerId) && (
                             <button
                               onClick={() => handleDeleteComment(reply.id, postId)}
-                              className="text-xs text-gray-400 hover:text-red-500"
+                              className="text-xs text-gray-400 hover:text-red-500 shrink-0"
                             >
                               删除
                             </button>
                           )}
                         </div>
                       </div>
-                      <p className="text-gray-700">{reply.content}</p>
+                      <p className="text-gray-700 break-words">{reply.content}</p>
                     </div>
                   ))}
                 </div>
@@ -550,21 +550,23 @@ export default function TimelinePage() {
         </div>
         
         {/* 评论输入框 */}
-        <div className="flex gap-2">
-          {renderAvatar(user.avatarUrl, user.username, 'w-6 h-6')}
-          <div className="flex-1 flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full min-w-0">
+          <div className="flex items-center gap-2 shrink-0">
+            {renderAvatar(user.avatarUrl, user.username, 'w-6 h-6')}
+          </div>
+          <div className="flex-1 flex flex-col sm:flex-row gap-2 min-w-0">
             <input
               type="text"
               value={newComment[postId] || ''}
               onChange={(e) => setNewComment(prev => ({ ...prev, [postId]: e.target.value }))}
               onKeyDown={(e) => e.key === 'Enter' && handleSendComment(postId)}
               placeholder={replyTo[postId] ? `回复 @${replyTo[postId]?.username}` : '发表评论...'}
-              className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-full focus:outline-none focus:border-pink-300"
+              className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-full focus:outline-none focus:border-pink-300 min-w-0"
             />
             <button
               onClick={() => handleSendComment(postId)}
               disabled={!newComment[postId]?.trim()}
-              className="px-3 py-1.5 text-sm bg-pink-500 text-white rounded-full hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-1.5 text-sm bg-pink-500 text-white rounded-full hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed shrink-0 whitespace-nowrap"
             >
               发送
             </button>
@@ -805,11 +807,11 @@ export default function TimelinePage() {
                     </div>
                   </div>
 
-                  {/* 并排内容 */}
-                  <div className="p-4">
-                    <div className="flex gap-4">
+                  {/* 并排内容 - 移动端改为垂直堆叠，桌面端并排显示 */}
+                  <div className="p-3 sm:p-4">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                       {/* 我的分享列 */}
-                      <div className="flex-1 space-y-3">
+                      <div className="flex-1 space-y-3 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
                           {renderAvatar(user.avatarUrl, user.username, 'w-8 h-8')}
                           <span className="text-sm font-medium text-pink-600">{user.username}</span>
@@ -863,11 +865,11 @@ export default function TimelinePage() {
                         )}
                       </div>
 
-                      {/* 分隔线 */}
-                      <div className="w-px bg-gradient-to-b from-pink-200 via-purple-200 to-pink-200" />
+                      {/* 分隔线 - 移动端横线，桌面端竖线 */}
+                      <div className="h-px sm:h-auto sm:w-px bg-gradient-to-r sm:bg-gradient-to-b from-pink-200 via-purple-200 to-pink-200" />
 
                       {/* TA 的分享列 */}
-                      <div className="flex-1 space-y-3">
+                      <div className="flex-1 space-y-3 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
                           {renderAvatar(user.partner?.avatarUrl || null, user.partner?.username || 'TA', 'w-8 h-8')}
                           <span className="text-sm font-medium text-purple-600">
