@@ -27,6 +27,7 @@ export default function PairPage() {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [activeTab, setActiveTab] = useState<'search' | 'requests'>('search')
+  const [hasViewedRequests, setHasViewedRequests] = useState(false)
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -47,9 +48,21 @@ export default function PairPage() {
       const data = await res.json()
       if (data.requests) {
         setRequests(data.requests)
+        // 如果有新请求，重置已查看状态
+        if (data.requests.length > 0) {
+          setHasViewedRequests(false)
+        }
       }
     } catch (err) {
       console.error('加载请求失败:', err)
+    }
+  }
+
+  const handleTabChange = (tab: 'search' | 'requests') => {
+    setActiveTab(tab)
+    // 切换到"收到的请求"标签时，标记为已查看
+    if (tab === 'requests') {
+      setHasViewedRequests(true)
     }
   }
 
@@ -126,9 +139,10 @@ export default function PairPage() {
       }
       setMessage('配对成功！')
       setRequests([])
-      // 更新本地存储的用户信息
-      const updatedUser = { ...user!, partnerId: 'pending' }
-      localStorage.setItem('user', JSON.stringify(updatedUser))
+      // 更新本地存储的用户信息（使用 API 返回的完整用户数据，包含 partner 对象）
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user))
+      }
       setTimeout(() => {
         window.location.href = '/'
       }, 1500)
@@ -165,7 +179,7 @@ export default function PairPage() {
         {/* 标签页 */}
         <div className="flex bg-white rounded-lg shadow-sm p-1 mb-4">
           <button
-            onClick={() => setActiveTab('search')}
+            onClick={() => handleTabChange('search')}
             className={`flex-1 py-2 text-sm font-medium rounded-md transition ${
               activeTab === 'search' ? 'bg-blue-100 text-blue-600' : 'text-gray-500'
             }`}
@@ -173,13 +187,14 @@ export default function PairPage() {
             搜索用户
           </button>
           <button
-            onClick={() => setActiveTab('requests')}
+            onClick={() => handleTabChange('requests')}
             className={`flex-1 py-2 text-sm font-medium rounded-md transition ${
               activeTab === 'requests' ? 'bg-blue-100 text-blue-600' : 'text-gray-500'
             }`}
           >
             收到的请求
-            {requests.length > 0 && (
+            {/* 只有当有请求且用户未查看时才显示徽章 */}
+            {requests.length > 0 && !hasViewedRequests && (
               <span className="ml-1 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
                 {requests.length}
               </span>

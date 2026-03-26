@@ -80,8 +80,24 @@ export async function POST(request: NextRequest) {
       }),
     ])
 
+    // 获取更新后的用户信息（包含伴侣详情）
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        partner: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    })
+
     return NextResponse.json({
       message: '配对成功',
+      user: updatedUser,
     })
   } catch (error) {
     console.error('接受配对请求错误:', error)
