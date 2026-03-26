@@ -194,6 +194,10 @@ export default function TimelinePage() {
       if (myData.posts) {
         const postsWithOwner = myData.posts.map((p: Post) => ({ ...p, owner: '我' as const }))
         setPosts(postsWithOwner)
+        // 加载所有帖子的评论数量
+        postsWithOwner.forEach((post: Post) => {
+          loadCommentCount(post.id)
+        })
       }
 
       if (partnerRes) {
@@ -201,12 +205,30 @@ export default function TimelinePage() {
         if (partnerData.posts) {
           const postsWithOwner = partnerData.posts.map((p: Post) => ({ ...p, owner: 'TA' as const }))
           setPartnerPosts(postsWithOwner)
+          // 加载所有帖子的评论数量
+          postsWithOwner.forEach((post: Post) => {
+            loadCommentCount(post.id)
+          })
         }
       }
     } catch (error) {
       console.error('加载分享失败:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // 只加载评论数量，不加载完整评论
+  const loadCommentCount = async (postId: string) => {
+    try {
+      const res = await fetch(`/api/comment?postId=${postId}`)
+      const data = await res.json()
+      if (data.comments) {
+        // 只更新评论数量，不展开评论列表
+        setComments(prev => ({ ...prev, [postId]: data.comments }))
+      }
+    } catch (error) {
+      console.error('加载评论数量失败:', error)
     }
   }
 
