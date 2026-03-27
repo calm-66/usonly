@@ -357,6 +357,27 @@ export default function TimelinePage() {
     }
   }
 
+  // 处理通知点击
+  const handleNotificationClick = async (notification: Notification) => {
+    setShowNotifications(false)
+    
+    // 如果是评论相关的通知，跳转到对应分享并打开评论弹窗
+    if ((notification.type === 'comment' || notification.type === 'comment_reply') && notification.post) {
+      // 找到对应的帖子
+      const targetPost = posts.find(p => p.id === notification.post!.id) || 
+                         partnerPosts.find(p => p.id === notification.post!.id)
+      
+      if (targetPost) {
+        // 打开评论弹窗
+        setSelectedPost(targetPost)
+        setShowCommentModal(true)
+        setNewComment('')
+        setReplyTo(undefined)
+        await loadComments(targetPost.id)
+      }
+    }
+  }
+
   // 打开评论弹窗
   const openCommentModal = (post: Post) => {
     setSelectedPost(post)
@@ -675,27 +696,33 @@ export default function TimelinePage() {
                     </div>
                   ) : (
                     <div>
-                      {notifications.map(notification => (
-                        <div
-                          key={notification.id}
-                          className={`p-3 border-b last:border-b-0 hover:bg-gray-50 transition ${
-                            !notification.isRead ? 'bg-pink-50' : ''
-                          }`}
-                        >
-                          <div className="flex gap-2">
-                            <span className="text-lg">{getNotificationIcon(notification.type)}</span>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm text-gray-800 truncate">
-                                {notification.sender && (
-                                  <span className="font-medium">{notification.sender.username}</span>
-                                )}
-                                {' '}{notification.content}
-                              </p>
-                              <p className="text-xs text-gray-500">{formatRelativeTime(notification.createdAt)}</p>
+                      {notifications.map(notification => {
+                        // 评论相关的通知可点击
+                        const isClickable = (notification.type === 'comment' || notification.type === 'comment_reply') && notification.post
+                        
+                        return (
+                          <div
+                            key={notification.id}
+                            onClick={() => isClickable && handleNotificationClick(notification)}
+                            className={`p-3 border-b last:border-b-0 transition ${
+                              !notification.isRead ? 'bg-pink-50' : ''
+                            } ${isClickable ? 'hover:bg-gray-50 cursor-pointer' : 'hover:bg-gray-50'}`}
+                          >
+                            <div className="flex gap-2">
+                              <span className="text-lg">{getNotificationIcon(notification.type)}</span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm text-gray-800 truncate">
+                                  {notification.sender && (
+                                    <span className="font-medium">{notification.sender.username}</span>
+                                  )}
+                                  {' '}{notification.content}
+                                </p>
+                                <p className="text-xs text-gray-500">{formatRelativeTime(notification.createdAt)}</p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   )}
                 </div>
