@@ -388,8 +388,8 @@ export default function TimelinePage() {
   const handleNotificationClick = async (notification: Notification) => {
     setShowNotifications(false)
     
-    // 如果是评论相关的通知，跳转到对应分享并打开评论弹窗
-    if ((notification.type === 'comment' || notification.type === 'comment_reply') && notification.post) {
+    // 如果是评论或新分享通知，跳转到对应分享并打开评论弹窗
+    if ((notification.type === 'comment' || notification.type === 'comment_reply' || notification.type === 'new_post') && notification.post) {
       // 找到对应的帖子
       const targetPost = posts.find(p => p.id === notification.post!.id) || 
                          partnerPosts.find(p => p.id === notification.post!.id)
@@ -736,8 +736,8 @@ export default function TimelinePage() {
                   ) : (
                     <div>
                       {notifications.map(notification => {
-                        // 评论相关的通知可点击
-                        const isClickable = (notification.type === 'comment' || notification.type === 'comment_reply') && notification.post
+                        // 评论或新分享通知可点击
+                        const isClickable = (notification.type === 'comment' || notification.type === 'comment_reply' || notification.type === 'new_post') && notification.post
                         
                         return (
                           <div
