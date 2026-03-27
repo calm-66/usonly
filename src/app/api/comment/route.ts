@@ -91,6 +91,9 @@ export async function POST(request: NextRequest) {
     });
 
     // 创建通知逻辑
+    const expiresAt = new Date()
+    expiresAt.setDate(expiresAt.getDate() + 2) // 2 天后过期
+    
     if (parentId) {
       // 如果是回复评论，获取父评论的作者并发送通知
       const parentComment = await prisma.comment.findUnique({
@@ -108,6 +111,7 @@ export async function POST(request: NextRequest) {
             content: '回复了你的评论',
             postId,
             commentId: comment.id,
+            expiresAt,
           },
         });
       }
@@ -122,6 +126,7 @@ export async function POST(request: NextRequest) {
             content: '评论了你的分享',
             postId,
             commentId: comment.id,
+            expiresAt,
           },
         });
       }

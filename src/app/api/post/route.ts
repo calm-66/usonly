@@ -77,6 +77,9 @@ export async function POST(request: NextRequest) {
 
     // 如果有配对对象，创建通知
     if (user?.partnerId) {
+      const expiresAt = new Date()
+      expiresAt.setDate(expiresAt.getDate() + 2) // 2 天后过期
+      
       await prisma.notification.create({
         data: {
           receiverId: user.partnerId,
@@ -84,6 +87,7 @@ export async function POST(request: NextRequest) {
           type: 'new_post',
           content: '发布了新的分享',
           postId: post.id,
+          expiresAt,
         },
       })
     }

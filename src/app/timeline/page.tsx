@@ -54,6 +54,7 @@ interface Notification {
   content: string
   isRead: boolean
   createdAt: string
+  expiresAt: string
   sender: {
     id: string
     username: string
@@ -340,20 +341,46 @@ export default function TimelinePage() {
     }
   }
 
-  const handleMarkAllNotificationsAsRead = async () => {
+  // 删除单条通知
+  const handleDeleteNotification = async (notificationId: string) => {
     try {
-      await fetch('/api/notification', {
+      const res = await fetch(`/api/notification?id=${notificationId}`, {
+        method: 'DELETE',
+        headers: {
+          'x-user-id': user!.id,
+        },
+      })
+
+      const data = await res.json()
+      if (data.success) {
+        setNotifications(prev => prev.filter(n => n.id !== notificationId))
+      }
+    } catch (error) {
+      console.error('删除通知失败:', error)
+    }
+  }
+
+  // 删除所有通知
+  const handleDeleteAllNotifications = async () => {
+    if (!confirm('确定要删除所有通知吗？')) return
+
+    try {
+      const res = await fetch('/api/notification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-user-id': user!.id,
         },
-        body: JSON.stringify({ markAllAsRead: true }),
+        body: JSON.stringify({ deleteAll: true }),
       })
-      setUnreadCount(0)
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
+
+      const data = await res.json()
+      if (data.success) {
+        setNotifications([])
+        setUnreadCount(0)
+      }
     } catch (error) {
-      console.error('标记已读失败:', error)
+      console.error('删除所有通知失败:', error)
     }
   }
 
@@ -681,14 +708,17 @@ export default function TimelinePage() {
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border z-50 max-h-96 overflow-y-auto">
                   <div className="p-3 border-b flex justify-between items-center">
                     <h3 className="font-semibold text-gray-800">通知</h3>
-                    {unreadCount > 0 && (
-                      <button
-                        onClick={handleMarkAllNotificationsAsRead}
-                        className="text-xs text-pink-600 hover:underline"
-                      >
-                        全部标记为已读
-                      </button>
-                    )}
+                    <div className="flex gap-2">
+                      <span className="text-xs text-gray-500">2 天后自动过期</span>
+                      {notifications.length > 0 && (
+                        <button
+                          onClick={handleDeleteAllNotifications}
+                          className="text-xs text-red-600 hover:underline"
+                        >
+                          一键删除
+                        </button>
+                      )}
+                    </div>
                   </div>
                   {notifications.length === 0 ? (
                     <div className="p-4 text-center text-gray-500 text-sm">
@@ -704,7 +734,7 @@ export default function TimelinePage() {
                           <div
                             key={notification.id}
                             onClick={() => isClickable && handleNotificationClick(notification)}
-                            className={`p-3 border-b last:border-b-0 transition ${
+                            className={`p-3 border-b last:border-b-0 transition relative ${
                               !notification.isRead ? 'bg-pink-50' : ''
                             } ${isClickable ? 'hover:bg-gray-50 cursor-pointer' : 'hover:bg-gray-50'}`}
                           >
@@ -720,6 +750,16 @@ export default function TimelinePage() {
                                 <p className="text-xs text-gray-500">{formatRelativeTime(notification.createdAt)}</p>
                               </div>
                             </div>
+                            {/* 删除按钮 */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleDeleteNotification(notification.id)
+                              }}
+                              className="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xs"
+                            >
+                              ✕
+                            </button>
                           </div>
                         )
                       })}
