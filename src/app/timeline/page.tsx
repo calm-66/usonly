@@ -918,23 +918,13 @@ export default function TimelinePage() {
                 <div key={day.date} className="bg-white rounded-xl shadow-sm overflow-hidden">
                   {/* 日期头部 */}
                   <div className="bg-gradient-to-r from-pink-50 to-purple-50 px-4 py-3 border-b">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-bold text-gray-800">
-                          {formatDate(day.date)}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          ({new Date(day.date).toLocaleDateString('zh-CN')})
-                        </span>
-                      </div>
-                      {day.title && (
-                        <div className="flex items-center gap-1">
-                          <svg className="w-4 h-4 text-pink-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                          </svg>
-                          <span className="text-sm text-gray-600">{day.title}</span>
-                        </div>
-                      )}
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-bold text-gray-800">
+                        {formatDate(day.date)}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        ({new Date(day.date).toLocaleDateString('zh-CN')})
+                      </span>
                     </div>
                   </div>
 
@@ -954,7 +944,10 @@ export default function TimelinePage() {
                         ) : (
                           day.myPosts.map((post) => (
                             <div key={post.id} className="bg-pink-50 rounded-lg p-3 border border-pink-100">
-                              <div className="flex justify-between items-center mb-2">
+                              <div className="flex justify-between items-start mb-2">
+                                {post.title && (
+                                  <span className="text-sm font-medium text-gray-700">{post.title}</span>
+                                )}
                                 <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
                               </div>
                               {post.imageUrl && (
@@ -1011,7 +1004,10 @@ export default function TimelinePage() {
                         ) : (
                           day.partnerPosts.map((post) => (
                             <div key={post.id} className="bg-purple-50 rounded-lg p-3 border border-purple-100">
-                              <div className="flex justify-between items-center mb-2">
+                              <div className="flex justify-between items-start mb-2">
+                                {post.title && (
+                                  <span className="text-sm font-medium text-gray-700">{post.title}</span>
+                                )}
                                 <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
                               </div>
                               {post.imageUrl && (
