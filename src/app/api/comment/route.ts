@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     // 获取所有顶级评论（parentId 为 null）
     const comments = await prisma.comment.findMany({
-      where: { postId },
+      where: { postId, parentId: null },
       include: {
         user: {
           select: {
