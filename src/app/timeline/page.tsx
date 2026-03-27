@@ -690,7 +690,14 @@ export default function TimelinePage() {
             {/* 通知图标 */}
             <div className="relative">
               <button
-                onClick={() => setShowNotifications(!showNotifications)}
+                onClick={async () => {
+                  const newState = !showNotifications
+                  setShowNotifications(newState)
+                  // 打开通知面板时重新加载通知，更新未读数量
+                  if (newState && user) {
+                    await loadNotifications(user)
+                  }
+                }}
                 className="relative p-1 hover:bg-gray-100 rounded-full transition"
               >
                 <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
