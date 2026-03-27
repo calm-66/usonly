@@ -90,19 +90,41 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // 创建通知（如果是评论他人的帖子）
-    if (post.userId !== userId) {
-      const notificationType = parentId ? 'comment_reply' : 'comment';
-      await prisma.notification.create({
-        data: {
-          receiverId: post.userId,
-          senderId: userId,
-          type: notificationType,
-          content: parentId ? '回复了你的评论' : '评论了你的分享',
-          postId,
-          commentId: comment.id,
-        },
+    // 创建通知逻辑
+    if (parentId) {
+      // 如果是回复评论，获取父评论的作者并发送通知
+      const parentComment = await prisma.comment.findUnique({
+        where: { id: parentId },
+        select: { userId: true },
       });
+      
+      // 如果父评论作者与当前评论者不是同一人，则发送通知
+      if (parentComment && parentComment.userId !== userId) {
+        await prisma.notification.create({
+          data: {
+            receiverId: parentComment.userId,
+            senderId: userId,
+            type: 'comment_reply',
+            content: '回复了你的评论',
+            postId,
+            commentId: comment.id,
+          },
+        });
+      }
+    } else {
+      // 如果是直接评论分享，给分享作者发送通知（如果不是自己评论自己）
+      if (post.userId !== userId) {
+        await prisma.notification.create({
+          data: {
+            receiverId: post.userId,
+            senderId: userId,
+            type: 'comment',
+            content: '评论了你的分享',
+            postId,
+            commentId: comment.id,
+          },
+        });
+      }
     }
 
     return NextResponse.json({ success: true, comment });
