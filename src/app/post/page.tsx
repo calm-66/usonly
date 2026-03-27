@@ -251,7 +251,7 @@ export default function PostPage() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                placeholder="给分享加个标题吧（可选）"
+                placeholder="请输入标题"
               />
             </div>
 
