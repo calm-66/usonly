@@ -686,9 +686,9 @@ export default function TimelinePage() {
     <main className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100">
       {/* 顶部导航 */}
       <header className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex justify-between items-center">
-          <h1 className="text-xl font-serif italic tracking-wide text-gray-800">UsOnly</h1>
-          <div className="flex items-center">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex relative">
+          <h1 className="text-xl font-serif italic tracking-wide text-gray-800 absolute left-1/2 -translate-x-1/2">UsOnly</h1>
+          <div className="flex items-center ml-auto">
             {/* 通知图标 */}
             <div className="relative">
               <button
