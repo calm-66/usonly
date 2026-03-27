@@ -173,7 +173,7 @@ export default function Home() {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-pink-100 to-purple-100">
         <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-          <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">UsOnly</h1>
+          <h1 className="text-3xl text-center text-gray-800 mb-2 font-serif italic tracking-wide">UsOnly</h1>
           <p className="text-center text-gray-500 mb-6">只属于两个人的私密空间</p>
           
           <div className="space-y-4">
@@ -353,7 +353,7 @@ export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-pink-100 to-purple-100">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">UsOnly</h1>
+        <h1 className="text-3xl text-center text-gray-800 mb-2 font-serif italic tracking-wide">UsOnly</h1>
         <p className="text-center text-gray-500 mb-6">只属于两个人的私密空间</p>
         
         <div className="flex mb-6 border-b">
