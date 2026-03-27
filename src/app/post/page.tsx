@@ -6,7 +6,7 @@ import { uploadImage, validateImageFile } from '@/lib/imageUpload'
 interface Post {
   id: string
   date: string
-  theme: string
+  title: string | null
   imageUrl: string | null
   text: string | null
   isLatePost: boolean
@@ -27,7 +27,7 @@ interface User {
 export default function PostPage() {
   const [user, setUser] = useState<User | null>(null)
   const [date, setDate] = useState('')
-  const [theme, setTheme] = useState('')
+  const [title, setTitle] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [text, setText] = useState('')
   const [isLatePost, setIsLatePost] = useState(false)
@@ -48,36 +48,11 @@ export default function PostPage() {
       // 默认日期为今天
       const today = new Date().toISOString().split('T')[0]
       setDate(today)
-      loadTheme(today, parsedUser.partnerId)
       loadPosts(parsedUser)
     } else {
       window.location.href = '/'
     }
   }, [])
-
-  const loadTheme = async (selectedDate: string, partnerId: string | null) => {
-    try {
-      const userData = localStorage.getItem('user')
-      if (!userData) return
-      const parsedUser = JSON.parse(userData)
-      
-      const params = new URLSearchParams({
-        date: selectedDate,
-        userId: parsedUser.id,
-      })
-      if (partnerId) {
-        params.set('partnerId', partnerId)
-      }
-      
-      const res = await fetch(`/api/theme?${params}`)
-      const data = await res.json()
-      if (data.theme) {
-        setTheme(data.theme.text)
-      }
-    } catch (err) {
-      console.error('加载主题失败:', err)
-    }
-  }
 
   const loadPosts = async (userData: User) => {
     try {
@@ -108,7 +83,7 @@ export default function PostPage() {
         },
         body: JSON.stringify({
           date,
-          theme,
+          title: title || null,
           imageUrl: imageUrl || null,
           text: text || null,
           isLatePost,
@@ -164,7 +139,6 @@ export default function PostPage() {
     setDate(newDate)
     const isToday = newDate === new Date().toISOString().split('T')[0]
     setIsLatePost(!isToday)
-    loadTheme(newDate, user?.partnerId || null)
   }
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -270,15 +244,14 @@ export default function PostPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                今日主题
+                标题（可选）
               </label>
               <input
                 type="text"
-                value={theme}
-                onChange={(e) => setTheme(e.target.value)}
-                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                placeholder="今日主题"
+                placeholder="给分享加个标题吧（可选）"
               />
             </div>
 
@@ -378,13 +351,15 @@ export default function PostPage() {
             <p className="text-center text-gray-500 py-4">今日还没有分享</p>
           ) : (
             <div className="space-y-3">
-              {posts.filter(p => p.date === today).map((post) => (
+                  {posts.filter(p => p.date === today).map((post) => (
                 <div
                   key={post.id}
                   className="p-4 bg-gray-50 rounded-lg"
                 >
                   <div className="flex justify-between items-start mb-2">
-                    <span className="text-sm font-medium text-gray-700">{post.theme}</span>
+                    {post.title && (
+                      <span className="text-sm font-medium text-gray-700">{post.title}</span>
+                    )}
                     <button
                       onClick={() => handleDelete(post.id)}
                       className="text-red-500 hover:text-red-700 text-sm"
@@ -395,7 +370,7 @@ export default function PostPage() {
                   {post.imageUrl && (
                     <img
                       src={post.imageUrl}
-                      alt={post.theme}
+                      alt="分享图片"
                       className="w-full h-32 object-cover rounded-lg mb-2"
                     />
                   )}

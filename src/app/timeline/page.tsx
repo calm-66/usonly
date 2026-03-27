@@ -6,7 +6,7 @@ interface Post {
   id: string
   userId: string
   date: string
-  theme: string
+  title: string | null
   imageUrl: string | null
   text: string | null
   isLatePost: boolean
@@ -16,7 +16,7 @@ interface Post {
 
 interface DayPosts {
   date: string
-  theme: string
+  title: string | null
   myPosts: Post[]
   partnerPosts: Post[]
 }
@@ -439,11 +439,11 @@ export default function TimelinePage() {
       ...partnerPosts.map(p => ({ ...p, owner: 'TA' as const })),
     ]
 
-    const grouped: Record<string, { myPosts: Post[]; partnerPosts: Post[]; theme: string }> = {}
+    const grouped: Record<string, { myPosts: Post[]; partnerPosts: Post[]; title: string | null }> = {}
     
     allPosts.forEach(post => {
       if (!grouped[post.date]) {
-        grouped[post.date] = { myPosts: [], partnerPosts: [], theme: post.theme }
+        grouped[post.date] = { myPosts: [], partnerPosts: [], title: post.title }
       }
       if (post.owner === '我') {
         grouped[post.date].myPosts.push(post)
@@ -455,7 +455,7 @@ export default function TimelinePage() {
     return Object.entries(grouped)
       .map(([date, data]) => ({
         date,
-        theme: data.theme,
+        title: data.title,
         myPosts: data.myPosts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
         partnerPosts: data.partnerPosts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
       }))
@@ -664,7 +664,9 @@ export default function TimelinePage() {
               <span>•</span>
               <span>{formatTime(selectedPost.createdAt)}</span>
             </div>
-            <p className="text-sm text-gray-600 truncate">主题：{selectedPost.theme}</p>
+            {selectedPost.title && (
+              <p className="text-sm font-medium text-gray-700 truncate">{selectedPost.title}</p>
+            )}
             {selectedPost.text && (
               <p className="text-xs text-gray-500 mt-1 line-clamp-2">{selectedPost.text}</p>
             )}
@@ -883,12 +885,14 @@ export default function TimelinePage() {
                       </div>
                       <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
                     </div>
-                    <p className="text-sm text-gray-500 mb-2">主题：{post.theme}</p>
+                    {post.title && (
+                      <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
+                    )}
                     {post.imageUrl && (
                       <div className="mb-3">
                         <img
                           src={post.imageUrl}
-                          alt={post.theme}
+                          alt="分享图片"
                           className="w-full h-48 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
                           onClick={() => setSelectedImage(post.imageUrl!)}
                         />
@@ -912,7 +916,7 @@ export default function TimelinePage() {
             ) : (
               dayPosts.map((day) => (
                 <div key={day.date} className="bg-white rounded-xl shadow-sm overflow-hidden">
-                  {/* 日期和主题头部 */}
+                  {/* 日期头部 */}
                   <div className="bg-gradient-to-r from-pink-50 to-purple-50 px-4 py-3 border-b">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -923,12 +927,14 @@ export default function TimelinePage() {
                           ({new Date(day.date).toLocaleDateString('zh-CN')})
                         </span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <svg className="w-4 h-4 text-pink-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                        </svg>
-                        <span className="text-sm text-gray-600">{day.theme}</span>
-                      </div>
+                      {day.title && (
+                        <div className="flex items-center gap-1">
+                          <svg className="w-4 h-4 text-pink-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                          </svg>
+                          <span className="text-sm text-gray-600">{day.title}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -955,7 +961,7 @@ export default function TimelinePage() {
                                 <div className="mb-2">
                                   <img
                                     src={post.imageUrl}
-                                    alt={post.theme}
+                                    alt="分享图片"
                                     className="w-full h-32 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
                                     onClick={() => setSelectedImage(post.imageUrl!)}
                                   />
@@ -1012,7 +1018,7 @@ export default function TimelinePage() {
                                 <div className="mb-2">
                                   <img
                                     src={post.imageUrl}
-                                    alt={post.theme}
+                                    alt="分享图片"
                                     className="w-full h-32 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
                                     onClick={() => setSelectedImage(post.imageUrl!)}
                                   />

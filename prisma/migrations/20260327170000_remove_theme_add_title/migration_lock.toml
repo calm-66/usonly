@@ -1,0 +1,7 @@
+# Prisma Migrations lock file
+
+# This file tracks the provider and state of migrations
+# It is used to ensure that migrations are applied in the correct order
+# and that the correct database provider is being used.
+
+provider = "postgresql"

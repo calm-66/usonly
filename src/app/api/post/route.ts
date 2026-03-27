@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
   try {
     const userId = request.headers.get('x-user-id')
     const body = await request.json()
-    const { date, theme, imageUrl, text, isLatePost } = body
+    const { date, title, imageUrl, text, isLatePost } = body
 
     if (!userId) {
       return NextResponse.json(
@@ -51,9 +51,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!date || !theme) {
+    if (!date) {
       return NextResponse.json(
-        { error: 'Date and theme are required' },
+        { error: 'Date is required' },
         { status: 400 }
       )
     }
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       data: {
         userId,
         date,
-        theme,
+        title: title || null,
         imageUrl,
         text,
         isLatePost: isLatePost || false,
