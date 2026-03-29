@@ -267,12 +267,35 @@ export default function TimelinePage() {
         headers: { 'x-user-id': userData.id },
       })
       const data = await res.json()
-      if (data.notifications) {
+      if (data.notifications !== undefined) {
         setNotifications(data.notifications)
         setUnreadCount(data.unreadCount)
       }
     } catch (error) {
       console.error('加载通知失败:', error)
+    }
+  }
+
+  // 标记所有通知为已读
+  const handleMarkAllNotificationsAsRead = async () => {
+    try {
+      const res = await fetch('/api/notification', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user!.id,
+        },
+        body: JSON.stringify({ markAllAsRead: true }),
+      })
+
+      const data = await res.json()
+      if (data.success) {
+        // 更新本地状态
+        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
+        setUnreadCount(0)
+      }
+    } catch (error) {
+      console.error('标记通知为已读失败:', error)
     }
   }
 
@@ -386,8 +409,6 @@ export default function TimelinePage() {
 
   // 处理通知点击
   const handleNotificationClick = async (notification: Notification) => {
-    setShowNotifications(false)
-    
     // 如果是评论或新分享通知，跳转到对应分享并打开评论弹窗
     if ((notification.type === 'comment' || notification.type === 'comment_reply' || notification.type === 'new_post') && notification.post) {
       // 找到对应的帖子
@@ -401,7 +422,34 @@ export default function TimelinePage() {
         setNewComment('')
         setReplyTo(undefined)
         await loadComments(targetPost.id)
+        // 标记该通知为已读
+        await markNotificationAsRead(notification.id)
       }
+    }
+  }
+
+  // 标记单个通知为已读
+  const markNotificationAsRead = async (notificationId: string) => {
+    try {
+      const res = await fetch('/api/notification', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user!.id,
+        },
+        body: JSON.stringify({ notificationId }),
+      })
+
+      const data = await res.json()
+      if (data.success) {
+        // 更新本地状态
+        setNotifications(prev => prev.map(n => 
+          n.id === notificationId ? { ...n, isRead: true } : n
+        ))
+        setUnreadCount(prev => Math.max(0, prev - 1))
+      }
+    } catch (error) {
+      console.error('标记通知为已读失败:', error)
     }
   }
 
@@ -695,9 +743,10 @@ export default function TimelinePage() {
                 onClick={async () => {
                   const newState = !showNotifications
                   setShowNotifications(newState)
-                  // 打开通知面板时重新加载通知，更新未读数量
+                  // 打开通知面板时重新加载通知并标记为已读
                   if (newState && user) {
                     await loadNotifications(user)
+                    await handleMarkAllNotificationsAsRead()
                   }
                 }}
                 className="relative p-1 hover:bg-gray-100 rounded-full transition"
@@ -719,6 +768,14 @@ export default function TimelinePage() {
                     <h3 className="font-semibold text-gray-800">通知</h3>
                     <div className="flex gap-2">
                       <span className="text-xs text-gray-500">2 天后自动过期</span>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={handleMarkAllNotificationsAsRead}
+                          className="text-xs text-pink-600 hover:underline"
+                        >
+                          全部标记为已读
+                        </button>
+                      )}
                       {notifications.length > 0 && (
                         <button
                           onClick={handleDeleteAllNotifications}

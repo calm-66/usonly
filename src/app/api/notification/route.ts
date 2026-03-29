@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// GET - 获取用户的通知列表（自动过滤过期通知并标记为已读）
+// GET - 获取用户的通知列表（自动过滤过期通知，但不标记为已读）
 export async function GET(request: NextRequest) {
   try {
     const userId = request.headers.get('x-user-id');
@@ -59,20 +59,6 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // 打开通知面板时自动标记所有未过期通知为已读
-    await prisma.notification.updateMany({
-      where: {
-        receiverId: userId,
-        isRead: false,
-        expiresAt: {
-          gte: now,
-        },
-      },
-      data: {
-        isRead: true,
-      },
-    });
-
     return NextResponse.json({ notifications, unreadCount });
   } catch (error) {
     console.error('Error fetching notifications:', error);
@@ -115,6 +101,58 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error('Error deleting notification:', error);
     return NextResponse.json({ error: 'Failed to delete notification' }, { status: 500 });
+  }
+}
+
+// PUT - 标记通知为已读
+export async function PUT(request: NextRequest) {
+  try {
+    const userId = request.headers.get('x-user-id');
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { markAllAsRead, notificationId } = body;
+
+    const now = new Date();
+
+    if (markAllAsRead) {
+      // 标记所有未过期通知为已读
+      await prisma.notification.updateMany({
+        where: {
+          receiverId: userId,
+          isRead: false,
+          expiresAt: {
+            gte: now,
+          },
+        },
+        data: {
+          isRead: true,
+        },
+      });
+    } else if (notificationId) {
+      // 标记单个通知为已读
+      const notification = await prisma.notification.findUnique({
+        where: { id: notificationId },
+      });
+
+      if (!notification || notification.receiverId !== userId) {
+        return NextResponse.json({ error: 'Notification not found' }, { status: 404 });
+      }
+
+      await prisma.notification.update({
+        where: { id: notificationId },
+        data: {
+          isRead: true,
+        },
+      });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    return NextResponse.json({ error: 'Failed to mark notification as read' }, { status: 500 });
   }
 }
 
