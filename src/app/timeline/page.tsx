@@ -54,7 +54,6 @@ interface Notification {
   content: string
   isRead: boolean
   createdAt: string
-  expiresAt: string
   sender: {
     id: string
     username: string
@@ -776,7 +775,6 @@ export default function TimelinePage() {
                   <div className="p-3 border-b flex justify-between items-center">
                     <h3 className="font-semibold text-gray-800">通知</h3>
                     <div className="flex gap-2">
-                      <span className="text-xs text-gray-500">2 天后自动过期</span>
                       {unreadCount > 0 && (
                         <button
                           onClick={handleMarkAllNotificationsAsRead}

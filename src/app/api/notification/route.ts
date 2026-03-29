@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// GET - 获取用户的通知列表（自动过滤过期通知，但不标记为已读）
+// GET - 获取用户的通知列表
 export async function GET(request: NextRequest) {
   try {
     const userId = request.headers.get('x-user-id');
@@ -9,25 +9,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const now = new Date();
-
-    // 先删除所有过期的通知
-    await prisma.notification.deleteMany({
-      where: {
-        receiverId: userId,
-        expiresAt: {
-          lt: now,
-        },
-      },
-    });
-
-    // 获取未过期的通知
+    // 获取通知
     const notifications = await prisma.notification.findMany({
       where: {
         receiverId: userId,
-        expiresAt: {
-          gte: now,
-        },
       },
       include: {
         sender: {
@@ -48,14 +33,11 @@ export async function GET(request: NextRequest) {
       take: 50,
     });
 
-    // 获取未读数量（只计算未过期的）
+    // 获取未读数量
     const unreadCount = await prisma.notification.count({
       where: {
         receiverId: userId,
         isRead: false,
-        expiresAt: {
-          gte: now,
-        },
       },
     });
 
@@ -115,17 +97,12 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { markAllAsRead, notificationId } = body;
 
-    const now = new Date();
-
     if (markAllAsRead) {
-      // 标记所有未过期通知为已读
+      // 标记所有通知为已读
       await prisma.notification.updateMany({
         where: {
           receiverId: userId,
           isRead: false,
-          expiresAt: {
-            gte: now,
-          },
         },
         data: {
           isRead: true,

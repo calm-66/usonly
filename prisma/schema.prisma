@@ -102,12 +102,10 @@ model Notification {
   commentId  String?   // 关联的评论 ID
   isRead     Boolean   @default(false)
   createdAt  DateTime  @default(now())
-  expiresAt  DateTime  // 通知过期时间（创建时间 + 2 天）
 
   receiver   User      @relation("NotificationReceiver", fields: [receiverId], references: [id])
   sender     User?     @relation("NotificationSender", fields: [senderId], references: [id])
   post       Post?     @relation(fields: [postId], references: [id])
 
   @@index([receiverId, isRead, createdAt])
-  @@index([expiresAt])  // 过期时间索引
 }
