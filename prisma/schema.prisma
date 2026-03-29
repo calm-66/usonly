@@ -20,6 +20,13 @@ model User {
   partnerId   String?  @unique
   partner     User?    @relation("PartnerRelation", fields: [partnerId], references: [id])
   partnerOf   User?    @relation("PartnerRelation")
+  // 取消配对冷静期相关字段
+  breakupInitiated  Boolean   @default(false) // 是否发起了解除配对
+  breakupAt         DateTime? // 发起解除配对的时间
+  // 归档相关字段
+  archivedPartnerId String?   // 已归档的伴侣 ID
+  archivedAt        DateTime? // 归档时间
+  archivedPosts     Post[]    @relation("ArchivedPosts")
   sentRequests     PairRequest[] @relation("SentRequests")
   receivedRequests PairRequest[] @relation("ReceivedRequests")
   posts       Post[]
@@ -54,10 +61,15 @@ model Post {
   imageUrl  String?       // 图片 URL（可选）
   text      String?       // 文字内容（可选）
   isLatePost Boolean      @default(false) // 是否补传
+  // 归档相关字段
+  archivedAt    DateTime? // 归档时间（null=未归档）
+  archivedBy    String?   // 归档操作人 userId
+  archivedUser  User?     @relation("ArchivedPosts", fields: [archivedBy], references: [id])
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
   @@index([userId, date]) // 添加索引以便查询
+  @@index([archivedAt])   // 归档时间索引
   comments  Comment[]     // 关联评论
   notifications Notification[] // 关联通知
 }
