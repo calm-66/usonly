@@ -751,10 +751,9 @@ export default function TimelinePage() {
                 onClick={async () => {
                   const newState = !showNotifications
                   setShowNotifications(newState)
-                  // 打开通知面板时重新加载通知并标记为已读
+                  // 打开通知面板时重新加载通知
                   if (newState && user) {
                     await loadNotifications(user)
-                    await handleMarkAllNotificationsAsRead()
                   }
                 }}
                 className="relative p-1 hover:bg-gray-100 rounded-full transition"
