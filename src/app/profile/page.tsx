@@ -82,9 +82,33 @@ export default function ProfilePage() {
       const parsedUser = JSON.parse(userData)
       setUser(parsedUser)
       checkBreakupStatus(parsedUser)
+      // 从服务器获取最新用户信息
+      fetchLatestUserInfo(parsedUser)
+    } else {
+      setLoading(false)
     }
-    setLoading(false)
   }, [])
+
+  // 从服务器获取最新用户信息
+  const fetchLatestUserInfo = async (localUser: User) => {
+    try {
+      const res = await fetch('/api/auth/me', {
+        headers: { 'x-user-id': localUser.id },
+      })
+      const data = await res.json()
+      if (data.user) {
+        const serverUser = data.user
+        // 更新本地存储
+        localStorage.setItem('user', JSON.stringify(serverUser))
+        setUser(serverUser)
+        checkBreakupStatus(serverUser)
+      }
+    } catch (error) {
+      console.error('获取用户信息失败:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // 检查冷静期状态
   const checkBreakupStatus = (userData: User) => {
@@ -580,7 +604,7 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* 底部导航 */}
+      {/* 底部导航 - 固定 3 个按钮 */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t">
         <div className="max-w-3xl mx-auto flex">
           <a href="/timeline" className="flex-1 py-3 text-center text-gray-500">
@@ -594,12 +618,6 @@ export default function ProfilePage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             <span className="text-xs">发布</span>
-          </a>
-          <a href="/pair" className="flex-1 py-3 text-center text-gray-500">
-            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            <span className="text-xs">配对</span>
           </a>
           <a href="/profile" className="flex-1 py-3 text-center text-pink-600">
             <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">

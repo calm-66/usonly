@@ -21,6 +21,9 @@ export async function GET(request: NextRequest) {
         email: true,
         avatarUrl: true,
         partnerId: true,
+        breakupInitiated: true,
+        breakupAt: true,
+        archivedPartnerId: true,
         partner: {
           select: {
             id: true,

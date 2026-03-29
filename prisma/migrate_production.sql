@@ -1,74 +1,58 @@
--- 创建评论表
-CREATE TABLE IF NOT EXISTS "Comment" (
-    id TEXT NOT NULL,
-    "postId" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "parentId" TEXT,
-    content TEXT NOT NULL,
-    "imageUrl" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+-- 为用户表添加取消配对和归档相关字段
+-- 如果字段已存在则跳过
 
-    CONSTRAINT "Comment_pkey" PRIMARY KEY (id)
-);
+-- 添加 breakupInitiated 字段（默认 false）
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'User' AND column_name = 'breakupInitiated') THEN
+    ALTER TABLE "User" ADD COLUMN "breakupInitiated" BOOLEAN NOT NULL DEFAULT false;
+  END IF;
+END $$;
 
--- 创建通知表
-CREATE TABLE IF NOT EXISTS "Notification" (
-    id TEXT NOT NULL,
-    "receiverId" TEXT NOT NULL,
-    "senderId" TEXT,
-    type TEXT NOT NULL,
-    content TEXT NOT NULL,
-    "postId" TEXT,
-    "commentId" TEXT,
-    "isRead" BOOLEAN NOT NULL DEFAULT false,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+-- 添加 breakupAt 字段
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'User' AND column_name = 'breakupAt') THEN
+    ALTER TABLE "User" ADD COLUMN "breakupAt" TIMESTAMP(3);
+  END IF;
+END $$;
 
-    CONSTRAINT "Notification_pkey" PRIMARY KEY (id)
-);
+-- 添加 archivedPartnerId 字段
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'User' AND column_name = 'archivedPartnerId') THEN
+    ALTER TABLE "User" ADD COLUMN "archivedPartnerId" TEXT;
+  END IF;
+END $$;
 
--- 添加外键约束
-ALTER TABLE "Comment" 
-ADD CONSTRAINT "Comment_postId_fkey" 
-FOREIGN KEY ("postId") 
-REFERENCES "Post"(id) 
-ON DELETE CASCADE ON UPDATE CASCADE;
+-- 添加 archivedAt 字段（User 表）
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'User' AND column_name = 'archivedAt') THEN
+    ALTER TABLE "User" ADD COLUMN "archivedAt" TIMESTAMP(3);
+  END IF;
+END $$;
 
-ALTER TABLE "Comment" 
-ADD CONSTRAINT "Comment_userId_fkey" 
-FOREIGN KEY ("userId") 
-REFERENCES "User"(id) 
-ON DELETE CASCADE ON UPDATE CASCADE;
+-- 为 Post 表添加归档相关字段
 
-ALTER TABLE "Comment" 
-ADD CONSTRAINT "Comment_parentId_fkey" 
-FOREIGN KEY ("parentId") 
-REFERENCES "Comment"(id) 
-ON DELETE CASCADE ON UPDATE CASCADE;
+-- 添加 archivedAt 字段（Post 表）
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Post' AND column_name = 'archivedAt') THEN
+    ALTER TABLE "Post" ADD COLUMN "archivedAt" TIMESTAMP(3);
+  END IF;
+END $$;
 
--- 添加通知表外键约束
-ALTER TABLE "Notification" 
-ADD CONSTRAINT "Notification_receiverId_fkey" 
-FOREIGN KEY ("receiverId") 
-REFERENCES "User"(id) 
-ON DELETE CASCADE ON UPDATE CASCADE;
+-- 添加 archivedBy 字段
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'Post' AND column_name = 'archivedBy') THEN
+    ALTER TABLE "Post" ADD COLUMN "archivedBy" TEXT;
+  END IF;
+END $$;
 
-ALTER TABLE "Notification" 
-ADD CONSTRAINT "Notification_senderId_fkey" 
-FOREIGN KEY ("senderId") 
-REFERENCES "User"(id) 
-ON DELETE CASCADE ON UPDATE CASCADE;
+-- 为 archivedAt 字段添加索引（Post 表）
+CREATE INDEX IF NOT EXISTS "Post_archivedAt_idx" ON "Post"("archivedAt");
 
-ALTER TABLE "Notification" 
-ADD CONSTRAINT "Notification_postId_fkey" 
-FOREIGN KEY ("postId") 
-REFERENCES "Post"(id) 
-ON DELETE CASCADE ON UPDATE CASCADE;
-
--- 添加索引
-CREATE INDEX "Comment_postId_createdAt_idx" ON "Comment"("postId", "createdAt");
-CREATE INDEX "Comment_parentId_idx" ON "Comment"("parentId");
-CREATE INDEX "Notification_receiverId_isRead_createdAt_idx" ON "Notification"("receiverId", "isRead", "createdAt");
-
--- 更新 Post 表添加关联（Prisma 会自动处理，不需要额外操作）
--- 更新 User 表添加关联（Prisma 会自动处理，不需要额外操作）
+-- 为 userId 和 date 添加复合索引（Post 表）
+CREATE INDEX IF NOT EXISTS "Post_userId_date_idx" ON "Post"("userId", "date");

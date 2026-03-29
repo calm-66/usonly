@@ -33,6 +33,8 @@ interface User {
     email: string
     avatarUrl: string | null
   } | null
+  breakupInitiated?: boolean
+  breakupAt?: string | null
 }
 
 interface Comment {
@@ -91,6 +93,12 @@ export default function TimelinePage() {
   const [showNotifications, setShowNotifications] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
+  
+  // 挽回配对相关状态
+  const [showAppealBanner, setShowAppealBanner] = useState(false)
+  const [appealLoading, setAppealLoading] = useState(false)
+  const [showAppealResponseModal, setShowAppealResponseModal] = useState(false)
+  const [selectedAppealNotification, setSelectedAppealNotification] = useState<Notification | null>(null)
 
   // 生成默认头像颜色（根据用户 ID 哈希）
   const getDefaultAvatarColor = (id: string): string => {
@@ -195,8 +203,80 @@ export default function TimelinePage() {
       setUser(parsedUser)
       loadPosts(parsedUser)
       loadNotifications(parsedUser)
+      checkAppealStatus(parsedUser)
     }
   }, [])
+
+  // 检查挽回状态：如果对方发起了取消配对，显示挽回横幅
+  const checkAppealStatus = (userData: User) => {
+    if (userData.partnerId && !userData.breakupInitiated) {
+      // 检查是否有 breakup_initiated 类型的未读通知
+      const hasUnreadBreakupNotification = notifications.some(
+        n => n.type === 'breakup_initiated' && !n.isRead
+      )
+      setShowAppealBanner(hasUnreadBreakupNotification)
+    }
+  }
+
+  // 发起挽回配对
+  const handleAppeal = async () => {
+    if (!user) return
+    try {
+      setAppealLoading(true)
+      const res = await fetch('/api/breakup/appeal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user.id,
+        },
+      })
+      const data = await res.json()
+      if (data.success) {
+        setShowAppealBanner(false)
+        alert('已发送挽回请求，等待对方确认')
+      } else {
+        alert('操作失败：' + (data.error || '未知错误'))
+      }
+    } catch (error) {
+      console.error('发起挽回失败:', error)
+      alert('操作失败，请重试')
+    } finally {
+      setAppealLoading(false)
+    }
+  }
+
+  // 处理挽回响应（接受/拒绝）
+  const handleAppealResponse = async (accept: boolean) => {
+    if (!user) return
+    try {
+      setAppealLoading(true)
+      const res = await fetch('/api/breakup/appeal-response', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user.id,
+        },
+        body: JSON.stringify({ accept }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setShowAppealResponseModal(false)
+        setSelectedAppealNotification(null)
+        // 重新加载通知
+        if (user) {
+          await loadNotifications(user)
+        }
+        alert(accept ? '已接受挽回请求，关系已恢复' : '已拒绝挽回请求')
+      } else {
+        alert('操作失败：' + (data.error || '未知错误'))
+      }
+    } catch (error) {
+      console.error('处理挽回请求失败:', error)
+      alert('操作失败，请重试')
+    } finally {
+      setAppealLoading(false)
+    }
+  }
 
   const loadPosts = async (userData: User) => {
     try {
@@ -594,8 +674,23 @@ export default function TimelinePage() {
       case 'breakup_confirmed':
       case 'breakup_auto_confirmed':
         return '🍂'
+      case 'breakup_appeal':
+        return '💌'
+      case 'breakup_appeal_accepted':
+        return '💞'
+      case 'breakup_appeal_rejected':
+        return '💔'
       default:
         return '🔔'
+    }
+  }
+
+  // 处理挽回通知点击
+  const handleAppealNotificationClick = (notification: Notification) => {
+    if (notification.type === 'breakup_appeal') {
+      setSelectedAppealNotification(notification)
+      setShowAppealResponseModal(true)
+      markNotificationAsRead(notification.id)
     }
   }
 
@@ -808,14 +903,19 @@ export default function TimelinePage() {
                       {notifications.map(notification => {
                         // 评论或新分享通知可点击
                         const isClickable = (notification.type === 'comment' || notification.type === 'comment_reply' || notification.type === 'new_post') && notification.post
+                        // 挽回请求通知可点击
+                        const isAppealClickable = notification.type === 'breakup_appeal'
                         
                         return (
                           <div
                             key={notification.id}
-                            onClick={() => isClickable && handleNotificationClick(notification)}
+                            onClick={() => {
+                              if (isClickable) handleNotificationClick(notification)
+                              else if (isAppealClickable) handleAppealNotificationClick(notification)
+                            }}
                             className={`p-3 border-b last:border-b-0 transition relative ${
                               !notification.isRead ? 'bg-pink-50' : ''
-                            } ${isClickable ? 'hover:bg-gray-50 cursor-pointer' : 'hover:bg-gray-50'}`}
+                            } ${(isClickable || isAppealClickable) ? 'hover:bg-gray-50 cursor-pointer' : 'hover:bg-gray-50'}`}
                           >
                             <div className="flex gap-2">
                               <span className="text-lg">{getNotificationIcon(notification.type)}</span>
@@ -850,6 +950,27 @@ export default function TimelinePage() {
           </div>
         </div>
       </header>
+
+      {/* 挽回配对横幅 */}
+      {showAppealBanner && user?.partnerId && (
+        <div className="max-w-3xl mx-auto px-4 mb-4">
+          <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl shadow-lg p-4 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-lg mb-1">💕 挽回配对</p>
+                <p className="text-sm text-pink-100">你的伴侣发起了取消配对，现在还有 7 天冷静期，发送挽回请求恢复关系吧！</p>
+              </div>
+              <button
+                onClick={handleAppeal}
+                disabled={appealLoading}
+                className="px-6 py-2 bg-white text-pink-600 rounded-full font-medium hover:bg-pink-50 disabled:opacity-50 shrink-0 ml-4"
+              >
+                {appealLoading ? '发送中...' : '发送挽回请求'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 标签页 */}
       <div className="max-w-3xl mx-auto px-4 py-4">
@@ -1113,7 +1234,47 @@ export default function TimelinePage() {
         )}
       </div>
 
-      {/* 底部导航 - 根据配对状态动态调整 */}
+      {/* 挽回响应弹窗 */}
+      {showAppealResponseModal && selectedAppealNotification && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowAppealResponseModal(false)}
+        >
+          <div
+            className="bg-white w-full max-w-sm rounded-xl p-6 animate-slideUp"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center mb-4">
+              <span className="text-4xl">💌</span>
+              <h3 className="text-lg font-bold text-gray-800 mt-2">挽回配对请求</h3>
+            </div>
+            <p className="text-gray-600 text-sm mb-2">
+              {selectedAppealNotification.sender?.username} 发送了挽回请求
+            </p>
+            <p className="text-gray-500 text-xs mb-6">
+              {selectedAppealNotification.content}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleAppealResponse(false)}
+                disabled={appealLoading}
+                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 disabled:opacity-50"
+              >
+                拒绝
+              </button>
+              <button
+                onClick={() => handleAppealResponse(true)}
+                disabled={appealLoading}
+                className="flex-1 px-4 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600 disabled:opacity-50"
+              >
+                {appealLoading ? '处理中...' : '接受'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 底部导航 - 固定 3 个按钮 */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t">
         <div className="max-w-3xl mx-auto flex">
           <a href="/timeline" className="flex-1 py-3 text-center text-pink-600">
@@ -1128,16 +1289,7 @@ export default function TimelinePage() {
             </svg>
             <span className="text-xs">发布</span>
           </a>
-          {/* 只有当用户没有配对时才显示配对按钮 */}
-          {!user.partnerId && (
-            <a href="/pair" className="flex-1 py-3 text-center text-gray-500">
-              <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              <span className="text-xs">配对</span>
-            </a>
-          )}
-          <a href="/profile" className={`flex-1 py-3 text-center text-gray-500 ${!user.partnerId ? '' : 'flex-1'}`}>
+          <a href="/profile" className="flex-1 py-3 text-center text-gray-500">
             <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
