@@ -33,12 +33,13 @@ export async function GET(request: NextRequest) {
     }
 
     // 获取归档的分享（按日期倒序）
+    // 查询条件：用户发布的且已归档的帖子
     const posts = await prisma.post.findMany({
       where: {
         userId: queryUserId,
         archivedAt: { not: null },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { date: 'desc' },
     });
 
     // 构建归档信息
