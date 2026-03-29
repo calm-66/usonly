@@ -335,12 +335,21 @@ export default function TimelinePage() {
 
       const data = await res.json()
       if (data.success) {
+        // 重新加载评论
         await loadComments(postId)
+        // 清空输入框
         setNewComment('')
         setReplyTo(undefined)
+        // 刷新通知（因为评论可能会创建新通知）
+        if (user) {
+          await loadNotifications(user)
+        }
+      } else {
+        alert('评论失败：' + (data.error || '未知错误'))
       }
     } catch (error) {
       console.error('发表评论失败:', error)
+      alert('评论失败，请重试')
     }
   }
 
