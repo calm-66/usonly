@@ -31,6 +31,9 @@ export default function ProfilePage() {
   const [breakupLoading, setBreakupLoading] = useState(false)
   const [showBreakupConfirm, setShowBreakupConfirm] = useState(false)
   const [breakupDaysLeft, setBreakupDaysLeft] = useState<number | null>(null)
+  
+  // 冷静期倒计时状态
+  const [timeLeft, setTimeLeft] = useState<{days: number, hours: number} | null>(null)
 
   // 生成默认头像颜色（根据用户 ID 哈希）
   const getDefaultAvatarColor = (id: string): string => {
@@ -88,6 +91,37 @@ export default function ProfilePage() {
       setLoading(false)
     }
   }, [])
+
+  // 冷静期倒计时定时器 - 每分钟更新一次
+  useEffect(() => {
+    if (!user?.breakupAt) {
+      setTimeLeft(null)
+      return
+    }
+    
+    const updateCountdown = () => {
+      const breakupAt = new Date(user.breakupAt!)
+      const deadline = new Date(breakupAt.getTime() + 7 * 24 * 60 * 60 * 1000)
+      const now = new Date()
+      const diff = deadline.getTime() - now.getTime()
+      
+      if (diff <= 0) {
+        // 冷静期已结束
+        setTimeLeft(null)
+        return
+      }
+      
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+      
+      setTimeLeft({ days, hours })
+    }
+    
+    updateCountdown() // 立即执行一次
+    const timer = setInterval(updateCountdown, 60000) // 每分钟更新一次
+    
+    return () => clearInterval(timer)
+  }, [user?.breakupAt])
 
   // 从服务器获取最新用户信息
   const fetchLatestUserInfo = async (localUser: User) => {
@@ -458,11 +492,11 @@ export default function ProfilePage() {
               </div>
 
               {/* 冷静期状态 */}
-              {breakupDaysLeft !== null ? (
+              {timeLeft !== null ? (
                 <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <p className="text-yellow-800 font-medium mb-2">⚠️ 冷静期中</p>
                   <p className="text-sm text-yellow-700 mb-3">
-                    还剩 {breakupDaysLeft} 天将解除配对关系
+                    还剩 {timeLeft.days}天{timeLeft.hours}小时 将解除配对关系
                   </p>
                   <div className="flex gap-2">
                     <button
