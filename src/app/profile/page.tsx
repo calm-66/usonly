@@ -238,11 +238,10 @@ export default function ProfilePage() {
       const updateData = await updateRes.json()
       if (updateData.success) {
         const updatedUser = { ...currentUser, avatarUrl: imageUrl }
-        setUser(updatedUser)
         localStorage.setItem('user', JSON.stringify(updatedUser))
-        setAvatarFile(null)
-        setAvatarPreview(null)
-        alert('头像更新成功')
+        alert('头像更新成功，页面将刷新...')
+        // 刷新页面以显示更新后的头像
+        window.location.reload()
       } else {
         throw new Error(updateData.error || '更新失败')
       }
