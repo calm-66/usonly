@@ -29,23 +29,6 @@ export async function POST(request: NextRequest) {
 
     const partnerId = user.partnerId;
 
-    // 获取双方所有未归档的帖子 ID（用于删除评论）
-    const userPosts = await prisma.post.findMany({
-      where: {
-        userId: userId,
-        archivedAt: null,
-      },
-      select: { id: true },
-    });
-    const partnerPosts = await prisma.post.findMany({
-      where: {
-        userId: partnerId,
-        archivedAt: null,
-      },
-      select: { id: true },
-    });
-    const allPostIds = [...userPosts.map(p => p.id), ...partnerPosts.map(p => p.id)];
-
     // 执行解除配对操作（事务）
     await prisma.$transaction([
       // 1. 清空双方的 partnerId
@@ -90,12 +73,7 @@ export async function POST(request: NextRequest) {
           archivedBy: userId,
         },
       }),
-      // 3. 删除双方的所有评论（包括顶级评论和回复）
-      prisma.comment.deleteMany({
-        where: {
-          userId: { in: [userId, partnerId] },
-        },
-      }),
+      // 注意：保留评论，不删除
     ]);
 
     // 3. 给对方发送通知
