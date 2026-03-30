@@ -25,11 +25,9 @@ export async function GET(request: NextRequest) {
       userId: targetUserId,
     }
 
-    // 如果是导出 PDF（带日期范围），则包含所有帖子（包括已归档的）
-    // 否则只显示未归档的帖子（正常时间轴浏览）
-    if (!startDate && !endDate) {
-      whereClause.archivedAt = null
-    }
+    // 始终过滤掉已归档的帖子（配对期间的帖子在解除配对后会被归档）
+    // 导出功能也不应包含已归档的内容
+    whereClause.archivedAt = null
 
     // 添加日期范围过滤
     if (startDate || endDate) {
