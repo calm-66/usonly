@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect } from 'react'
 import CommentModal from '@/components/CommentModal'
 
 interface Post {
@@ -217,22 +217,25 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
 
         if (data.posts) {
           // 根据帖子 userId 判断是"我"还是"TA"的帖子
-          const myPosts: Post[] = []
-          const partnerPosts: Post[] = []
+          const myPostsData: Post[] = []
+          const partnerPostsData: Post[] = []
           
-          data.posts.forEach((p: Post) => {
+          for (const p of data.posts) {
             if (p.userId === serverUser.id) {
-              myPosts.push({ ...p, owner: '我' as const })
+              myPostsData.push({ ...p, owner: '我' as const })
             } else {
-              partnerPosts.push({ ...p, owner: 'TA' as const })
+              partnerPostsData.push({ ...p, owner: 'TA' as const })
             }
-          })
+          }
           
-          setPosts(myPosts)
-          setPartnerPosts(partnerPosts)
+          setPosts(myPostsData)
+          setPartnerPosts(partnerPostsData)
           
           // 加载所有帖子的评论
-          [...myPosts, ...partnerPosts].forEach(post => loadComments(post.id))
+          const allPosts = [...myPostsData, ...partnerPostsData]
+          for (let i = 0; i < allPosts.length; i++) {
+            loadComments(allPosts[i].id)
+          }
         }
 
         // 设置归档信息
