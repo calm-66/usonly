@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import PDFExportModal from '@/components/PDFExportModal'
+import HTMLExportModal from '@/components/HTMLExportModal'
 
 interface User {
   id: string
@@ -41,7 +41,7 @@ export default function ProfilePage() {
   // 冷静期倒计时状态
   const [timeLeft, setTimeLeft] = useState<{days: number, hours: number} | null>(null)
   
-  // PDF 导出相关状态
+  // HTML 导出相关状态
   const [showExportModal, setShowExportModal] = useState(false)
 
   // 生成默认头像颜色（根据用户 ID 哈希）
@@ -662,7 +662,7 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* 导出回忆 PDF */}
+          {/* 导出回忆 HTML */}
           <div className="mt-4 pt-4 border-t">
             <button
               onClick={() => setShowExportModal(true)}
@@ -671,7 +671,7 @@ export default function ProfilePage() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              导出回忆 PDF
+              导出回忆
             </button>
           </div>
 
@@ -777,8 +777,8 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* PDF 导出弹窗 */}
-      <PDFExportModal 
+      {/* HTML 导出弹窗 */}
+      <HTMLExportModal 
         isOpen={showExportModal} 
         onClose={() => setShowExportModal(false)} 
         user={user} 
