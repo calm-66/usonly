@@ -304,22 +304,24 @@ export default function CommentModal({
                       </div>
                     </div>
                   </div>
-                  {canDeleteComment(comment) && (
+                  <div className="flex items-center gap-2 shrink-0 ml-2">
                     <button
-                      onClick={() => handleDeleteComment(comment.id)}
-                      className="text-xs text-gray-400 hover:text-red-500 shrink-0 ml-2"
+                      onClick={() => handleReplyClick(comment.id, comment.user.username)}
+                      className="text-xs text-pink-600 hover:underline"
                     >
-                      删除
+                      回复
                     </button>
-                  )}
+                    {canDeleteComment(comment) && (
+                      <button
+                        onClick={() => handleDeleteComment(comment.id)}
+                        className="text-xs text-gray-400 hover:text-red-500"
+                      >
+                        删除
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <p className="text-gray-700 break-words text-sm mb-2">{comment.content}</p>
-                <button
-                  onClick={() => handleReplyClick(comment.id, comment.user.username)}
-                  className="text-xs text-pink-600 hover:underline"
-                >
-                  回复
-                </button>
                 {/* 回复列表 */}
                 {comment.replies && comment.replies.length > 0 && (
                   <div className="mt-3 space-y-2 ml-4 border-l-2 border-pink-100 pl-3">
@@ -335,23 +337,24 @@ export default function CommentModal({
                               </div>
                             </div>
                           </div>
-                          {canDeleteComment(reply) && (
+                          <div className="flex items-center gap-2 shrink-0 ml-2">
                             <button
-                              onClick={() => handleDeleteComment(reply.id)}
-                              className="text-xs text-gray-400 hover:text-red-500 shrink-0 ml-2"
+                              onClick={() => handleReplyClick(reply.id, reply.user.username, comment.id)}
+                              className="text-xs text-pink-600 hover:underline"
                             >
-                              删除
+                              回复
                             </button>
-                          )}
+                            {canDeleteComment(reply) && (
+                              <button
+                                onClick={() => handleDeleteComment(reply.id)}
+                                className="text-xs text-gray-400 hover:text-red-500"
+                              >
+                                删除
+                              </button>
+                            )}
+                          </div>
                         </div>
                         <p className="text-gray-700 break-words text-sm">{reply.content}</p>
-                {/* 回复的回复按钮 - 传入当前回复所属的顶级评论 ID (comment.id) */}
-                <button
-                  onClick={() => handleReplyClick(reply.id, reply.user.username, comment.id)}
-                  className="text-xs text-pink-600 hover:underline mt-1"
-                >
-                  回复
-                </button>
                       </div>
                     ))}
                   </div>
