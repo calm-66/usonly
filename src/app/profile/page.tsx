@@ -189,10 +189,26 @@ export default function ProfilePage() {
 
   // 上传头像
   const handleUploadAvatar = async () => {
-    if (!avatarFile || !user) return
+    if (!avatarFile || !user?.id) {
+      alert('用户信息未加载，请刷新页面后重试')
+      return
+    }
 
     try {
       setUploading(true)
+      
+      // 先从服务器获取最新的用户信息，确保 user.id 有效
+      const res = await fetch('/api/auth/me', {
+        headers: { 'x-user-id': user.id },
+      })
+      const data = await res.json()
+      
+      if (!data.user) {
+        throw new Error('用户信息无效，请重新登录')
+      }
+      
+      const currentUser = data.user
+      
       const formData = new FormData()
       formData.append('image', avatarFile)
 
@@ -204,7 +220,7 @@ export default function ProfilePage() {
       const imgbbData = await imgbbRes.json()
 
       if (!imgbbData.success) {
-        throw new Error('图片上传失败')
+        throw new Error('图片上传失败：' + (imgbbData.error?.message || '未知错误'))
       }
 
       const imageUrl = imgbbData.data.url
@@ -214,23 +230,25 @@ export default function ProfilePage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': user.id,
+          'x-user-id': currentUser.id,
         },
         body: JSON.stringify({ avatarUrl: imageUrl }),
       })
 
       const updateData = await updateRes.json()
       if (updateData.success) {
-        const updatedUser = { ...user, avatarUrl: imageUrl }
+        const updatedUser = { ...currentUser, avatarUrl: imageUrl }
         setUser(updatedUser)
         localStorage.setItem('user', JSON.stringify(updatedUser))
         setAvatarFile(null)
         setAvatarPreview(null)
         alert('头像更新成功')
+      } else {
+        throw new Error(updateData.error || '更新失败')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('上传头像失败:', error)
-      alert('上传失败，请重试')
+      alert('上传失败：' + (error.message || '请重试'))
     } finally {
       setUploading(false)
     }
