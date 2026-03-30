@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
         receiverId: partnerId,
         senderId: userId,
         type: 'breakup_initiated',
-        content: '你的伴侣发起了取消配对，有 7 天冷静期',
+        content: '发起了取消配对，有 7 天冷静期',
       },
     });
 

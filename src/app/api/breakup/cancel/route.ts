@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
         receiverId: user.partnerId,
         senderId: userId,
         type: 'breakup_cancelled',
-        content: '你的伴侣撤销了取消配对请求',
+        content: '撤销了取消配对请求',
       },
     });
 

@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
         receiverId: partnerId,
         senderId: userId,
         type: 'breakup_confirmed',
-        content: '你的伴侣确认了解除配对，你们的关系已结束',
+        content: '确认了解除配对，你们的关系已结束',
       },
     });
 

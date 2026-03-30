@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
         receiverId: user.partnerId,
         senderId: userId,
         type: 'breakup_appeal',
-        content: '你的伴侣请求挽回配对关系',
+        content: '请求挽回配对关系',
       },
     });
 

@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
             receiverId: partnerId,
             senderId: userId,
             type: 'breakup_appeal_accepted',
-            content: '你的伴侣接受了挽回请求，你们的关系已恢复',
+            content: '接受了挽回请求，你们的关系已恢复',
           },
         }),
       ]);
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
           receiverId: partnerId,
           senderId: userId,
           type: 'breakup_appeal_rejected',
-          content: '你的伴侣拒绝了挽回请求',
+          content: '拒绝了挽回请求',
         },
       });
 
