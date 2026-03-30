@@ -7,6 +7,8 @@ export async function GET(request: NextRequest) {
     const userId = request.headers.get('x-user-id')
     const { searchParams } = new URL(request.url)
     const partnerId = searchParams.get('partnerId')
+    const startDate = searchParams.get('startDate')
+    const endDate = searchParams.get('endDate')
 
     if (!userId) {
       return NextResponse.json(
@@ -18,12 +20,31 @@ export async function GET(request: NextRequest) {
     // 如果是获取伴侣的分享
     const targetUserId = partnerId || userId
 
+    // 构建查询条件
+    const whereClause: any = {
+      userId: targetUserId,
+    }
+
+    // 如果是导出 PDF（带日期范围），则包含所有帖子（包括已归档的）
+    // 否则只显示未归档的帖子（正常时间轴浏览）
+    if (!startDate && !endDate) {
+      whereClause.archivedAt = null
+    }
+
+    // 添加日期范围过滤
+    if (startDate || endDate) {
+      whereClause.date = {}
+      if (startDate) {
+        whereClause.date.gte = startDate
+      }
+      if (endDate) {
+        whereClause.date.lte = endDate
+      }
+    }
+
     // 过滤掉已归档的帖子（配对期间的帖子在解除配对后会被归档）
     const posts = await prisma.post.findMany({
-      where: {
-        userId: targetUserId,
-        archivedAt: null, // 只显示未归档的帖子
-      },
+      where: whereClause,
       orderBy: {
         createdAt: 'desc',
       },

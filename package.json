@@ -10,9 +10,10 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
-"postinstall": "prisma generate"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@react-pdf/renderer": "^4.3.2",
     "@vercel/postgres": "^0.10.0",
     "next": "^15.0.0",
     "react": "^19.0.0",
