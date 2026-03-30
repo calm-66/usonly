@@ -54,14 +54,14 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// 更新用户信息（头像等）
+// 更新用户信息（头像、用户名等）
 export async function PUT(request: NextRequest) {
   try {
     const userId = request.headers.get('x-user-id')
     const body = await request.json()
-    const { avatarUrl } = body
+    const { avatarUrl, username } = body
 
-    console.log('[PUT /api/auth/me] 收到请求:', { userId, avatarUrl })
+    console.log('[PUT /api/auth/me] 收到请求:', { userId, avatarUrl, username })
 
     if (!userId) {
       console.error('[PUT /api/auth/me] 缺少用户 ID')
@@ -84,12 +84,36 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // 更新用户头像
+    // 构建更新数据对象
+    const updateData: any = {}
+    if (avatarUrl !== undefined) {
+      updateData.avatarUrl = avatarUrl === null ? null : avatarUrl
+    }
+    if (username !== undefined) {
+      // 验证用户名格式
+      if (username.trim().length === 0) {
+        return NextResponse.json(
+          { error: '用户名不能为空' },
+          { status: 400 }
+        )
+      }
+      // 检查用户名是否已被其他用户使用
+      const existingUsername = await prisma.user.findUnique({
+        where: { username: username.trim() },
+      })
+      if (existingUsername && existingUsername.id !== userId) {
+        return NextResponse.json(
+          { error: '该用户名已被使用' },
+          { status: 400 }
+        )
+      }
+      updateData.username = username.trim()
+    }
+
+    // 更新用户信息
     const user = await prisma.user.update({
       where: { id: userId },
-      data: {
-        avatarUrl: avatarUrl === null ? null : avatarUrl,
-      },
+      data: updateData,
       select: {
         id: true,
         username: true,

@@ -25,6 +25,11 @@ export default function ProfilePage() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
+  
+  // 用户名编辑相关状态
+  const [editingUsername, setEditingUsername] = useState(false)
+  const [usernameInput, setUsernameInput] = useState('')
+  const [updatingUsername, setUpdatingUsername] = useState(false)
 
   // 取消配对相关状态
   const [showBreakupModal, setShowBreakupModal] = useState(false)
@@ -409,6 +414,59 @@ export default function ProfilePage() {
     window.location.href = '/'
   }
 
+  // 开始编辑用户名
+  const handleStartEditUsername = () => {
+    if (!user) return
+    setUsernameInput(user.username)
+    setEditingUsername(true)
+  }
+
+  // 取消编辑用户名
+  const handleCancelEditUsername = () => {
+    setEditingUsername(false)
+    setUsernameInput('')
+  }
+
+  // 保存用户名
+  const handleSaveUsername = async () => {
+    if (!user?.id) return
+    
+    if (usernameInput.trim() === user.username) {
+      setEditingUsername(false)
+      setUsernameInput('')
+      return
+    }
+
+    try {
+      setUpdatingUsername(true)
+      const res = await fetch('/api/auth/me', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user.id,
+        },
+        body: JSON.stringify({ username: usernameInput.trim() }),
+      })
+
+      const data = await res.json()
+      if (data.user) {
+        const updatedUser = { ...user, username: data.user.username }
+        localStorage.setItem('user', JSON.stringify(updatedUser))
+        setUser(updatedUser)
+        setEditingUsername(false)
+        setUsernameInput('')
+        alert('用户名修改成功')
+      } else {
+        alert('修改失败：' + (data.error || '未知错误'))
+      }
+    } catch (error: any) {
+      console.error('修改用户名失败:', error)
+      alert('修改失败：' + (error.message || '请重试'))
+    } finally {
+      setUpdatingUsername(false)
+    }
+  }
+
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-purple-100">
@@ -456,7 +514,51 @@ export default function ProfilePage() {
               </label>
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-gray-800">{user.username}</h2>
+              {editingUsername ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={usernameInput}
+                    onChange={(e) => setUsernameInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSaveUsername()
+                      } else if (e.key === 'Escape') {
+                        handleCancelEditUsername()
+                      }
+                    }}
+                    className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-gray-800"
+                    placeholder="输入新用户名"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleSaveUsername}
+                    disabled={updatingUsername}
+                    className="px-3 py-1.5 bg-pink-500 text-white text-sm rounded-lg hover:bg-pink-600 disabled:opacity-50"
+                  >
+                    {updatingUsername ? '保存中...' : '保存'}
+                  </button>
+                  <button
+                    onClick={handleCancelEditUsername}
+                    className="px-3 py-1.5 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300"
+                  >
+                    取消
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-gray-800">{user.username}</h2>
+                  <button
+                    onClick={handleStartEditUsername}
+                    className="p-1.5 text-gray-400 hover:text-pink-600 transition"
+                    title="修改用户名"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                </div>
+              )}
               <p className="text-gray-500 text-sm">{user.email}</p>
             </div>
           </div>
