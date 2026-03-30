@@ -45,6 +45,19 @@ interface ArchiveInfo {
   postCount: number
 }
 
+interface Comment {
+  id: string
+  content: string
+  imageUrl: string | null
+  createdAt: string
+  user: {
+    id: string
+    username: string
+    avatarUrl: string | null
+  }
+  replies: Comment[]
+}
+
 export default function ArchivePage({ searchParams }: { searchParams: Promise<{ partnerId: string }> }) {
   const [user, setUser] = useState<User | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
@@ -54,6 +67,9 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
   const [archiveInfo, setArchiveInfo] = useState<ArchiveInfo | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  
+  // 评论相关状态
+  const [comments, setComments] = useState<Record<string, Comment[]>>({})
   
   // 评论弹窗状态
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
@@ -120,6 +136,19 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
     const hours = date.getHours().toString().padStart(2, '0')
     const minutes = date.getMinutes().toString().padStart(2, '0')
     return `${hours}:${minutes}`
+  }
+
+  // 加载评论
+  const loadComments = async (postId: string) => {
+    try {
+      const res = await fetch(`/api/comment?postId=${postId}`)
+      const data = await res.json()
+      if (data.comments) {
+        setComments(prev => ({ ...prev, [postId]: data.comments }))
+      }
+    } catch (error) {
+      console.error('加载评论失败:', error)
+    }
   }
 
   useEffect(() => {
@@ -201,6 +230,9 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
           
           setPosts(myPosts)
           setPartnerPosts(partnerPosts)
+          
+          // 加载所有帖子的评论
+          [...myPosts, ...partnerPosts].forEach(post => loadComments(post.id))
         }
 
         // 设置归档信息
@@ -403,21 +435,23 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                             {post.text && (
                               <p className="text-sm text-gray-700 whitespace-pre-wrap">{post.text}</p>
                             )}
-                            {/* 评论按钮 */}
-                            <div className="mt-2 flex items-center gap-4">
-                              <button
-                                onClick={() => {
-                                  setSelectedPost(post)
-                                  setShowCommentModal(true)
-                                }}
-                                className="text-xs text-gray-500 hover:text-pink-600 flex items-center gap-1"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                </svg>
-                                评论
-                              </button>
-                            </div>
+                            {/* 评论按钮 - 只有有评论时才显示 */}
+                            {comments[post.id] && comments[post.id].length > 0 && (
+                              <div className="mt-2 flex items-center gap-4">
+                                <button
+                                  onClick={() => {
+                                    setSelectedPost(post)
+                                    setShowCommentModal(true)
+                                  }}
+                                  className="text-xs text-gray-500 hover:text-pink-600 flex items-center gap-1"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                  </svg>
+                                  评论
+                                </button>
+                              </div>
+                            )}
                           </div>
                         ))
                       )}
@@ -460,21 +494,23 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                             {post.text && (
                               <p className="text-sm text-gray-700 whitespace-pre-wrap">{post.text}</p>
                             )}
-                            {/* 评论按钮 */}
-                            <div className="mt-2 flex items-center gap-4">
-                              <button
-                                onClick={() => {
-                                  setSelectedPost(post)
-                                  setShowCommentModal(true)
-                                }}
-                                className="text-xs text-gray-500 hover:text-purple-600 flex items-center gap-1"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                </svg>
-                                评论
-                              </button>
-                            </div>
+                            {/* 评论按钮 - 只有有评论时才显示 */}
+                            {comments[post.id] && comments[post.id].length > 0 && (
+                              <div className="mt-2 flex items-center gap-4">
+                                <button
+                                  onClick={() => {
+                                    setSelectedPost(post)
+                                    setShowCommentModal(true)
+                                  }}
+                                  className="text-xs text-gray-500 hover:text-purple-600 flex items-center gap-1"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                  </svg>
+                                  评论
+                                </button>
+                              </div>
+                            )}
                           </div>
                         ))
                       )}
