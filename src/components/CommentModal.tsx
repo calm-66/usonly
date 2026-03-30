@@ -36,6 +36,7 @@ interface User {
 interface ReplyToState {
   commentId: string
   username: string
+  rootCommentId?: string // 顶级评论 ID，用于将回复都放在同一层级
 }
 
 interface CommentModalProps {
@@ -160,7 +161,9 @@ export default function CommentModal({
         content,
       }
       if (replyTo) {
-        body.parentId = replyTo.commentId
+        // 使用 rootCommentId（如果有）或 commentId 作为 parentId
+        // 这样所有回复都作为顶级评论的直接回复，显示在同一层级
+        body.parentId = replyTo.rootCommentId || replyTo.commentId
       }
 
       const res = await fetch('/api/comment', {
@@ -210,8 +213,10 @@ export default function CommentModal({
   }
 
   // 处理回复点击
-  const handleReplyClick = (commentId: string, username: string) => {
-    setReplyTo({ commentId, username })
+  // isReply 参数用于区分是回复评论还是回复回复
+  // 如果是回复回复（isReply=true），则 rootCommentId 为传入的 commentId（即一级回复的 ID）
+  const handleReplyClick = (commentId: string, username: string, rootCommentId?: string) => {
+    setReplyTo({ commentId, username, rootCommentId })
     setNewComment(`@${username} `)
   }
 
@@ -340,12 +345,13 @@ export default function CommentModal({
                           )}
                         </div>
                         <p className="text-gray-700 break-words text-sm">{reply.content}</p>
-                        <button
-                          onClick={() => handleReplyClick(reply.id, reply.user.username)}
-                          className="text-xs text-pink-600 hover:underline mt-1"
-                        >
-                          回复
-                        </button>
+                {/* 回复的回复按钮 - 传入当前回复所属的顶级评论 ID (comment.id) */}
+                <button
+                  onClick={() => handleReplyClick(reply.id, reply.user.username, comment.id)}
+                  className="text-xs text-pink-600 hover:underline mt-1"
+                >
+                  回复
+                </button>
                       </div>
                     ))}
                   </div>
