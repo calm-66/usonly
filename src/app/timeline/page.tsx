@@ -33,6 +33,8 @@ interface User {
     username: string
     email: string
     avatarUrl: string | null
+    breakupInitiated?: boolean
+    breakupAt?: string | null
   } | null
   breakupInitiated?: boolean
   breakupAt?: string | null
@@ -205,17 +207,40 @@ export default function TimelinePage() {
       loadPosts(parsedUser)
       loadNotifications(parsedUser)
       checkAppealStatus(parsedUser)
+      // 从服务器获取最新用户信息（包含伴侣的 breakupInitiated 状态）
+      fetchLatestUserInfo(parsedUser)
     }
   }, [])
 
+  // 从服务器获取最新用户信息
+  const fetchLatestUserInfo = async (localUser: User) => {
+    try {
+      const res = await fetch('/api/auth/me', {
+        headers: { 'x-user-id': localUser.id },
+      })
+      const data = await res.json()
+      if (data.user) {
+        const serverUser = data.user
+        // 更新本地存储
+        localStorage.setItem('user', JSON.stringify(serverUser))
+        setUser(serverUser)
+        // 现在检查挽回状态
+        checkAppealStatus(serverUser)
+      }
+    } catch (error) {
+      console.error('获取用户信息失败:', error)
+    }
+  }
+
   // 检查挽回状态：如果对方发起了取消配对，显示挽回横幅
   const checkAppealStatus = (userData: User) => {
-    if (userData.partnerId && !userData.breakupInitiated) {
-      // 检查是否有 breakup_initiated 类型的未读通知
-      const hasUnreadBreakupNotification = notifications.some(
-        n => n.type === 'breakup_initiated' && !n.isRead
-      )
-      setShowAppealBanner(hasUnreadBreakupNotification)
+    if (userData.partnerId && !userData.breakupInitiated && userData.partner) {
+      // 检查伴侣是否发起了取消配对
+      if (userData.partner.breakupInitiated) {
+        setShowAppealBanner(true)
+      } else {
+        setShowAppealBanner(false)
+      }
     }
   }
 

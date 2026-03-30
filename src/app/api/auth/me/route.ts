@@ -30,6 +30,8 @@ export async function GET(request: NextRequest) {
             username: true,
             email: true,
             avatarUrl: true,
+            breakupInitiated: true,
+            breakupAt: true,
           },
         },
       },
