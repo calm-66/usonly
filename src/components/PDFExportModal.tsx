@@ -421,41 +421,56 @@ export default function PDFExportModal({ isOpen, onClose, user }: PDFExportModal
     
     setGenerating(true)
     try {
+      console.log('[PDF Export] 开始生成 PDF，用户:', user.username)
+      console.log('[PDF Export] 帖子数据:', postsData.length, '天')
+      
       // 获取带评论的完整数据
+      console.log('[PDF Export] 开始获取帖子和评论数据...')
       const postsWithComments = await Promise.all(
         postsData.map(async (day) => {
           const [myPostsWithComments, partnerPostsWithComments] = await Promise.all([
             Promise.all(day.myPosts.map(async (post) => {
               if (!includeComments) return { ...post, comments: [] }
-              const res = await fetch(`/api/comment?postId=${post.id}`)
-              const data = await res.json()
-              // 扁平化评论和回复
-              const allComments: Comment[] = []
-              if (data.comments) {
-                data.comments.forEach((comment: Comment) => {
-                  allComments.push(comment)
-                  if (comment.replies && comment.replies.length > 0) {
-                    allComments.push(...comment.replies)
-                  }
-                })
+              try {
+                const res = await fetch(`/api/comment?postId=${post.id}`)
+                const data = await res.json()
+                console.log('[PDF Export] 帖子评论数据:', post.id, data)
+                // 扁平化评论和回复
+                const allComments: Comment[] = []
+                if (data.comments) {
+                  data.comments.forEach((comment: Comment) => {
+                    allComments.push(comment)
+                    if (comment.replies && comment.replies.length > 0) {
+                      allComments.push(...comment.replies)
+                    }
+                  })
+                }
+                return { ...post, comments: allComments }
+              } catch (err) {
+                console.error('[PDF Export] 获取评论失败:', post.id, err)
+                return { ...post, comments: [] }
               }
-              return { ...post, comments: allComments }
             })),
             Promise.all(day.partnerPosts.map(async (post) => {
               if (!includeComments) return { ...post, comments: [] }
-              const res = await fetch(`/api/comment?postId=${post.id}`)
-              const data = await res.json()
-              // 扁平化评论和回复
-              const allComments: Comment[] = []
-              if (data.comments) {
-                data.comments.forEach((comment: Comment) => {
-                  allComments.push(comment)
-                  if (comment.replies && comment.replies.length > 0) {
-                    allComments.push(...comment.replies)
-                  }
-                })
+              try {
+                const res = await fetch(`/api/comment?postId=${post.id}`)
+                const data = await res.json()
+                // 扁平化评论和回复
+                const allComments: Comment[] = []
+                if (data.comments) {
+                  data.comments.forEach((comment: Comment) => {
+                    allComments.push(comment)
+                    if (comment.replies && comment.replies.length > 0) {
+                      allComments.push(...comment.replies)
+                    }
+                  })
+                }
+                return { ...post, comments: allComments }
+              } catch (err) {
+                console.error('[PDF Export] 获取评论失败:', post.id, err)
+                return { ...post, comments: [] }
               }
-              return { ...post, comments: allComments }
             }))
           ])
           return {
@@ -465,6 +480,8 @@ export default function PDFExportModal({ isOpen, onClose, user }: PDFExportModal
           }
         })
       )
+      
+      console.log('[PDF Export] 帖子数据处理完成，开始生成 PDF 文档...')
 
       // 生成 PDF
       const pdfDoc = (
@@ -475,7 +492,10 @@ export default function PDFExportModal({ isOpen, onClose, user }: PDFExportModal
         />
       )
 
+      console.log('[PDF Export] PDF 文档组件创建完成，开始转换为 Blob...')
       const blob = await pdf(pdfDoc).toBlob()
+      console.log('[PDF Export] Blob 生成成功，大小:', blob.size, 'bytes')
+      
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
@@ -483,11 +503,16 @@ export default function PDFExportModal({ isOpen, onClose, user }: PDFExportModal
       link.click()
       URL.revokeObjectURL(url)
       
+      console.log('[PDF Export] PDF 下载完成')
       alert('PDF 生成成功！')
       onClose()
     } catch (error) {
-      console.error('生成 PDF 失败:', error)
-      alert('生成 PDF 失败，请重试')
+      console.error('[PDF Export] 生成 PDF 失败，详细错误:', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : undefined,
+      })
+      alert('生成 PDF 失败：' + (error instanceof Error ? error.message : '未知错误') + '，请查看控制台日志')
     } finally {
       setGenerating(false)
     }
