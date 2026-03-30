@@ -45,6 +45,7 @@ interface CommentModalProps {
   isOpen: boolean
   onClose: () => void
   onCommentSuccess?: () => void
+  readonly?: boolean // 只读模式，只能浏览评论，不能发送或回复
 }
 
 // 生成默认头像颜色（根据用户 ID 哈希）
@@ -121,6 +122,7 @@ export default function CommentModal({
   isOpen,
   onClose,
   onCommentSuccess,
+  readonly = false,
 }: CommentModalProps) {
   const [comments, setComments] = useState<Comment[]>([])
   const [newComment, setNewComment] = useState<string>('')
@@ -304,22 +306,24 @@ export default function CommentModal({
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0 ml-2">
-                    <button
-                      onClick={() => handleReplyClick(comment.id, comment.user.username)}
-                      className="text-xs text-pink-600 hover:underline"
-                    >
-                      回复
-                    </button>
-                    {canDeleteComment(comment) && (
+                  {!readonly && (
+                    <div className="flex items-center gap-2 shrink-0 ml-2">
                       <button
-                        onClick={() => handleDeleteComment(comment.id)}
-                        className="text-xs text-gray-400 hover:text-red-500"
+                        onClick={() => handleReplyClick(comment.id, comment.user.username)}
+                        className="text-xs text-pink-600 hover:underline"
                       >
-                        删除
+                        回复
                       </button>
-                    )}
-                  </div>
+                      {canDeleteComment(comment) && (
+                        <button
+                          onClick={() => handleDeleteComment(comment.id)}
+                          className="text-xs text-gray-400 hover:text-red-500"
+                        >
+                          删除
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <p className="text-gray-700 break-words text-sm mb-2">{comment.content}</p>
                 {/* 回复列表 */}
@@ -337,22 +341,24 @@ export default function CommentModal({
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0 ml-2">
-                            <button
-                              onClick={() => handleReplyClick(reply.id, reply.user.username, comment.id)}
-                              className="text-xs text-pink-600 hover:underline"
-                            >
-                              回复
-                            </button>
-                            {canDeleteComment(reply) && (
+                          {!readonly && (
+                            <div className="flex items-center gap-2 shrink-0 ml-2">
                               <button
-                                onClick={() => handleDeleteComment(reply.id)}
-                                className="text-xs text-gray-400 hover:text-red-500"
+                                onClick={() => handleReplyClick(reply.id, reply.user.username, comment.id)}
+                                className="text-xs text-pink-600 hover:underline"
                               >
-                                删除
+                                回复
                               </button>
-                            )}
-                          </div>
+                              {canDeleteComment(reply) && (
+                                <button
+                                  onClick={() => handleDeleteComment(reply.id)}
+                                  className="text-xs text-gray-400 hover:text-red-500"
+                                >
+                                  删除
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </div>
                         <p className="text-gray-700 break-words text-sm">{reply.content}</p>
                       </div>
@@ -364,27 +370,36 @@ export default function CommentModal({
           )}
         </div>
         
-        {/* 评论输入框 */}
-        <div className="flex items-center gap-2 border-t border-gray-200 p-3 bg-white">
-          {renderAvatar(user?.avatarUrl || '', user?.username || '用户', 'w-8 h-8')}
-          <div className="flex-1 flex gap-2">
-            <input
-              type="text"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSendComment()}
-              placeholder={replyTo ? `回复 @${replyTo.username}` : '发表评论...'}
-              className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-full focus:outline-none focus:border-pink-300"
-            />
-            <button
-              onClick={handleSendComment}
-              disabled={!newComment.trim()}
-              className="px-4 py-2 text-sm bg-pink-500 text-white rounded-full hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-            >
-              发送
-            </button>
+        {/* 评论输入框 - 只在非只读模式显示 */}
+        {!readonly && (
+          <div className="flex items-center gap-2 border-t border-gray-200 p-3 bg-white">
+            {renderAvatar(user?.avatarUrl || '', user?.username || '用户', 'w-8 h-8')}
+            <div className="flex-1 flex gap-2">
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendComment()}
+                placeholder={replyTo ? `回复 @${replyTo.username}` : '发表评论...'}
+                className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-full focus:outline-none focus:border-pink-300"
+              />
+              <button
+                onClick={handleSendComment}
+                disabled={!newComment.trim()}
+                className="px-4 py-2 text-sm bg-pink-500 text-white rounded-full hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+              >
+                发送
+              </button>
+            </div>
           </div>
-        </div>
+        )}
+        
+        {/* 只读模式提示 */}
+        {readonly && (
+          <div className="border-t border-gray-200 p-3 bg-gray-50 text-center text-xs text-gray-500">
+            归档回忆，仅支持浏览
+          </div>
+        )}
       </div>
     </div>
   )

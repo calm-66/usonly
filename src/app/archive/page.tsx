@@ -530,7 +530,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
         )}
       </div>
 
-      {/* 评论弹窗 - 使用复用组件 */}
+      {/* 评论弹窗 - 使用复用组件，归档页面为只读模式 */}
       {showCommentModal && (
         <CommentModal
           post={selectedPost}
@@ -540,6 +540,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
             setShowCommentModal(false)
             setSelectedPost(null)
           }}
+          readonly={true}
         />
       )}
 
