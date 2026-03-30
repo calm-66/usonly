@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 验证双方是否存在归档关系
-    // 当前用户必须有 archivedPartnerId，且该 ID 应该与 queryUserId 或 partnerId 匹配
+    // 只要当前用户有 archivedPartnerId 即可
     const currentUser = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -36,14 +36,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '没有归档记录' }, { status: 404 });
     }
 
-    // 验证归档关系：currentUser.archivedPartnerId 应该等于 queryUserId
-    // 因为 queryUserId 是要查看的归档对象（前伴侣）
-    if (currentUser.archivedPartnerId !== queryUserId) {
-      // 如果当前用户是被动解除配对的一方，archivedPartnerId 可能指向对方
-      // 此时需要验证 partnerId 是否等于 archivedPartnerId
-      if (currentUser.archivedPartnerId !== partnerId) {
-        return NextResponse.json({ error: '归档关系不匹配' }, { status: 403 });
-      }
+    // 验证归档关系：
+    // 当前用户的 archivedPartnerId 应该等于 queryUserId 或 partnerId 中的一个
+    // 因为双方解除配对后，各自的 archivedPartnerId 都指向对方
+    const validArchiveRelation = 
+      currentUser.archivedPartnerId === queryUserId || 
+      currentUser.archivedPartnerId === partnerId;
+    
+    if (!validArchiveRelation) {
+      return NextResponse.json({ error: '归档关系不匹配' }, { status: 403 });
     }
 
     // 获取归档的用户信息
