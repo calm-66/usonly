@@ -424,17 +424,29 @@ export default function PDFExportModal({ isOpen, onClose, user }: PDFExportModal
       console.log('[PDF Export] 开始生成 PDF，用户:', user.username)
       console.log('[PDF Export] 帖子数据:', postsData.length, '天')
       
-      // 获取带评论的完整数据
+      // 获取带评论的完整数据（不包含评论也走一次流程以保持一致性）
       console.log('[PDF Export] 开始获取帖子和评论数据...')
+      
       const postsWithComments = await Promise.all(
         postsData.map(async (day) => {
           const [myPostsWithComments, partnerPostsWithComments] = await Promise.all([
             Promise.all(day.myPosts.map(async (post) => {
               if (!includeComments) return { ...post, comments: [] }
               try {
-                const res = await fetch(`/api/comment?postId=${post.id}`)
+                // 使用绝对 URL 获取评论
+                const origin = window.location.origin
+                const res = await fetch(`${origin}/api/comment?postId=${post.id}`)
+                console.log('[PDF Export] 评论 API 响应状态:', res.status)
+                
+                if (!res.ok) {
+                  const errorText = await res.text()
+                  console.error('[PDF Export] 评论 API 错误响应:', errorText)
+                  return { ...post, comments: [] }
+                }
+                
                 const data = await res.json()
                 console.log('[PDF Export] 帖子评论数据:', post.id, data)
+                
                 // 扁平化评论和回复
                 const allComments: Comment[] = []
                 if (data.comments) {
@@ -454,7 +466,16 @@ export default function PDFExportModal({ isOpen, onClose, user }: PDFExportModal
             Promise.all(day.partnerPosts.map(async (post) => {
               if (!includeComments) return { ...post, comments: [] }
               try {
-                const res = await fetch(`/api/comment?postId=${post.id}`)
+                const origin = window.location.origin
+                const res = await fetch(`${origin}/api/comment?postId=${post.id}`)
+                console.log('[PDF Export] 评论 API 响应状态:', res.status)
+                
+                if (!res.ok) {
+                  const errorText = await res.text()
+                  console.error('[PDF Export] 评论 API 错误响应:', errorText)
+                  return { ...post, comments: [] }
+                }
+                
                 const data = await res.json()
                 // 扁平化评论和回复
                 const allComments: Comment[] = []
