@@ -236,6 +236,8 @@ export default function ProfilePage() {
       })
 
       const updateData = await updateRes.json()
+      console.log('[头像更新] API 响应:', updateData)
+      console.log('[头像更新] 检查 updateData.user:', updateData.user)
       if (updateData.user) {
         const updatedUser = { ...currentUser, avatarUrl: imageUrl }
         localStorage.setItem('user', JSON.stringify(updatedUser))
@@ -243,6 +245,7 @@ export default function ProfilePage() {
         // 刷新页面以显示更新后的头像
         window.location.reload()
       } else {
+        console.error('[头像更新] 失败，完整响应:', updateData)
         throw new Error(updateData.error || '更新失败')
       }
     } catch (error: any) {
