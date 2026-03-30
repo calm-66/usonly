@@ -803,6 +803,20 @@ prisma.notification.updateMany({
 
 ---
 
+### V2.0 - 登录流程优化 ✨
+
+#### 首页简化
+- [x] 移除首页的用户信息卡片和头像管理功能
+- [x] 只保留登录/注册表单作为网站入口
+- [x] 已登录用户访问首页自动重定向到时间轴
+- [x] 登录/注册成功后直接跳转到时间轴页面
+
+#### 用户体验优化
+- [x] 简化首页代码，减少不必要的功能
+- [x] 优化登录后的页面流转
+
+---
+
 ## 十、未来迭代方向（产品思路）
 
 ### 短期迭代
@@ -856,10 +870,11 @@ prisma.notification.updateMany({
 ### 前端页面
 | 文件路径 | 功能 | 关键函数 |
 |---------|------|---------|
-| `src/app/page.tsx` | 登录/注册页 | handleLogin, handleRegister |
+| `src/app/page.tsx` | 登录/注册页（仅表单） | handleSubmit |
 | `src/app/pair/page.tsx` | 配对中心 | handleSearch, handleSendRequest, handleAcceptRequest |
-| `src/app/post/page.tsx` | 发布页面 | handleSubmit, loadPosts |
+| `src/app/post/page.tsx` | 发布页面 | handleSubmit |
 | `src/app/timeline/page.tsx` | 时间轴 | loadPosts, groupByDate, renderAvatar |
+| `src/app/profile/page.tsx` | 个人资料 | 头像管理、配对状态管理 |
 
 ### API 接口
 | 文件路径 | 功能 | HTTP 方法 |
@@ -924,8 +939,8 @@ UsOnly 是一个典型的**全栈 Web 应用**，包含：
 
 ---
 
-*文档版本：1.9*  
+*文档版本：2.0*  
 *最后更新：2026-03-30*  
-*本次更新：V1.9 匹配解除与归档系统 ✨*
+*本次更新：V2.0 登录流程优化 ✨*
 
 ---
