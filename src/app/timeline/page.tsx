@@ -1167,11 +1167,6 @@ export default function TimelinePage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                   </svg>
                                   评论
-                                  {comments[post.id] && comments[post.id].length > 0 && (
-                                    <span className="bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full text-xs">
-                                      {comments[post.id].length}
-                                    </span>
-                                  )}
                                 </button>
                               </div>
                             </div>
@@ -1227,11 +1222,6 @@ export default function TimelinePage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                   </svg>
                                   评论
-                                  {comments[post.id] && comments[post.id].length > 0 && (
-                                    <span className="bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full text-xs">
-                                      {comments[post.id].length}
-                                    </span>
-                                  )}
                                 </button>
                               </div>
                             </div>
