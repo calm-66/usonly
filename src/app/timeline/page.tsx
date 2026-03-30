@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import CommentModal from '@/components/CommentModal'
 
 interface Post {
   id: string
@@ -1039,8 +1040,20 @@ export default function TimelinePage() {
         </div>
       )}
 
-      {/* 评论弹窗 */}
-      {showCommentModal && selectedPost && renderCommentModal()}
+  {/* 评论弹窗 - 使用复用组件 */}
+      {showCommentModal && (
+        <CommentModal
+          post={selectedPost}
+          user={user ? { id: user.id, username: user.username, avatarUrl: user.avatarUrl } : null}
+          isOpen={showCommentModal}
+          onClose={closeCommentModal}
+          onCommentSuccess={() => {
+            if (user) {
+              loadNotifications(user)
+            }
+          }}
+        />
+      )}
 
       {/* 时间轴 */}
       <div className="max-w-3xl mx-auto px-4 pb-8">

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, use } from 'react'
+import CommentModal from '@/components/CommentModal'
 
 interface Post {
   id: string
@@ -53,6 +54,10 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
   const [archiveInfo, setArchiveInfo] = useState<ArchiveInfo | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  
+  // 评论弹窗状态
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null)
+  const [showCommentModal, setShowCommentModal] = useState(false)
   
   // 从 URL 参数获取 partnerId
   const [partnerId, setPartnerId] = useState<string>('')
@@ -398,6 +403,21 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                             {post.text && (
                               <p className="text-sm text-gray-700 whitespace-pre-wrap">{post.text}</p>
                             )}
+                            {/* 评论按钮 */}
+                            <div className="mt-2 flex items-center gap-4">
+                              <button
+                                onClick={() => {
+                                  setSelectedPost(post)
+                                  setShowCommentModal(true)
+                                }}
+                                className="text-xs text-gray-500 hover:text-pink-600 flex items-center gap-1"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
+                                评论
+                              </button>
+                            </div>
                           </div>
                         ))
                       )}
@@ -440,6 +460,21 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                             {post.text && (
                               <p className="text-sm text-gray-700 whitespace-pre-wrap">{post.text}</p>
                             )}
+                            {/* 评论按钮 */}
+                            <div className="mt-2 flex items-center gap-4">
+                              <button
+                                onClick={() => {
+                                  setSelectedPost(post)
+                                  setShowCommentModal(true)
+                                }}
+                                className="text-xs text-gray-500 hover:text-purple-600 flex items-center gap-1"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
+                                评论
+                              </button>
+                            </div>
                           </div>
                         ))
                       )}
@@ -451,6 +486,19 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
           </div>
         )}
       </div>
+
+      {/* 评论弹窗 - 使用复用组件 */}
+      {showCommentModal && (
+        <CommentModal
+          post={selectedPost}
+          user={user ? { id: user.id, username: user.username, avatarUrl: user.avatarUrl } : null}
+          isOpen={showCommentModal}
+          onClose={() => {
+            setShowCommentModal(false)
+            setSelectedPost(null)
+          }}
+        />
+      )}
 
       {/* 图片放大查看模态框 */}
       {selectedImage && (
