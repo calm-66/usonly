@@ -118,30 +118,65 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
   }
 
   useEffect(() => {
-    const userData = localStorage.getItem('user')
-    if (userData) {
-      const parsedUser = JSON.parse(userData)
-      setUser(parsedUser)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!partnerId || !user) return
-
-    const loadArchiveData = async () => {
+    const loadUserAndArchive = async () => {
       try {
         setLoading(true)
         
+        // 先从 localStorage 获取用户 ID
+        const userData = localStorage.getItem('user')
+        let localUser: User | null = null
+        
+        if (userData) {
+          localUser = JSON.parse(userData)
+        }
+
+        if (!localUser || !localUser.id) {
+          alert('请先登录')
+          window.location.href = '/'
+          return
+        }
+
+        // 从服务器获取最新的用户信息（包含 archivedPartnerId）
+        const userRes = await fetch(`/api/auth/me`, {
+          headers: { 'x-user-id': localUser.id },
+        })
+        const userData_response = await userRes.json()
+        
+        if (!userData_response.user) {
+          alert('获取用户信息失败')
+          return
+        }
+
+        const serverUser = userData_response.user
+        // 更新 localStorage
+        localStorage.setItem('user', JSON.stringify(serverUser))
+        setUser(serverUser)
+
+        // 如果没有 archivedPartnerId，提示用户
+        if (!serverUser.archivedPartnerId) {
+          alert('没有归档记录')
+          window.location.href = '/profile'
+          return
+        }
+
+        // 使用 URL 中的 partnerId 或 localStorage 中的 archivedPartnerId
+        const targetPartnerId = partnerId || serverUser.archivedPartnerId
+        
         // 加载归档数据 - 只需要一次请求，API 会返回双方的帖子
-        const res = await fetch(`/api/archive?userId=${partnerId}&partnerId=${user.id}`, {
-          headers: { 'x-user-id': user.id },
+        const res = await fetch(`/api/archive?userId=${targetPartnerId}&partnerId=${serverUser.id}`, {
+          headers: { 'x-user-id': serverUser.id },
         })
 
         const data = await res.json()
 
         if (data.error) {
           console.error('加载归档数据失败:', data.error)
-          alert('加载失败：' + data.error)
+          if (data.error === '没有归档记录') {
+            alert('暂无归档内容')
+            window.location.href = '/profile'
+          } else {
+            alert('加载失败：' + data.error)
+          }
           return
         }
 
@@ -151,7 +186,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
           const partnerPosts: Post[] = []
           
           data.posts.forEach((p: Post) => {
-            if (p.userId === user.id) {
+            if (p.userId === serverUser.id) {
               myPosts.push({ ...p, owner: '我' as const })
             } else {
               partnerPosts.push({ ...p, owner: 'TA' as const })
@@ -174,8 +209,8 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
       }
     }
 
-    loadArchiveData()
-  }, [partnerId, user])
+    loadUserAndArchive()
+  }, [partnerId])
 
   // 按日期分组
   const groupByDate = (): DayPosts[] => {

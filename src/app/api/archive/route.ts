@@ -36,7 +36,9 @@ export async function GET(request: NextRequest) {
     }
 
     // 验证归档关系是否匹配
-    if (currentUser.archivedPartnerId !== partnerId && currentUser.archivedPartnerId !== queryUserId) {
+    // currentUser.archivedPartnerId 应该等于 queryUserId 或 partnerId 中的另一个
+    const expectedPartnerId = (currentUser.archivedPartnerId === queryUserId) ? queryUserId : partnerId;
+    if (currentUser.archivedPartnerId !== expectedPartnerId) {
       return NextResponse.json({ error: '归档关系不匹配' }, { status: 403 });
     }
 
