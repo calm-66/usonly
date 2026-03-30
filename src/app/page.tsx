@@ -18,6 +18,9 @@ export default function Home() {
       if (user && user.email) {
         setEmail(user.email)
       }
+      if (user && user.password) {
+        setPassword(user.password)
+      }
     }
   }, [])
 
