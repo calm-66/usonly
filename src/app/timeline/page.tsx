@@ -1157,20 +1157,22 @@ export default function TimelinePage() {
                                 <p className="text-sm text-gray-700 whitespace-pre-wrap">{post.text}</p>
                               )}
                               
-                              {/* 评论按钮 - 只有有评论时才显示 */}
-                              {comments[post.id] && comments[post.id].length > 0 && (
-                                <div className="mt-2 flex items-center gap-4">
-                                  <button
-                                    onClick={() => openCommentModal(post)}
-                                    className="text-xs text-gray-500 hover:text-pink-600 flex items-center gap-1"
-                                  >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                    </svg>
-                                    评论
-                                  </button>
-                                </div>
-                              )}
+                              {/* 评论按钮 - 通过颜色区分有评论/无评论状态 */}
+                              <div className="mt-2 flex items-center gap-4">
+                                <button
+                                  onClick={() => openCommentModal(post)}
+                                  className={`text-xs flex items-center gap-1 ${
+                                    comments[post.id]?.length > 0 
+                                      ? 'text-pink-600' 
+                                      : 'text-gray-400'
+                                  } hover:text-pink-600`}
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                  </svg>
+                                  评论
+                                </button>
+                              </div>
                             </div>
                           ))
                         )}
@@ -1214,20 +1216,22 @@ export default function TimelinePage() {
                                 <p className="text-sm text-gray-700 whitespace-pre-wrap">{post.text}</p>
                               )}
                               
-                              {/* 评论按钮 - 只有有评论时才显示 */}
-                              {comments[post.id] && comments[post.id].length > 0 && (
-                                <div className="mt-2 flex items-center gap-4">
-                                  <button
-                                    onClick={() => openCommentModal(post)}
-                                    className="text-xs text-gray-500 hover:text-purple-600 flex items-center gap-1"
-                                  >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                    </svg>
-                                    评论
-                                  </button>
-                                </div>
-                              )}
+                              {/* 评论按钮 - 通过颜色区分有评论/无评论状态 */}
+                              <div className="mt-2 flex items-center gap-4">
+                                <button
+                                  onClick={() => openCommentModal(post)}
+                                  className={`text-xs flex items-center gap-1 ${
+                                    comments[post.id]?.length > 0 
+                                      ? 'text-purple-600' 
+                                      : 'text-gray-400'
+                                  } hover:text-purple-600`}
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                  </svg>
+                                  评论
+                                </button>
+                              </div>
                             </div>
                           ))
                         )}
