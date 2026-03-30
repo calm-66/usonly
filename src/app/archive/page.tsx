@@ -152,17 +152,18 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
         localStorage.setItem('user', JSON.stringify(serverUser))
         setUser(serverUser)
 
-        // 如果没有 archivedPartnerId，提示用户
-        if (!serverUser.archivedPartnerId) {
+        // 确定归档 partnerId：优先使用 URL 参数，否则使用服务器返回的 archivedPartnerId
+        const targetPartnerId = partnerId || serverUser.archivedPartnerId
+        
+        if (!targetPartnerId) {
           alert('没有归档记录')
           window.location.href = '/profile'
           return
         }
-
-        // 使用 URL 中的 partnerId 或 localStorage 中的 archivedPartnerId
-        const targetPartnerId = partnerId || serverUser.archivedPartnerId
         
         // 加载归档数据 - 只需要一次请求，API 会返回双方的帖子
+        // userId: 要查看归档的用户 ID（对方）
+        // partnerId: 当前登录用户的 ID
         const res = await fetch(`/api/archive?userId=${targetPartnerId}&partnerId=${serverUser.id}`, {
           headers: { 'x-user-id': serverUser.id },
         })
