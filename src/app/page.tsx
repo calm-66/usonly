@@ -42,17 +42,14 @@ export default function Home() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const avatarInputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    // 检查是否已登录，如果已登录直接跳转到时间轴
+  // 在服务端渲染时不执行，在客户端渲染时立即检查并跳转
+  if (typeof window !== 'undefined') {
     const userData = localStorage.getItem('user')
     if (userData) {
-      const parsed = JSON.parse(userData)
-      setUser(parsed)
-      setAvatarUrl(parsed.avatarUrl || '')
-      // 已登录用户自动跳转到时间轴
       window.location.href = '/timeline'
+      return null
     }
-  }, [])
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
