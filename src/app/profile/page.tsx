@@ -236,7 +236,7 @@ export default function ProfilePage() {
       })
 
       const updateData = await updateRes.json()
-      if (updateData.success) {
+      if (updateData.user) {
         const updatedUser = { ...currentUser, avatarUrl: imageUrl }
         localStorage.setItem('user', JSON.stringify(updatedUser))
         alert('头像更新成功，页面将刷新...')
@@ -268,7 +268,7 @@ export default function ProfilePage() {
       })
 
       const updateData = await updateRes.json()
-      if (updateData.success) {
+      if (updateData.user) {
         const updatedUser = { ...user, avatarUrl: null }
         setUser(updatedUser)
         localStorage.setItem('user', JSON.stringify(updatedUser))
