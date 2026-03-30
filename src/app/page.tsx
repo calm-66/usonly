@@ -43,12 +43,14 @@ export default function Home() {
   const avatarInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    // 检查是否已登录
+    // 检查是否已登录，如果已登录直接跳转到时间轴
     const userData = localStorage.getItem('user')
     if (userData) {
       const parsed = JSON.parse(userData)
       setUser(parsed)
       setAvatarUrl(parsed.avatarUrl || '')
+      // 已登录用户自动跳转到时间轴
+      window.location.href = '/timeline'
     }
   }, [])
 
@@ -76,9 +78,14 @@ export default function Home() {
       if (isLogin) {
         setUser(data.user)
         localStorage.setItem('user', JSON.stringify(data.user))
+        // 登录成功直接跳转到时间轴
+        window.location.href = '/timeline'
       } else {
-        alert('注册成功！请登录')
-        setIsLogin(true)
+        alert('注册成功！')
+        // 注册成功也直接跳转到时间轴
+        setUser(data.user)
+        localStorage.setItem('user', JSON.stringify(data.user))
+        window.location.href = '/timeline'
       }
     } catch (err: any) {
       setError(err.message)
