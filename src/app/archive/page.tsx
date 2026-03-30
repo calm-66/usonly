@@ -132,37 +132,43 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
       try {
         setLoading(true)
         
-        // 加载归档数据
-        const [myRes, partnerRes] = await Promise.all([
-          fetch(`/api/archive?userId=${user.id}&partnerId=${partnerId}`, {
-            headers: { 'x-user-id': user.id },
-          }),
-          fetch(`/api/archive?userId=${partnerId}&partnerId=${user.id}`, {
-            headers: { 'x-user-id': user.id },
-          }),
-        ])
+        // 加载归档数据 - 只需要一次请求，API 会返回双方的帖子
+        const res = await fetch(`/api/archive?userId=${partnerId}&partnerId=${user.id}`, {
+          headers: { 'x-user-id': user.id },
+        })
 
-        const myData = await myRes.json()
-        const partnerData = await partnerRes.json()
+        const data = await res.json()
 
-        if (myData.posts) {
-          const postsWithOwner = myData.posts.map((p: Post) => ({ ...p, owner: '我' as const }))
-          setPosts(postsWithOwner)
+        if (data.error) {
+          console.error('加载归档数据失败:', data.error)
+          alert('加载失败：' + data.error)
+          return
         }
 
-        if (partnerData.posts) {
-          const postsWithOwner = partnerData.posts.map((p: Post) => ({ ...p, owner: 'TA' as const }))
-          setPartnerPosts(postsWithOwner)
+        if (data.posts) {
+          // 根据帖子 userId 判断是"我"还是"TA"的帖子
+          const myPosts: Post[] = []
+          const partnerPosts: Post[] = []
+          
+          data.posts.forEach((p: Post) => {
+            if (p.userId === user.id) {
+              myPosts.push({ ...p, owner: '我' as const })
+            } else {
+              partnerPosts.push({ ...p, owner: 'TA' as const })
+            }
+          })
+          
+          setPosts(myPosts)
+          setPartnerPosts(partnerPosts)
         }
 
         // 设置归档信息
-        if (myData.archivedInfo) {
-          setArchiveInfo(myData.archivedInfo)
-        } else if (partnerData.archivedInfo) {
-          setArchiveInfo(partnerData.archivedInfo)
+        if (data.archivedInfo) {
+          setArchiveInfo(data.archivedInfo)
         }
       } catch (error) {
         console.error('加载归档数据失败:', error)
+        alert('加载失败，请重试')
       } finally {
         setLoading(false)
       }

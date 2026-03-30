@@ -17,6 +17,29 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '缺少参数' }, { status: 400 });
     }
 
+    // 验证当前用户是否有权查看这个归档
+    // 当前用户必须是 queryUserId 或 partnerId 之一
+    if (userId !== queryUserId && userId !== partnerId) {
+      return NextResponse.json({ error: '无权访问' }, { status: 403 });
+    }
+
+    // 验证双方是否存在归档关系
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        archivedPartnerId: true,
+      },
+    });
+
+    if (!currentUser || !currentUser.archivedPartnerId) {
+      return NextResponse.json({ error: '没有归档记录' }, { status: 404 });
+    }
+
+    // 验证归档关系是否匹配
+    if (currentUser.archivedPartnerId !== partnerId && currentUser.archivedPartnerId !== queryUserId) {
+      return NextResponse.json({ error: '归档关系不匹配' }, { status: 403 });
+    }
+
     // 获取归档的用户信息
     const archivedUser = await prisma.user.findUnique({
       where: { id: queryUserId },
@@ -32,15 +55,27 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '用户不存在' }, { status: 404 });
     }
 
-    // 获取归档的分享（按日期倒序）
-    // 查询条件：用户发布的且已归档的帖子
-    const posts = await prisma.post.findMany({
-      where: {
-        userId: queryUserId,
-        archivedAt: { not: null },
-      },
-      orderBy: { date: 'desc' },
-    });
+    // 获取双方的归档分享（按日期倒序）
+    // 查询条件：双方发布的且已归档的帖子
+    const [userPosts, partnerPosts] = await Promise.all([
+      prisma.post.findMany({
+        where: {
+          userId: queryUserId,
+          archivedAt: { not: null },
+        },
+        orderBy: { date: 'desc' },
+      }),
+      prisma.post.findMany({
+        where: {
+          userId: partnerId,
+          archivedAt: { not: null },
+        },
+        orderBy: { date: 'desc' },
+      }),
+    ]);
+
+    // 合并双方的帖子
+    const allPosts = [...userPosts, ...partnerPosts];
 
     // 构建归档信息
     const archivedInfo = {
@@ -48,11 +83,11 @@ export async function GET(request: NextRequest) {
       partnerUsername: archivedUser.username,
       partnerAvatarUrl: archivedUser.avatarUrl,
       archivedAt: archivedUser.archivedAt || new Date(),
-      postCount: posts.length,
+      postCount: allPosts.length,
     };
 
     return NextResponse.json({
-      posts,
+      posts: allPosts,
       archivedInfo,
     });
   } catch (error) {
