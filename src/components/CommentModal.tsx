@@ -340,6 +340,12 @@ export default function CommentModal({
                           )}
                         </div>
                         <p className="text-gray-700 break-words text-sm">{reply.content}</p>
+                        <button
+                          onClick={() => handleReplyClick(reply.id, reply.user.username)}
+                          className="text-xs text-pink-600 hover:underline mt-1"
+                        >
+                          回复
+                        </button>
                       </div>
                     ))}
                   </div>
