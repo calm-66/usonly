@@ -11,10 +11,13 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    // 检查是否已登录，如果已登录直接跳转到时间轴
+    // 检查 localStorage 中是否有用户信息，用于预填充登录表单
     const userData = localStorage.getItem('user')
     if (userData) {
-      window.location.href = '/timeline'
+      const user = JSON.parse(userData)
+      if (user && user.email) {
+        setEmail(user.email)
+      }
     }
   }, [])
 
