@@ -18,9 +18,11 @@ export async function GET(request: NextRequest) {
     // 如果是获取伴侣的分享
     const targetUserId = partnerId || userId
 
+    // 过滤掉已归档的帖子（配对期间的帖子在解除配对后会被归档）
     const posts = await prisma.post.findMany({
       where: {
         userId: targetUserId,
+        archivedAt: null, // 只显示未归档的帖子
       },
       orderBy: {
         createdAt: 'desc',

@@ -99,6 +99,11 @@ UsOnly 是一个**情侣/配对社交应用**，核心概念是：
 | password | String | 密码 | 加密存储 |
 | avatarUrl | String? | 头像 URL | 可选，支持上传自定义头像 |
 | partnerId | String? | 配对对象 ID | 配对成功后存储对方的 ID，建立一对一关系 |
+| pairedAt | DateTime? | 配对开始时间 | 接受配对请求时记录，用于归档时判断配对期间 |
+| breakupInitiated | Boolean | 是否发起解除 | 默认 false，true 表示已进入冷静期 |
+| breakupAt | DateTime? | 冷静期开始时间 | 用于计算 7 天冷静期到期时间 |
+| archivedPartnerId | String? | 已归档伴侣 ID | 解除配对后存储对方 ID，用于查看归档 |
+| archivedAt | DateTime? | 归档时间 | 解除配对时记录归档时间 |
 | createdAt | DateTime | 创建时间 | 自动记录注册时间 |
 | updatedAt | DateTime | 更新时间 | 自动记录资料修改时间 |
 
@@ -128,6 +133,8 @@ UsOnly 是一个**情侣/配对社交应用**，核心概念是：
 | imageUrl | String? | 图片 URL | 可选，上传到图床后的地址 |
 | text | String? | 文字 | 可选，用户想说的话 |
 | isLatePost | Boolean | 是否补传 | 标记是否是过后补的分享 |
+| archivedAt | DateTime? | 归档时间 | null=未归档，有值=已归档（配对期间的帖子） |
+| archivedBy | String? | 归档操作人 | 执行归档操作的用户 ID |
 | createdAt | DateTime | 创建时间 | 实际发布时间（精确到时分） |
 | updatedAt | DateTime | 更新时间 | 修改时间 |
 
@@ -750,6 +757,106 @@ prisma.notification.updateMany({
   - 时间轴页面移除日期头部标题
   - post 卡片显示标题和时间
 
+
+## V1.8 - 评论功能增强与归档回忆 ✨
+
+#### 评论视觉优化
+- [x] 评论图标颜色区分
+  - 无评论：灰色 (`text-gray-400`)
+  - 有评论："我"的帖子显示粉色，"TA"的帖子显示紫色
+
+#### 评论交互优化
+- [x] 回复按钮位置调整
+  - 从内容下方移到消息右上角
+  - 顺序：`回复 | 删除`
+- [x] 支持对回复进行再回复
+  - 点击回复按钮可 @对方
+  - 所有回复显示在同一层级（避免无限嵌套）
+- [x] 修复回复发送后不显示的问题
+  - 简单方案：所有回复的 `parentId` 指向顶级评论 ID
+
+#### 归档回忆页面
+- [x] 评论只读模式
+  - 可以浏览所有评论
+  - 不能发送或回复评论
+  - 底部显示提示："归档回忆，仅支持浏览"
+
+#### 技术实现
+- [x] `CommentModal.tsx` 添加 `readonly` 属性
+- [x] `archive/page.tsx` 传递 `readonly={true}`
+- [x] `timeline/page.tsx` 评论图标颜色逻辑
+
+---
+
+### V1.9 - 匹配解除与归档系统 ✨
+
+#### 冷静期机制
+- [x] 三阶段解除流程
+  - **发起阶段**：用户发起取消配对，进入 7 天冷静期
+  - **冷静期**：7 天内可随时撤销，恢复配对关系
+  - **确认/自动解除**：用户手动确认或 7 天后自动解除
+
+#### API 接口
+- [x] `/api/breakup/initiate` (POST) - 发起取消配对
+  - 设置 `breakupInitiated: true` 和 `breakupAt` 时间戳
+  - 给对方发送 `breakup_initiated` 通知
+- [x] `/api/breakup/cancel` (POST) - 撤销取消配对
+  - 仅在冷静期 7 天内有效
+  - 清除冷静期状态，关系恢复正常
+  - 给对方发送 `breakup_cancelled` 通知
+- [x] `/api/breakup/confirm` (POST) - 确认解除配对
+  - 仅在冷静期内可用
+  - 立即解除配对关系
+  - 归档配对期间的分享（根据 `pairedAt` 和 `archivedAt` 时间范围）
+  - 给对方发送 `breakup_confirmed` 通知
+- [x] `/api/breakup/check` (GET) - 检查冷静期到期
+  - 定时调用（如每天凌晨）
+  - 自动处理冷静期到期的用户
+  - 发送 `breakup_auto_confirmed` 通知
+
+#### 数据库模型更新
+- [x] User 表新增字段
+  - `pairedAt` (DateTime?) - 配对开始时间，接受配对时记录
+  - `breakupInitiated` (Boolean) - 是否发起了解除配对
+  - `breakupAt` (DateTime?) - 发起解除配对的时间
+  - `archivedPartnerId` (String?) - 已归档的伴侣 ID
+  - `archivedAt` (DateTime?) - 归档时间
+- [x] Post 表归档字段
+  - `archivedAt` (DateTime?) - 归档时间（null=未归档）
+  - `archivedBy` (String?) - 归档操作人 userId
+
+#### 归档逻辑
+- [x] 配对期间判断：根据 `pairedAt`（配对开始）到 `archivedAt`（解除配对）的时间范围
+- [x] 只归档配对期间的帖子，配对前和解除后发的帖子不归档
+- [x] Timeline 页面过滤：`archivedAt: null` 的帖子才显示
+
+#### 归档系统
+- [x] 归档回忆页面 (`/archive`)
+  - 只读模式查看历史分享
+  - 支持评论浏览（不可回复）
+  - 显示归档时间和分享数量
+  - 支持永久删除归档
+
+#### UI 交互
+- [x] Profile 页面 (`/profile`) 配对状态卡片
+  - 冷静期状态提示（黄色警告框）
+  - 剩余天数显示
+  - "继续配对"撤销按钮
+  - "确认解除"按钮
+- [x] 取消配对确认弹窗
+  - 说明冷静期规则
+  - 说明后果（归档、通知）
+- [x] 确认解除配对弹窗
+  - 警告不可逆操作
+- [x] 归档回忆入口
+  - 在 Profile 页面显示"查看归档回忆"按钮
+
+#### 通知类型
+- [x] `breakup_initiated` - 你的伴侣发起了取消配对，有 7 天冷静期
+- [x] `breakup_cancelled` - 你的伴侣撤销了取消配对请求
+- [x] `breakup_confirmed` - 你的伴侣确认了解除配对，你们的关系已结束
+- [x] `breakup_auto_confirmed` - 冷静期已结束，你们的配对关系已自动解除
+
 ---
 
 ## 十、未来迭代方向（产品思路）
@@ -842,6 +949,22 @@ prisma.notification.updateMany({
 | `src/app/api/comment/delete/route.ts` | 删除评论 | DELETE |
 | `src/app/api/notification/route.ts` | 获取/标记通知 | GET/POST |
 
+### 新增 API（V1.9）
+| 文件路径 | 功能 | HTTP 方法 |
+|---------|------|---------|
+| `src/app/api/breakup/initiate/route.ts` | 发起取消配对 | POST |
+| `src/app/api/breakup/cancel/route.ts` | 撤销取消配对 | POST |
+| `src/app/api/breakup/confirm/route.ts` | 确认解除配对 | POST |
+| `src/app/api/breakup/check/route.ts` | 检查冷静期到期 | GET |
+| `src/app/api/archive/route.ts` | 获取归档回忆 | GET |
+| `src/app/api/archive/delete/route.ts` | 删除归档 | DELETE |
+
+### 新增前端页面（V1.9）
+| 文件路径 | 功能 |
+|---------|------|
+| `src/app/archive/page.tsx` | 归档回忆页面（只读模式） |
+| `src/app/profile/page.tsx` | 个人资料页面（含配对状态管理） |
+
 ---
 
 ## 总结
@@ -866,36 +989,10 @@ UsOnly 是一个典型的**全栈 Web 应用**，包含：
 
 ---
 
-*文档版本：1.8*  
+*文档版本：1.9*  
 *最后更新：2026-03-30*  
-*本次更新：V1.8 评论功能增强 + 归档回忆只读模式*
+*本次更新：V1.9 匹配解除与归档系统 ✨*
 
 ---
 
-## V1.8 - 评论功能增强与归档回忆 ✨
 
-### 评论视觉优化
-- [x] 评论图标颜色区分
-  - 无评论：灰色 (`text-gray-400`)
-  - 有评论："我"的帖子显示粉色，"TA"的帖子显示紫色
-
-### 评论交互优化
-- [x] 回复按钮位置调整
-  - 从内容下方移到消息右上角
-  - 顺序：`回复 | 删除`
-- [x] 支持对回复进行再回复
-  - 点击回复按钮可 @对方
-  - 所有回复显示在同一层级（避免无限嵌套）
-- [x] 修复回复发送后不显示的问题
-  - 简单方案：所有回复的 `parentId` 指向顶级评论 ID
-
-### 归档回忆页面
-- [x] 评论只读模式
-  - 可以浏览所有评论
-  - 不能发送或回复评论
-  - 底部显示提示："归档回忆，仅支持浏览"
-
-### 技术实现
-- [x] `CommentModal.tsx` 添加 `readonly` 属性
-- [x] `archive/page.tsx` 传递 `readonly={true}`
-- [x] `timeline/page.tsx` 评论图标颜色逻辑

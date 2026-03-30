@@ -22,6 +22,7 @@ export async function GET() {
       select: {
         id: true,
         partnerId: true,
+        pairedAt: true,
       },
     });
 
@@ -33,6 +34,12 @@ export async function GET() {
       const partnerId = user.partnerId;
 
       try {
+        // 获取伴侣的 pairedAt
+        const partner = await prisma.user.findUnique({
+          where: { id: partnerId },
+          select: { pairedAt: true },
+        });
+
         // 执行解除配对操作（事务）
         await prisma.$transaction([
           // 1. 清空双方的 partnerId 和冷静期状态
@@ -56,27 +63,39 @@ export async function GET() {
               archivedAt: now,
             },
           }),
-          // 2. 归档双方的所有分享
-          prisma.post.updateMany({
-            where: {
-              userId: user.id,
-              archivedAt: null,
-            },
-            data: {
-              archivedAt: now,
-              archivedBy: user.id,
-            },
-          }),
-          prisma.post.updateMany({
-            where: {
-              userId: partnerId,
-              archivedAt: null,
-            },
-            data: {
-              archivedAt: now,
-              archivedBy: user.id,
-            },
-          }),
+          // 2. 归档配对期间的分享（根据 pairedAt 和 archivedAt 时间范围）
+          ...(user.pairedAt ? [
+            prisma.post.updateMany({
+              where: {
+                userId: user.id,
+                archivedAt: null,
+                createdAt: {
+                  gte: user.pairedAt,
+                  lte: now,
+                },
+              },
+              data: {
+                archivedAt: now,
+                archivedBy: user.id,
+              },
+            }),
+          ] : []),
+          ...(partner?.pairedAt ? [
+            prisma.post.updateMany({
+              where: {
+                userId: partnerId,
+                archivedAt: null,
+                createdAt: {
+                  gte: partner.pairedAt,
+                  lte: now,
+                },
+              },
+              data: {
+                archivedAt: now,
+                archivedBy: user.id,
+              },
+            }),
+          ] : []),
         ]);
 
         // 3. 给对方发送通知

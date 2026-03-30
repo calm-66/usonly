@@ -20,6 +20,8 @@ model User {
   partnerId   String?  @unique
   partner     User?    @relation("PartnerRelation", fields: [partnerId], references: [id])
   partnerOf   User?    @relation("PartnerRelation")
+  // 配对时间
+  pairedAt          DateTime? // 配对开始时间
   // 取消配对冷静期相关字段
   breakupInitiated  Boolean   @default(false) // 是否发起了解除配对
   breakupAt         DateTime? // 发起解除配对的时间

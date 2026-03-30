@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 使用事务更新请求和用户关系
+    const pairedAt = new Date()
     await prisma.$transaction([
       // 更新请求状态
       prisma.pairRequest.update({
@@ -71,12 +72,18 @@ export async function POST(request: NextRequest) {
       // 更新接收者的伴侣关系
       prisma.user.update({
         where: { id: userId },
-        data: { partnerId: pairRequest.senderId },
+        data: { 
+          partnerId: pairRequest.senderId,
+          pairedAt,
+        },
       }),
       // 更新发送者的伴侣关系
       prisma.user.update({
         where: { id: pairRequest.senderId },
-        data: { partnerId: userId },
+        data: { 
+          partnerId: userId,
+          pairedAt,
+        },
       }),
     ])
 

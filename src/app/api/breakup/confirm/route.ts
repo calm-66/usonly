@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
         partnerId: true,
         breakupInitiated: true,
         breakupAt: true,
+        pairedAt: true,
       },
     });
 
@@ -28,6 +29,13 @@ export async function POST(request: NextRequest) {
     }
 
     const partnerId = user.partnerId;
+    const now = new Date();
+
+    // 获取伴侣的 pairedAt（双方的 pairedAt 应该相同）
+    const partner = await prisma.user.findUnique({
+      where: { id: partnerId },
+      select: { pairedAt: true },
+    });
 
     // 执行解除配对操作（事务）
     await prisma.$transaction([
@@ -39,7 +47,7 @@ export async function POST(request: NextRequest) {
           breakupInitiated: false,
           breakupAt: null,
           archivedPartnerId: partnerId,
-          archivedAt: new Date(),
+          archivedAt: now,
         },
       }),
       prisma.user.update({
@@ -49,30 +57,42 @@ export async function POST(request: NextRequest) {
           breakupInitiated: false,
           breakupAt: null,
           archivedPartnerId: userId,
-          archivedAt: new Date(),
+          archivedAt: now,
         },
       }),
-      // 2. 归档双方的所有分享
-      prisma.post.updateMany({
-        where: {
-          userId: userId,
-          archivedAt: null,
-        },
-        data: {
-          archivedAt: new Date(),
-          archivedBy: userId,
-        },
-      }),
-      prisma.post.updateMany({
-        where: {
-          userId: partnerId,
-          archivedAt: null,
-        },
-        data: {
-          archivedAt: new Date(),
-          archivedBy: userId,
-        },
-      }),
+      // 2. 归档配对期间的分享（根据 pairedAt 和 archivedAt 时间范围）
+      ...(user.pairedAt ? [
+        prisma.post.updateMany({
+          where: {
+            userId: userId,
+            archivedAt: null,
+            createdAt: {
+              gte: user.pairedAt,
+              lte: now,
+            },
+          },
+          data: {
+            archivedAt: now,
+            archivedBy: userId,
+          },
+        }),
+      ] : []),
+      ...(partner?.pairedAt ? [
+        prisma.post.updateMany({
+          where: {
+            userId: partnerId,
+            archivedAt: null,
+            createdAt: {
+              gte: partner.pairedAt,
+              lte: now,
+            },
+          },
+          data: {
+            archivedAt: now,
+            archivedBy: userId,
+          },
+        }),
+      ] : []),
       // 注意：保留评论，不删除
     ]);
 
