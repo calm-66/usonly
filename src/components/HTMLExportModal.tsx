@@ -237,6 +237,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
       margin-bottom: 24px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.05);
       overflow: hidden;
+      border: 1px solid #fbcfe8;
     }
     
     .date-header {
@@ -466,6 +467,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
         page-break-inside: avoid !important;
         margin-bottom: 16px !important;
         background: #ffffff !important;
+        border: 1px solid #fbcfe8 !important;
       }
       
       .date-header {
