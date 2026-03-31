@@ -871,8 +871,7 @@ prisma.notification.updateMany({
 #### 新增文件
 | 文件路径 | 功能 |
 |---------|------|
-| `src/components/HTMLExportModal.tsx` | PDF 导出模态框组件 |
-| `src/components/PDFExportModal.tsx` | PDF 导出模态框组件（备用） |
+| `src/components/HTMLExportModal.tsx` | HTML/PDF 导出模态框组件 |
 
 #### 新增 API 调用
 | API | 用途 |
