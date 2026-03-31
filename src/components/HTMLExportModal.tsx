@@ -129,17 +129,55 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
     }
   }
 
+  // 生成默认头像颜色（根据用户 ID 哈希）
+  const getDefaultAvatarColor = (id: string): string => {
+    const colors = [
+      'from-pink-400 to-pink-500',
+      'from-purple-400 to-purple-500',
+      'from-blue-400 to-blue-500',
+      'from-green-400 to-green-500',
+      'from-yellow-400 to-yellow-500',
+      'from-red-400 to-red-500',
+      'from-indigo-400 to-indigo-500',
+      'from-teal-400 to-teal-500',
+    ]
+    let hash = 0
+    for (let i = 0; i < id.length; i++) {
+      hash = ((hash << 5) - hash) + id.charCodeAt(i)
+      hash = hash & hash
+    }
+    return colors[Math.abs(hash) % colors.length]
+  }
+
+  // 获取首字母
+  const getInitial = (str: string): string => {
+    return str.charAt(0).toUpperCase()
+  }
+
+  // 渲染头像
+  const renderAvatar = (avatarUrl: string | null, name: string, size: string = '24'): string => {
+    if (avatarUrl) {
+      return `<img src="${avatarUrl}" alt="${name}" class="w-[${size}] h-[${size}] rounded-full object-cover border border-gray-200" onerror="this.style.display='none'">`
+    }
+    const color = getDefaultAvatarColor(name)
+    return `<div class="w-[${size}] h-[${size}] rounded-full bg-gradient-to-br ${color} flex items-center justify-center text-white text-xs font-bold">${getInitial(name)}</div>`
+  }
+
   const generateHTML = (postsWithComments: { date: string; myPosts: Post[]; partnerPosts: Post[] }[]) => {
-    const partnerName = user?.partner?.username || '珍贵的回忆'
     const exportDate = new Date().toLocaleDateString('zh-CN')
+    const myUsername = user?.username || '我'
+    const partnerUsername = user?.partner?.username || 'TA'
     
     return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UsOnly 回忆录 - ${partnerName}</title>
+  <title>UsOnly 回忆录</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
+    
     * {
       margin: 0;
       padding: 0;
@@ -154,120 +192,153 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
     }
     
     .container {
-      max-width: 800px;
+      max-width: 900px;
       margin: 0 auto;
     }
     
+    /* 封面页样式 */
     .cover {
       text-align: center;
-      padding: 60px 20px;
+      padding: 80px 20px;
       background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
       border-radius: 20px;
       margin-bottom: 30px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      position: relative;
     }
     
     .cover h1 {
-      font-size: 36px;
+      font-size: 42px;
       color: #db2777;
-      margin-bottom: 10px;
+      margin-bottom: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
     }
     
-    .cover .subtitle {
-      font-size: 18px;
-      color: #9ca3af;
-      margin-bottom: 20px;
+    .cover-info {
+      position: absolute;
+      bottom: 20px;
+      right: 30px;
+      text-align: right;
     }
     
-    .cover .info {
+    .cover-info p {
       font-size: 14px;
       color: #6b7280;
+      margin-bottom: 4px;
     }
     
+    /* 日期 section 样式 */
     .date-section {
       background: white;
       border-radius: 16px;
-      padding: 24px;
       margin-bottom: 24px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      overflow: hidden;
     }
     
     .date-header {
+      background: linear-gradient(to right, #fce7f3, #f3e8ff);
+      padding: 16px 24px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .date-header-title {
       font-size: 18px;
       font-weight: bold;
       color: #374151;
-      padding: 12px 16px;
-      background: #f3f4f6;
-      border-radius: 8px;
-      margin-bottom: 20px;
     }
     
-    .posts-row {
+    .date-header-date {
+      font-size: 13px;
+      color: #6b7280;
+      margin-left: 8px;
+    }
+    
+    /* 帖子内容区域 */
+    .posts-container {
       display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
+      gap: 24px;
+      padding: 24px;
     }
     
-    .post-card {
+    .posts-column {
       flex: 1;
-      min-width: 280px;
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 16px;
+      min-width: 0;
+    }
+    
+    .column-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .column-header .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
       border: 1px solid #e5e7eb;
     }
     
-    .post-card.my {
-      border-left: 4px solid #ec4899;
-    }
-    
-    .post-card.partner {
-      border-left: 4px solid #a855f7;
-    }
-    
-    .post-label {
-      font-size: 12px;
-      color: #ec4899;
-      margin-bottom: 8px;
+    .column-header .username {
+      font-size: 14px;
       font-weight: 500;
     }
     
-    .post-label.partner {
-      color: #a855f7;
+    .column-header .username.my {
+      color: #db2777;
     }
     
-    .post-item {
-      margin-bottom: 16px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #f3f4f6;
+    .column-header .username.partner {
+      color: #9333ea;
     }
     
-    .post-item:last-child {
-      border-bottom: none;
+    /* 帖子卡片样式 */
+    .post-card {
+      background: #fef2f2;
+      border: 1px solid #fbcfe8;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .post-card.partner {
+      background: #faf5ff;
+      border: 1px solid #e9d5ff;
+    }
+    
+    .post-card:last-child {
       margin-bottom: 0;
-      padding-bottom: 0;
+    }
+    
+    .post-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
     }
     
     .post-title {
       font-size: 14px;
-      font-weight: bold;
-      color: #1f2937;
-      margin-bottom: 4px;
+      font-weight: 500;
+      color: #374151;
     }
     
     .post-time {
       font-size: 12px;
       color: #9ca3af;
-      margin-bottom: 8px;
     }
     
     .post-image {
       width: 100%;
-      height: auto;
+      height: 160px;
+      object-fit: cover;
       border-radius: 8px;
       margin-bottom: 8px;
-      max-height: 200px;
-      object-fit: cover;
     }
     
     .post-text {
@@ -277,6 +348,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
       white-space: pre-wrap;
     }
     
+    /* 评论区域样式 */
     .comments-section {
       margin-top: 12px;
       padding-top: 12px;
@@ -285,27 +357,51 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
     
     .comment-item {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 8px;
-      padding: 6px 8px;
+      padding: 8px;
       background: #fafafa;
-      border-radius: 6px;
+      border-radius: 8px;
       margin-bottom: 6px;
     }
     
+    .comment-item:last-child {
+      margin-bottom: 0;
+    }
+    
     .comment-avatar {
-      width: 20px;
-      height: 20px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       object-fit: cover;
+      flex-shrink: 0;
+    }
+    
+    .comment-body {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .comment-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    
+    .comment-username {
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
     }
     
     .comment-text {
-      font-size: 12px;
-      color: #6b7280;
-      flex: 1;
+      font-size: 13px;
+      color: #4b5563;
+      line-height: 1.4;
     }
     
+    /* 打印按钮 */
     .print-btn {
       position: fixed;
       bottom: 30px;
@@ -320,6 +416,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
       cursor: pointer;
       box-shadow: 0 4px 20px rgba(219, 39, 119, 0.4);
       transition: all 0.3s ease;
+      z-index: 100;
     }
     
     .print-btn:hover {
@@ -328,6 +425,17 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
       box-shadow: 0 6px 25px rgba(219, 39, 119, 0.5);
     }
     
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 24px;
+      background: #f9fafb;
+      border-radius: 12px;
+      color: #9ca3af;
+      font-size: 14px;
+    }
+    
+    /* 打印样式 */
     @media print {
       .print-btn {
         display: none;
@@ -352,71 +460,126 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
         break-inside: avoid;
       }
     }
+    
+    /* 移动端适配 */
+    @media (max-width: 768px) {
+      .posts-container {
+        flex-direction: column;
+        gap: 16px;
+      }
+      
+      .cover-info {
+        position: static;
+        text-align: center;
+        margin-top: 20px;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- 封面页 -->
     <div class="cover">
-      <h1>💕 UsOnly 回忆录</h1>
-      <p class="subtitle">${partnerName}</p>
-      <p class="info">导出日期：${exportDate}</p>
-      <p class="info">共 ${postsWithComments.length} 天的分享，${previewCount} 条内容</p>
-    </div>
-    
-    ${postsWithComments.map(day => `
-    <div class="date-section">
-      <div class="date-header">📅 ${day.date}</div>
-      <div class="posts-row">
-        ${day.myPosts.length > 0 ? `
-        <div class="post-card my">
-          <div class="post-label">💖 我的分享</div>
-          ${day.myPosts.map(post => `
-            <div class="post-item">
-              ${post.title ? `<div class="post-title">${post.title}</div>` : ''}
-              <div class="post-time">${new Date(post.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</div>
-              ${post.imageUrl ? `<img src="${post.imageUrl}" alt="分享图片" class="post-image" onerror="this.style.display='none'">` : ''}
-              ${post.text ? `<div class="post-text">${post.text}</div>` : ''}
-              ${includeComments && post.comments && post.comments.length > 0 ? `
-                <div class="comments-section">
-                  ${post.comments.map(comment => `
-                    <div class="comment-item">
-                      ${comment.user.avatarUrl ? `<img src="${comment.user.avatarUrl}" alt="" class="comment-avatar" onerror="this.style.display='none'">` : ''}
-                      <span class="comment-text"><strong>${comment.user.username}</strong>: ${comment.content}</span>
-                    </div>
-                  `).join('')}
-                </div>
-              ` : ''}
-            </div>
-          `).join('')}
-        </div>
-        ` : ''}
-        
-        ${day.partnerPosts.length > 0 ? `
-        <div class="post-card partner">
-          <div class="post-label partner">💜 TA 的分享</div>
-          ${day.partnerPosts.map(post => `
-            <div class="post-item">
-              ${post.title ? `<div class="post-title">${post.title}</div>` : ''}
-              <div class="post-time">${new Date(post.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</div>
-              ${post.imageUrl ? `<img src="${post.imageUrl}" alt="分享图片" class="post-image" onerror="this.style.display='none'">` : ''}
-              ${post.text ? `<div class="post-text">${post.text}</div>` : ''}
-              ${includeComments && post.comments && post.comments.length > 0 ? `
-                <div class="comments-section">
-                  ${post.comments.map(comment => `
-                    <div class="comment-item">
-                      ${comment.user.avatarUrl ? `<img src="${comment.user.avatarUrl}" alt="" class="comment-avatar" onerror="this.style.display='none'">` : ''}
-                      <span class="comment-text"><strong>${comment.user.username}</strong>: ${comment.content}</span>
-                    </div>
-                  `).join('')}
-                </div>
-              ` : ''}
-            </div>
-          `).join('')}
-        </div>
-        ` : ''}
+      <h1>
+        <span style="font-size: 48px;">❤️</span>
+        UsOnly 回忆录
+      </h1>
+      <div class="cover-info">
+        <p>导出日期：${exportDate}</p>
+        <p>共 ${postsWithComments.length} 天的分享，${previewCount} 条内容</p>
       </div>
     </div>
-    `).join('')}
+    
+    <!-- 内容页 -->
+    ${postsWithComments.map(day => {
+      const myUsername = user?.username || '我'
+      const partnerUsername = user?.partner?.username || 'TA'
+      const myAvatarHtml = user?.avatarUrl 
+        ? `<img src="${user.avatarUrl}" alt="${myUsername}" class="avatar">`
+        : `<div class="avatar w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-pink-500 flex items-center justify-center text-white text-xs font-bold">${getInitial(myUsername)}</div>`
+      
+      const partnerAvatarHtml = user?.partner?.avatarUrl 
+        ? `<img src="${user.partner.avatarUrl}" alt="${partnerUsername}" class="avatar">`
+        : `<div class="avatar w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold">${getInitial(partnerUsername)}</div>`
+      
+      return `
+    <div class="date-section">
+      <div class="date-header">
+        <span class="date-header-title">${day.date}</span>
+      </div>
+      <div class="posts-container">
+        <!-- 我的分享列 -->
+        <div class="posts-column">
+          <div class="column-header">
+            ${myAvatarHtml}
+            <span class="username my">${myUsername}</span>
+          </div>
+          ${day.myPosts.length > 0 ? `
+            ${day.myPosts.map(post => `
+            <div class="post-card">
+              <div class="post-card-header">
+                ${post.title ? `<span class="post-title">${post.title}</span>` : ''}
+                <span class="post-time">${new Date(post.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+              ${post.imageUrl ? `<img src="${post.imageUrl}" alt="分享图片" class="post-image" onerror="this.style.display='none'">` : ''}
+              ${post.text ? `<div class="post-text">${post.text}</div>` : ''}
+              ${includeComments && post.comments && post.comments.length > 0 ? `
+              <div class="comments-section">
+                ${post.comments.map(comment => `
+                <div class="comment-item">
+                  ${comment.user.avatarUrl ? `<img src="${comment.user.avatarUrl}" alt="" class="comment-avatar">` : ''}
+                  <div class="comment-body">
+                    <div class="comment-header">
+                      <span class="comment-username">${comment.user.username}</span>
+                    </div>
+                    <div class="comment-text">${comment.content}</div>
+                  </div>
+                </div>
+                `).join('')}
+              </div>
+              ` : ''}
+            </div>
+            `).join('')}
+          ` : `<div class="empty-state">暂无分享</div>`}
+        </div>
+        
+        <!-- TA 的分享列 -->
+        <div class="posts-column">
+          <div class="column-header">
+            ${partnerAvatarHtml}
+            <span class="username partner">${partnerUsername}</span>
+          </div>
+          ${day.partnerPosts.length > 0 ? `
+            ${day.partnerPosts.map(post => `
+            <div class="post-card partner">
+              <div class="post-card-header">
+                ${post.title ? `<span class="post-title">${post.title}</span>` : ''}
+                <span class="post-time">${new Date(post.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+              ${post.imageUrl ? `<img src="${post.imageUrl}" alt="分享图片" class="post-image" onerror="this.style.display='none'">` : ''}
+              ${post.text ? `<div class="post-text">${post.text}</div>` : ''}
+              ${includeComments && post.comments && post.comments.length > 0 ? `
+              <div class="comments-section">
+                ${post.comments.map(comment => `
+                <div class="comment-item">
+                  ${comment.user.avatarUrl ? `<img src="${comment.user.avatarUrl}" alt="" class="comment-avatar">` : ''}
+                  <div class="comment-body">
+                    <div class="comment-header">
+                      <span class="comment-username">${comment.user.username}</span>
+                    </div>
+                    <div class="comment-text">${comment.content}</div>
+                  </div>
+                </div>
+                `).join('')}
+              </div>
+              ` : ''}
+            </div>
+            `).join('')}
+          ` : `<div class="empty-state">暂无分享</div>`}
+        </div>
+      </div>
+    </div>
+    `}).join('')}
   </div>
   
   <button class="print-btn" onclick="window.print()">📄 打印 / 另存为 PDF</button>
