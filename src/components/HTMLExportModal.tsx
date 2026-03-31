@@ -441,31 +441,65 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
         display: none !important;
       }
       
-      body {
-        background: white !important;
+      html, body {
+        background: #ffffff !important;
         padding: 0 !important;
         margin: 0 !important;
+        min-height: auto !important;
       }
       
       .container {
         max-width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
+        background: #ffffff !important;
       }
       
       .cover {
         box-shadow: none !important;
         page-break-after: always !important;
+        background: #ffffff !important;
       }
       
       .date-section {
         box-shadow: none !important;
         page-break-inside: avoid !important;
         margin-bottom: 16px !important;
+        background: #ffffff !important;
+      }
+      
+      .date-header {
+        background: linear-gradient(to right, #fce7f3, #f3e8ff) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       
       .post-card {
         break-inside: avoid !important;
+      }
+      
+      .post-card {
+        background: #fef2f2 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      .post-card.partner {
+        background: #faf5ff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      .comment-item {
+        background: #fafafa !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      .empty-state {
+        background: #f9fafb !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       
       /* 保持并排布局 */
@@ -474,11 +508,13 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
         flex-direction: row !important;
         gap: 24px !important;
         padding: 24px !important;
+        background: #ffffff !important;
       }
       
       .posts-column {
         flex: 1 !important;
         min-width: 0 !important;
+        background: #ffffff !important;
       }
       
       /* 确保背景色正确打印 */
