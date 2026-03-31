@@ -230,14 +230,17 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
       margin-bottom: 4px;
     }
     
-    /* 日期 section 样式 */
+    /* 日期 section 样式 - 渐变边框从左到右粉色到紫色 */
     .date-section {
       background: white;
       border-radius: 16px;
       margin-bottom: 24px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.05);
       overflow: hidden;
-      border: 1px solid #fbcfe8;
+      /* 使用渐变边框 */
+      border: 2px solid transparent;
+      background: linear-gradient(white, white) padding-box,
+                  linear-gradient(to right, #fbcfe8, #e9d5ff) border-box;
     }
     
     .date-header {
@@ -447,6 +450,12 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
         padding: 0 !important;
         margin: 0 !important;
         min-height: auto !important;
+        width: 100% !important;
+      }
+      
+      @page {
+        size: A4;
+        margin: 1.5cm;
       }
       
       .container {
@@ -454,6 +463,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
         margin: 0 !important;
         padding: 0 !important;
         background: #ffffff !important;
+        width: 100% !important;
       }
       
       .cover {
@@ -467,7 +477,12 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
         page-break-inside: avoid !important;
         margin-bottom: 16px !important;
         background: #ffffff !important;
-        border: 1px solid #fbcfe8 !important;
+        /* 打印时也使用渐变边框 */
+        border: 2px solid transparent !important;
+        background: linear-gradient(#ffffff, #ffffff) padding-box,
+                    linear-gradient(to right, #fbcfe8, #e9d5ff) border-box !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       
       .date-header {
