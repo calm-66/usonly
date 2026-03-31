@@ -13,6 +13,9 @@ interface Post {
   isLatePost: boolean
   createdAt: string
   owner: '我' | 'TA'
+  latitude?: number | null
+  longitude?: number | null
+  location?: string | null
 }
 
 interface DayPosts {
@@ -1192,6 +1195,15 @@ export default function TimelinePage() {
                               {post.text && (
                                 <p className="text-sm text-gray-700 whitespace-pre-wrap">{post.text}</p>
                               )}
+                              {post.location && (
+                                <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
+                                  <svg className="w-3 h-3 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  </svg>
+                                  {post.location}
+                                </div>
+                              )}
                               
                               {/* 评论按钮 - 通过颜色区分有评论/无评论状态 */}
                               <div className="mt-2 flex items-center gap-4">
@@ -1250,6 +1262,15 @@ export default function TimelinePage() {
                               )}
                               {post.text && (
                                 <p className="text-sm text-gray-700 whitespace-pre-wrap">{post.text}</p>
+                              )}
+                              {post.location && (
+                                <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
+                                  <svg className="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  </svg>
+                                  {post.location}
+                                </div>
                               )}
                               
                               {/* 评论按钮 - 通过颜色区分有评论/无评论状态 */}
@@ -1321,7 +1342,7 @@ export default function TimelinePage() {
         </div>
       )}
 
-      {/* 底部导航 - 固定 2 个按钮 */}
+      {/* 底部导航 - 3 个按钮：时间轴、足迹、我的 */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t">
         <div className="max-w-3xl mx-auto flex">
           <a href="/timeline" className="flex-1 py-3 text-center text-pink-600">
@@ -1329,6 +1350,13 @@ export default function TimelinePage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span className="text-xs">时间轴</span>
+          </a>
+          <a href="/map" className="flex-1 py-3 text-center text-gray-500">
+            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="text-xs">足迹</span>
           </a>
           <a href="/profile" className="flex-1 py-3 text-center text-gray-500">
             <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">

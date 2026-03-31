@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
   try {
     const userId = request.headers.get('x-user-id')
     const body = await request.json()
-    const { date, title, imageUrl, text, isLatePost } = body
+    const { date, title, imageUrl, text, isLatePost, latitude, longitude, location } = body
 
     if (!userId) {
       return NextResponse.json(
@@ -93,6 +93,9 @@ export async function POST(request: NextRequest) {
         imageUrl,
         text,
         isLatePost: isLatePost || false,
+        latitude: latitude || null,
+        longitude: longitude || null,
+        location: location || null,
       },
     })
 

@@ -10,6 +10,9 @@ interface Post {
   imageUrl: string | null
   text: string | null
   isLatePost: boolean
+  latitude?: number | null
+  longitude?: number | null
+  location?: string | null
 }
 
 interface User {
@@ -39,6 +42,12 @@ export default function PostPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  // 位置相关状态
+  const [latitude, setLatitude] = useState<number | null>(null)
+  const [longitude, setLongitude] = useState<number | null>(null)
+  const [location, setLocation] = useState<string>('')
+  const [showLocationInput, setShowLocationInput] = useState(false)
+  const [gettingLocation, setGettingLocation] = useState(false)
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -87,6 +96,9 @@ export default function PostPage() {
           imageUrl: imageUrl || null,
           text: text || null,
           isLatePost,
+          latitude: latitude || null,
+          longitude: longitude || null,
+          location: location || null,
         }),
       })
       const data = await res.json()
@@ -98,6 +110,10 @@ export default function PostPage() {
       setImageUrl('')
       setText('')
       setIsLatePost(false)
+      setLatitude(null)
+      setLongitude(null)
+      setLocation('')
+      setShowLocationInput(false)
       // 重新加载分享列表
       loadPosts(user!)
     } catch (err: any) {
@@ -184,6 +200,56 @@ export default function PostPage() {
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
+  }
+
+  // 获取当前位置
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setError('浏览器不支持地理定位')
+      return
+    }
+
+    setGettingLocation(true)
+    setError('')
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLatitude(position.coords.latitude)
+        setLongitude(position.coords.longitude)
+        setLocation('我的位置') // 用户可手动修改
+        setShowLocationInput(true)
+        setGettingLocation(false)
+        setMessage('已获取当前位置，请确认或修改位置名称')
+      },
+      (error) => {
+        setGettingLocation(false)
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            setError('用户拒绝了定位请求')
+            break
+          case error.POSITION_UNAVAILABLE:
+            setError('位置信息不可用')
+            break
+          case error.TIMEOUT:
+            setError('定位超时，请重试')
+            break
+          default:
+            setError('定位失败')
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    )
+  }
+
+  const handleClearLocation = () => {
+    setLatitude(null)
+    setLongitude(null)
+    setLocation('')
+    setShowLocationInput(false)
   }
 
   if (!user) {
@@ -333,6 +399,65 @@ export default function PostPage() {
               />
             </div>
 
+            {/* 位置选择器 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                位置（可选）
+              </label>
+              {!showLocationInput ? (
+                <button
+                  type="button"
+                  onClick={handleGetCurrentLocation}
+                  disabled={gettingLocation}
+                  className="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-pink-500 hover:text-pink-500 transition flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {gettingLocation ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      获取位置中...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      获取当前位置
+                    </>
+                  )}
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <input
+                      type="text"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                      placeholder="输入位置名称（如：公司、家）"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleClearLocation}
+                      className="text-red-500 hover:text-red-700 text-sm px-2"
+                    >
+                      清除
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    坐标：{latitude?.toFixed(4)}, {longitude?.toFixed(4)}
+                  </p>
+                </div>
+              )}
+            </div>
+
             <button
               type="submit"
               disabled={loading}
@@ -350,7 +475,7 @@ export default function PostPage() {
             <p className="text-center text-gray-500 py-4">今日还没有分享</p>
           ) : (
             <div className="space-y-3">
-                  {posts.filter(p => p.date === today).map((post) => (
+              {posts.filter(p => p.date === today).map((post) => (
                 <div
                   key={post.id}
                   className="p-4 bg-gray-50 rounded-lg"
@@ -376,6 +501,15 @@ export default function PostPage() {
                   {post.text && (
                     <p className="text-sm text-gray-600 whitespace-pre-wrap">{post.text}</p>
                   )}
+                  {post.location && (
+                    <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      {post.location}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -383,7 +517,7 @@ export default function PostPage() {
         </div>
       </div>
 
-      {/* 底部导航 - 固定 2 个按钮 */}
+      {/* 底部导航 - 3 个按钮：时间轴、足迹、我的 */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t">
         <div className="max-w-2xl mx-auto flex">
           <a href="/timeline" className="flex-1 py-3 text-center text-gray-500">
@@ -391,6 +525,13 @@ export default function PostPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span className="text-xs">时间轴</span>
+          </a>
+          <a href="/map" className="flex-1 py-3 text-center text-gray-500">
+            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="text-xs">足迹</span>
           </a>
           <a href="/profile" className="flex-1 py-3 text-center text-gray-500">
             <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">

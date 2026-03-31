@@ -63,6 +63,10 @@ model Post {
   imageUrl  String?       // 图片 URL（可选）
   text      String?       // 文字内容（可选）
   isLatePost Boolean      @default(false) // 是否补传
+  // 位置相关字段（地图打卡）
+  latitude    Float?      // 纬度
+  longitude   Float?      // 经度
+  location    String?     // 位置名称（用户手动输入）
   // 归档相关字段
   archivedAt    DateTime? // 归档时间（null=未归档）
   archivedBy    String?   // 归档操作人 userId
