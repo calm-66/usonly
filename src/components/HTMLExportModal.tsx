@@ -438,26 +438,53 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
     /* 打印样式 */
     @media print {
       .print-btn {
-        display: none;
+        display: none !important;
       }
       
       body {
-        background: white;
-        padding: 0;
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      
+      .container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
       }
       
       .cover {
-        box-shadow: none;
-        page-break-after: always;
+        box-shadow: none !important;
+        page-break-after: always !important;
       }
       
       .date-section {
-        box-shadow: none;
-        page-break-inside: avoid;
+        box-shadow: none !important;
+        page-break-inside: avoid !important;
+        margin-bottom: 16px !important;
       }
       
       .post-card {
-        break-inside: avoid;
+        break-inside: avoid !important;
+      }
+      
+      /* 保持并排布局 */
+      .posts-container {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 24px !important;
+        padding: 24px !important;
+      }
+      
+      .posts-column {
+        flex: 1 !important;
+        min-width: 0 !important;
+      }
+      
+      /* 确保背景色正确打印 */
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
     }
     
