@@ -817,6 +817,71 @@ prisma.notification.updateMany({
 
 ---
 
+### V2.1 - PDF 导出功能 ✨
+
+#### 功能概述
+- [x] 在 Profile 页面添加"导出回忆"按钮
+- [x] 点击后弹出导出设置模态框
+- [x] 用户可选择日期范围和是否包含评论
+- [x] 生成 HTML 文件并在新窗口打开预览
+- [x] 用户可使用浏览器打印功能保存为 PDF
+
+#### 导出设置选项
+- [x] **日期范围选择**
+  - 最近 7 天
+  - 最近 30 天
+  - 全部
+  - 自定义日期范围
+- [x] **包含评论**：可选开关，决定是否导出评论数据
+
+#### 技术实现
+- [x] `HTMLExportModal.tsx` 组件
+  - 导出设置表单（日期范围、评论选项）
+  - 数据加载与处理
+  - HTML 生成与预览
+- [x] HTML 结构设计
+  - 封面页：标题、导出日期、内容统计
+  - 内容页：按日期分组，并排展示双方分享
+  - 评论区域：嵌套评论扁平化展示
+- [x] 样式设计
+  - 使用 Tailwind CSS CDN
+  - 渐变边框装饰
+  - 响应式布局适配
+
+#### 打印优化
+- [x] **A4 纸张适配**
+  - 设置 `@page { size: A4; margin: 1.5cm; }`
+  - 页面宽度设为 100%
+  - 避免内容被裁剪
+- [x] **渐变边框样式**
+  - 从左到右粉色 (`#fbcfe8`) 到紫色 (`#e9d5ff`) 渐变
+  - 匹配双方用户的主题色
+  - 使用 `background: linear-gradient(white, white) padding-box, linear-gradient(to right, #fbcfe8, #e9d5ff) border-box` 实现
+- [x] **打印专用样式**
+  - `-webkit-print-color-adjust: exact` 确保颜色正确打印
+  - `page-break-inside: avoid` 避免日期区块被分页切断
+  - `page-break-after: always` 封面页后分页
+
+#### 用户体验细节
+- [x] 预览信息提示：显示将导出的天数和内容数量
+- [x] 加载状态反馈
+- [x] 导出成功提示
+- [x] 弹出窗口被拦截时的友好提示
+
+#### 新增文件
+| 文件路径 | 功能 |
+|---------|------|
+| `src/components/HTMLExportModal.tsx` | PDF 导出模态框组件 |
+| `src/components/PDFExportModal.tsx` | PDF 导出模态框组件（备用） |
+
+#### 新增 API 调用
+| API | 用途 |
+|-----|------|
+| `GET /api/post?startDate=&endDate=` | 获取指定日期范围内的分享 |
+| `GET /api/comment?postId=` | 获取每条评论的详细内容 |
+
+---
+
 ## 十、未来迭代方向（产品思路）
 
 ### 短期迭代
@@ -939,8 +1004,8 @@ UsOnly 是一个典型的**全栈 Web 应用**，包含：
 
 ---
 
-*文档版本：2.0*  
-*最后更新：2026-03-30*  
-*本次更新：V2.0 登录流程优化 ✨*
+*文档版本：2.1*  
+*最后更新：2026-03-31*  
+*本次更新：V2.1 PDF 导出功能 ✨*
 
 ---
