@@ -233,8 +233,12 @@ export default function PostPage() {
       console.log('county:', address?.county)
       console.log('road:', address?.road)
       
-      // 添加城市信息（按优先级）
-      if (address?.city) {
+      // 简单方案：优先使用 state（处理直辖市情况）
+      // 添加城市/省级信息
+      if (address?.state) {
+        console.log('添加 state:', address.state)
+        parts.push(address.state)
+      } else if (address?.city) {
         console.log('添加 city:', address.city)
         parts.push(address.city)
       } else if (address?.town) {
@@ -243,21 +247,18 @@ export default function PostPage() {
       } else if (address?.village) {
         console.log('添加 village:', address.village)
         parts.push(address.village)
-      } else if (address?.state) {
-        console.log('添加 state:', address.state)
-        parts.push(address.state)
       }
       
-      // 添加区县/街道信息（避免重复城市名）
-      if (address?.suburb && address.suburb !== address.city) {
+      // 添加区县/街道信息（避免与 state 重复）
+      if (address?.suburb && address.suburb !== address.state) {
         console.log('添加 suburb:', address.suburb)
         parts.push(address.suburb)
       }
-      if (address?.district && address.district !== address.city) {
+      if (address?.district && address.district !== address.state) {
         console.log('添加 district:', address.district)
         parts.push(address.district)
       }
-      if (address?.county && address.county !== address.city) {
+      if (address?.county && address.county !== address.state) {
         console.log('添加 county:', address.county)
         parts.push(address.county)
       }
