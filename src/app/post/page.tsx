@@ -215,25 +215,26 @@ export default function PostPage() {
       )
       const data = await response.json()
       
-      // 构建中文地址：省 + 市 + 区 + 街道
+      // 构建中文地址：市 + 区 + 街道
       const address = data.address
-      let addressString = ''
+      const parts: string[] = []
       
-      if (address?.city) {
-        addressString += address.city
-      } else if (address?.town) {
-        addressString += address.town
-      } else if (address?.village) {
-        addressString += address.village
-      }
+      // 添加城市信息（按优先级）
+      if (address?.city) parts.push(address.city)
+      else if (address?.town) parts.push(address.town)
+      else if (address?.village) parts.push(address.village)
+      else if (address?.state) parts.push(address.state)
       
-      if (address?.district) {
-        addressString += address.district
-      }
+      // 添加区县信息
+      if (address?.district) parts.push(address.district)
+      else if (address?.suburb) parts.push(address.suburb)
+      else if (address?.county) parts.push(address.county)
       
-      if (address?.road) {
-        addressString += ' ' + address.road
-      }
+      // 添加道路信息
+      if (address?.road) parts.push(address.road)
+      
+      // 组合地址
+      let addressString = parts.join(' ')
       
       // 如果解析失败，使用默认名称
       if (!addressString) {
