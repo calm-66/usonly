@@ -17,6 +17,7 @@ interface Post {
   date: string
   title: string | null
   text: string | null
+  imageUrl: string | null
   latitude?: number | null
   longitude?: number | null
   location?: string | null
@@ -34,6 +35,38 @@ interface User {
     username: string
     email: string
   } | null
+}
+
+// 生成头像颜色
+const getColorForUser = (userId: string) => {
+  const colors = [
+    'from-pink-400 to-pink-600',
+    'from-purple-400 to-purple-600',
+    'from-blue-400 to-blue-600',
+    'from-green-400 to-green-600',
+    'from-yellow-400 to-yellow-600',
+    'from-red-400 to-red-600',
+  ]
+  const index = userId.charCodeAt(0) % colors.length
+  return colors[index]
+}
+
+// 头像组件
+const Avatar = ({ username, size = 'md' }: { username: string; size?: 'sm' | 'md' | 'lg' }) => {
+  const firstChar = username.charAt(0)
+  const sizeClasses = {
+    sm: 'w-6 h-6 text-xs',
+    md: 'w-8 h-8 text-sm',
+    lg: 'w-10 h-10 text-base',
+  }
+  const colorIndex = username.charCodeAt(0) % 6
+  const bgColors = ['bg-pink-500', 'bg-purple-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500']
+  
+  return (
+    <div className={`${sizeClasses[size]} ${bgColors[colorIndex]} rounded-full flex items-center justify-center text-white font-medium`}>
+      {firstChar.toUpperCase()}
+    </div>
+  )
 }
 
 // 地图中心控制组件
@@ -164,58 +197,51 @@ export default function MapPage() {
       </header>
 
       <div className="max-w-4xl mx-auto px-4 py-6 pb-24">
-        {/* 统计卡片 */}
-        <div className="grid grid-cols-3 gap-4 mb-4">
-          <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-            <div className="text-2xl font-bold text-pink-500">{myPostsCount}</div>
-            <div className="text-xs text-gray-500">我的打卡</div>
+      {/* 统计卡片 - 同时作为筛选按钮 */}
+      <div className="grid grid-cols-3 gap-3 mb-4">
+        {/* 我的打卡 */}
+        <button
+          onClick={() => setSelectedUserId(user.id)}
+          className={`bg-white rounded-xl shadow-sm p-3 text-center transition ${
+            selectedUserId === user.id ? 'ring-2 ring-pink-500' : ''
+          }`}
+        >
+          <div className="flex justify-center mb-1">
+            <Avatar username={user.username} size="sm" />
           </div>
-          <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-            <div className="text-2xl font-bold text-purple-500">{partnerPostsCount}</div>
-            <div className="text-xs text-gray-500">TA 的打卡</div>
+          <div className="text-lg font-bold text-pink-500">{myPostsCount}</div>
+          <div className="text-xs text-gray-500 truncate">{user.username}</div>
+        </button>
+        
+        {/* TA 的打卡 */}
+        <button
+          onClick={() => setSelectedUserId(user.partnerId || 'none')}
+          disabled={!user.partnerId}
+          className={`bg-white rounded-xl shadow-sm p-3 text-center transition disabled:opacity-50 ${
+            selectedUserId === user.partnerId ? 'ring-2 ring-purple-500' : ''
+          }`}
+        >
+          <div className="flex justify-center mb-1">
+            {user.partner ? (
+              <Avatar username={user.partner.username} size="sm" />
+            ) : (
+              <div className="w-6 h-6 rounded-full bg-gray-300" />
+            )}
           </div>
-          <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-            <div className="text-2xl font-bold text-blue-500">{locationsMap.size}</div>
-            <div className="text-xs text-gray-500">地点数</div>
+          <div className="text-lg font-bold text-purple-500">{partnerPostsCount}</div>
+          <div className="text-xs text-gray-500 truncate">{user.partner?.username || '暂无'}</div>
+        </button>
+        
+        {/* 地点数 - 显示两人的头像 */}
+        <div className="bg-white rounded-xl shadow-sm p-3 text-center">
+          <div className="flex justify-center gap-1 mb-1">
+            <Avatar username={user.username} size="sm" />
+            {user.partner && <Avatar username={user.partner.username} size="sm" />}
           </div>
+          <div className="text-lg font-bold text-blue-500">{locationsMap.size}</div>
+          <div className="text-xs text-gray-500">地点数</div>
         </div>
-
-        {/* 筛选器 */}
-        <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
-          <div className="flex gap-2">
-            <button
-              onClick={() => setSelectedUserId('all')}
-              className={`flex-1 py-2 px-4 rounded-lg transition ${
-                selectedUserId === 'all'
-                  ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              全部
-            </button>
-            <button
-              onClick={() => setSelectedUserId(user.id)}
-              className={`flex-1 py-2 px-4 rounded-lg transition ${
-                selectedUserId === user.id
-                  ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              我的
-            </button>
-            <button
-              onClick={() => setSelectedUserId(user.partnerId || 'none')}
-              disabled={!user.partnerId}
-              className={`flex-1 py-2 px-4 rounded-lg transition disabled:opacity-50 ${
-                selectedUserId === user.partnerId
-                  ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              TA 的
-            </button>
-          </div>
-        </div>
+      </div>
 
         {/* 地图容器 */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4">
@@ -296,32 +322,45 @@ export default function MapPage() {
             <div className="space-y-3 max-h-64 overflow-y-auto">
               {filteredPosts.map((post) => (
                 <div key={post.id} className="p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
+                  <div className="flex items-start gap-3">
+                    {/* 头像 */}
+                    <Avatar 
+                      username={post.userId === user.id ? user.username : user.partner?.username || 'TA'} 
+                      size="md" 
+                    />
+                    <div className="flex-1 min-w-0">
+                      {/* 用户名和日期 */}
                       <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-xs px-2 py-0.5 rounded ${
-                          post.userId === user.id
-                            ? 'bg-pink-100 text-pink-600'
-                            : 'bg-purple-100 text-purple-600'
-                        }`}>
-                          {post.userId === user.id ? '我' : user.partner?.username || 'TA'}
+                        <span className="text-sm font-medium text-gray-700">
+                          {post.userId === user.id ? user.username : user.partner?.username || 'TA'}
                         </span>
                         <span className="text-xs text-gray-400">{post.date}</span>
                       </div>
+                      {/* 位置 */}
                       {post.location && (
-                        <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
-                          <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                          <svg className="w-3 h-3 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                           </svg>
                           {post.location}
                         </div>
                       )}
+                      {/* 标题 */}
                       {post.title && (
-                        <div className="text-sm font-medium text-gray-700">{post.title}</div>
+                        <div className="text-sm font-medium text-gray-700 mb-1">{post.title}</div>
                       )}
+                      {/* 文字内容 */}
                       {post.text && (
-                        <div className="text-sm text-gray-600 truncate">{post.text}</div>
+                        <div className="text-sm text-gray-600 mb-2">{post.text}</div>
+                      )}
+                      {/* 图片 */}
+                      {post.imageUrl && (
+                        <img
+                          src={post.imageUrl}
+                          alt="打卡图片"
+                          className="w-24 h-24 object-cover rounded-lg"
+                        />
                       )}
                     </div>
                   </div>
