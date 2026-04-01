@@ -215,32 +215,64 @@ export default function PostPage() {
       )
       const data = await response.json()
       
+      console.log('=== Nominatim API 响应 ===')
+      console.log('完整数据:', data)
+      console.log('address 对象:', data.address)
+      
       // 构建中文地址：市 + 区 + 街道
       const address = data.address
       const parts: string[] = []
       
+      console.log('--- 地址解析过程 ---')
+      console.log('city:', address?.city)
+      console.log('town:', address?.town)
+      console.log('village:', address?.village)
+      console.log('state:', address?.state)
+      console.log('district:', address?.district)
+      console.log('suburb:', address?.suburb)
+      console.log('county:', address?.county)
+      console.log('road:', address?.road)
+      
       // 添加城市信息（按优先级）
-      if (address?.city) parts.push(address.city)
-      else if (address?.town) parts.push(address.town)
-      else if (address?.village) parts.push(address.village)
-      else if (address?.state) parts.push(address.state)
+      if (address?.city) {
+        console.log('添加 city:', address.city)
+        parts.push(address.city)
+      } else if (address?.town) {
+        console.log('添加 town:', address.town)
+        parts.push(address.town)
+      } else if (address?.village) {
+        console.log('添加 village:', address.village)
+        parts.push(address.village)
+      } else if (address?.state) {
+        console.log('添加 state:', address.state)
+        parts.push(address.state)
+      }
       
       // 添加区县/街道信息（避免重复城市名）
       if (address?.suburb && address.suburb !== address.city) {
+        console.log('添加 suburb:', address.suburb)
         parts.push(address.suburb)
       }
       if (address?.district && address.district !== address.city) {
+        console.log('添加 district:', address.district)
         parts.push(address.district)
       }
       if (address?.county && address.county !== address.city) {
+        console.log('添加 county:', address.county)
         parts.push(address.county)
       }
       
       // 添加道路信息
-      if (address?.road) parts.push(address.road)
+      if (address?.road) {
+        console.log('添加 road:', address.road)
+        parts.push(address.road)
+      }
       
       // 组合地址
       let addressString = parts.join(' ')
+      console.log('最终地址 parts:', parts)
+      console.log('最终地址字符串:', addressString)
+      console.log('=== 地址解析结束 ===')
       
       // 如果解析失败，使用默认名称
       if (!addressString) {
