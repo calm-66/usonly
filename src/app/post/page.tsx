@@ -48,6 +48,8 @@ export default function PostPage() {
   const [location, setLocation] = useState<string>('')
   const [showLocationInput, setShowLocationInput] = useState(false)
   const [gettingLocation, setGettingLocation] = useState(false)
+  // 调试日志
+  const [debugLogs, setDebugLogs] = useState<string[]>([])
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -289,45 +291,96 @@ export default function PostPage() {
     }
   }
 
+  // 添加调试日志
+  const addDebugLog = (message: string) => {
+    const timestamp = new Date().toLocaleTimeString('zh-CN')
+    const log = `[${timestamp}] ${message}`
+    console.log(log)
+    setDebugLogs(prev => [...prev, log])
+  }
+
   // 获取当前位置
   const handleGetCurrentLocation = async () => {
+    // 清空之前的日志
+    setDebugLogs([])
+    
+    addDebugLog('=== 开始获取位置 ===')
+    
+    // 检测设备信息
+    const userAgent = navigator.userAgent
+    const isIOS = /iPad|iPhone|iPod/.test(userAgent)
+    const isSafari = /^((?!chrome|android).)*safari/i.test(userAgent)
+    addDebugLog(`设备信息：${userAgent}`)
+    addDebugLog(`iOS 设备：${isIOS ? '是' : '否'}`)
+    addDebugLog(`Safari 浏览器：${isSafari ? '是' : '否'}`)
+    addDebugLog(`当前协议：${window.location.protocol}`)
+    
     if (!navigator.geolocation) {
+      addDebugLog('错误：浏览器不支持地理定位 API')
       setError('浏览器不支持地理定位')
       return
     }
+    
+    addDebugLog('浏览器支持地理定位 API')
+    addDebugLog('请求定位权限...')
 
     setGettingLocation(true)
     setError('')
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
+        addDebugLog('✓ 定位成功')
         const lat = position.coords.latitude
         const lon = position.coords.longitude
+        const accuracy = position.coords.accuracy
+        addDebugLog(`纬度：${lat}`)
+        addDebugLog(`经度：${lon}`)
+        addDebugLog(`精度：${accuracy}米`)
+        
         setLatitude(lat)
         setLongitude(lon)
         
         // 获取实际地址
+        addDebugLog('开始反向地理编码...')
         const address = await fetchAddressFromCoords(lat, lon)
+        addDebugLog(`反向地理编码结果：${address}`)
+        
         setLocation(address)
         setShowLocationInput(true)
         setGettingLocation(false)
         setMessage(`已获取位置：${address}`)
       },
       (error) => {
+        addDebugLog(`✗ 定位失败`)
+        addDebugLog(`错误代码：${error.code}`)
+        addDebugLog(`错误消息：${error.message}`)
+        
         setGettingLocation(false)
+        
+        // 详细的错误信息
+        let detailedError = ''
+        let errorMessage = ''
+        
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            setError('用户拒绝了定位请求')
+            detailedError = 'PERMISSION_DENIED - 用户拒绝了定位请求'
+            errorMessage = '定位被拒绝，请在浏览器设置中允许定位权限'
             break
           case error.POSITION_UNAVAILABLE:
-            setError('位置信息不可用')
+            detailedError = 'POSITION_UNAVAILABLE - 位置信息不可用'
+            errorMessage = '位置信息不可用，请检查网络连接'
             break
           case error.TIMEOUT:
-            setError('定位超时，请重试')
+            detailedError = 'TIMEOUT - 定位超时'
+            errorMessage = '定位超时，请重试'
             break
           default:
-            setError('定位失败')
+            detailedError = `UNKNOWN_ERROR - 未知错误：${error.message}`
+            errorMessage = '定位失败'
         }
+        
+        addDebugLog(`详细错误：${detailedError}`)
+        setError(errorMessage)
       },
       {
         enableHighAccuracy: true,
@@ -378,6 +431,16 @@ export default function PostPage() {
         {error && (
           <div className="mb-4 text-red-500 text-sm bg-red-50 p-3 rounded-lg">
             {error}
+          </div>
+        )}
+        
+        {/* 调试日志面板 */}
+        {debugLogs.length > 0 && (
+          <div className="mb-4 bg-gray-800 text-green-400 text-xs p-3 rounded-lg font-mono overflow-x-auto max-h-48 overflow-y-auto">
+            <div className="font-bold text-white mb-2">📋 调试日志</div>
+            {debugLogs.map((log, index) => (
+              <div key={index} className="break-all">{log}</div>
+            ))}
           </div>
         )}
 
