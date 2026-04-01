@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
 
 // 动态导入 react-leaflet 组件，避免 SSR 问题
@@ -93,6 +93,12 @@ export default function MapPage() {
   const [mapCenter, setMapCenter] = useState<[number, number]>([35.8617, 104.1954]) // 中国中心
   const [mounted, setMounted] = useState(false)
   const [defaultIcon, setDefaultIcon] = useState<any>(null)
+  // 联动状态：选中的地点 key
+  const [selectedLocationKey, setSelectedLocationKey] = useState<string | null>(null)
+  // 地图实例引用，用于程序控制地图
+  const [mapInstance, setMapInstance] = useState<any>(null)
+  // 列表引用，用于滚动定位
+  const listRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -278,6 +284,7 @@ export default function MapPage() {
                 zoom={5}
                 style={{ height: '100%', width: '100%' }}
                 scrollWheelZoom={true}
+                whenCreated={(map) => setMapInstance(map)}
               >
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -286,30 +293,30 @@ export default function MapPage() {
                 {Array.from(locationsMap.entries()).map(([key, postsAtLocation]) => {
                   const post = postsAtLocation[0]
                   const position: [number, number] = [post.latitude!, post.longitude!]
+                  const isSelected = selectedLocationKey === key
                   return (
-                    <Marker key={key} position={position} icon={defaultIcon}>
+                    <Marker 
+                      key={key} 
+                      position={position} 
+                      icon={defaultIcon}
+                      eventHandlers={{
+                        click: () => {
+                          setSelectedLocationKey(key)
+                          // 滚动列表到对应位置
+                          const firstPostId = postsAtLocation[0].id
+                          setTimeout(() => {
+                            const element = document.getElementById(`post-${firstPostId}`)
+                            if (element) {
+                              element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                            }
+                          }, 100)
+                        }
+                      }}
+                    >
                       <Popup>
-                        <div className="min-w-[200px]">
-                          <div className="font-bold text-gray-800 mb-2">
+                        <div className="min-w-[120px] text-center">
+                          <div className="font-bold text-gray-800">
                             {post.location || '打卡地点'}
-                          </div>
-                          <div className="text-xs text-gray-500 mb-2">
-                            共 {postsAtLocation.length} 次打卡
-                          </div>
-                          <div className="space-y-2 max-h-48 overflow-y-auto">
-                            {postsAtLocation.map(p => (
-                              <div key={p.id} className="border-t pt-2 first:border-0 first:pt-0">
-                                <div className="text-xs text-gray-400">
-                                  {p.userId === user.id ? '我' : user.partner?.username || 'TA'} · {p.date}
-                                </div>
-                                {p.title && (
-                                  <div className="text-sm font-medium text-gray-700">{p.title}</div>
-                                )}
-                                {p.text && (
-                                  <div className="text-xs text-gray-600 truncate">{p.text}</div>
-                                )}
-                              </div>
-                            ))}
                           </div>
                         </div>
                       </Popup>
@@ -326,51 +333,86 @@ export default function MapPage() {
         {filteredPosts.length > 0 && (
           <div className="bg-white rounded-xl shadow-sm p-4">
             <h2 className="text-lg font-bold text-gray-800 mb-4">回忆</h2>
-            <div className="space-y-3 max-h-64 overflow-y-auto">
-              {filteredPosts.map((post) => (
-                <div key={post.id} className="p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    {/* 头像 */}
-                    <Avatar 
-                      username={post.userId === user.id ? user.username : user.partner?.username || 'TA'} 
-                      avatarUrl={post.userId === user.id ? user.avatarUrl : user.partner?.avatarUrl}
-                      size="md" 
-                    />
-                    <div className="flex-1 min-w-0">
-                      {/* 日期 */}
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs text-gray-400">{post.date}</span>
-                      </div>
-                      {/* 位置 */}
-                      {post.location && (
-                        <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
-                          <svg className="w-3 h-3 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          {post.location}
+            <div 
+              ref={listRef}
+              className="space-y-3 max-h-64 overflow-y-auto"
+            >
+              {filteredPosts.map((post) => {
+                const postLocationKey = post.latitude && post.longitude 
+                  ? `${post.latitude}-${post.longitude}` 
+                  : null
+                const isSelected = selectedLocationKey === postLocationKey
+                return (
+                  <div 
+                    key={post.id} 
+                    id={`post-${post.id}`}
+                    className={`p-3 rounded-lg transition-all ${
+                      isSelected 
+                        ? 'bg-pink-50 ring-2 ring-pink-300' 
+                        : 'bg-gray-50'
+                    }`}
+                    onMouseEnter={() => {
+                      if (postLocationKey && mapInstance) {
+                        setSelectedLocationKey(postLocationKey)
+                        mapInstance.flyTo([post.latitude!, post.longitude!], 12, {
+                          duration: 0.5
+                        })
+                      }
+                    }}
+                    onClick={() => {
+                      if (postLocationKey) {
+                        setSelectedLocationKey(postLocationKey)
+                        // 地图飞到该位置
+                        const mapElement = document.querySelector('.leaflet-container')
+                        if (mapElement) {
+                          mapElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        }
+                      }
+                    }}
+                  >
+                    <div className="flex items-start gap-3">
+                      {/* 头像 */}
+                      <Avatar 
+                        username={post.userId === user.id ? user.username : user.partner?.username || 'TA'} 
+                        avatarUrl={post.userId === user.id ? user.avatarUrl : user.partner?.avatarUrl}
+                        size="md" 
+                      />
+                      <div className="flex-1 min-w-0">
+                        {/* 日期 */}
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs text-gray-400">{post.date}</span>
                         </div>
-                      )}
-                      {/* 标题 */}
-                      {post.title && (
-                        <div className="text-sm font-medium text-gray-700 mb-1">{post.title}</div>
-                      )}
-                      {/* 文字内容 */}
-                      {post.text && (
-                        <div className="text-sm text-gray-600 mb-2">{post.text}</div>
-                      )}
-                      {/* 图片 */}
-                      {post.imageUrl && (
-                        <img
-                          src={post.imageUrl}
-                          alt="打卡图片"
-                          className="w-24 h-24 object-cover rounded-lg"
-                        />
-                      )}
+                        {/* 位置 */}
+                        {post.location && (
+                          <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                            <svg className="w-3 h-3 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            {post.location}
+                          </div>
+                        )}
+                        {/* 标题 */}
+                        {post.title && (
+                          <div className="text-sm font-medium text-gray-700 mb-1">{post.title}</div>
+                        )}
+                        {/* 文字内容 */}
+                        {post.text && (
+                          <div className="text-sm text-gray-600 mb-2">{post.text}</div>
+                        )}
+                        {/* 图片 */}
+                        {post.imageUrl && (
+                          <img
+                            src={post.imageUrl}
+                            alt="打卡图片"
+                            className="w-24 h-24 object-cover rounded-lg"
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}
