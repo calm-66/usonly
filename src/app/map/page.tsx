@@ -85,6 +85,18 @@ function MapController({ center }: { center: [number, number] }) {
   return null
 }
 
+// 地图实例设置组件
+function MapInstanceSetter({ onMapReady }: { onMapReady: (map: any) => void }) {
+  const { useMap } = require('react-leaflet')
+  const map = useMap()
+  useEffect(() => {
+    if (map && onMapReady) {
+      onMapReady(map)
+    }
+  }, [map, onMapReady])
+  return null
+}
+
 export default function MapPage() {
   const [user, setUser] = useState<User | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
@@ -284,12 +296,12 @@ export default function MapPage() {
                 zoom={5}
                 style={{ height: '100%', width: '100%' }}
                 scrollWheelZoom={true}
-                whenCreated={(map) => setMapInstance(map)}
               >
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
+                <MapInstanceSetter onMapReady={setMapInstance} />
                 {Array.from(locationsMap.entries()).map(([key, postsAtLocation]) => {
                   const post = postsAtLocation[0]
                   const position: [number, number] = [post.latitude!, post.longitude!]
