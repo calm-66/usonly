@@ -9,6 +9,9 @@ const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLaye
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
 const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
 
+// 静态导入 leaflet CSS（在文件顶部，TypeScript 可以正确处理）
+import 'leaflet/dist/leaflet.css'
+
 interface Post {
   id: string
   date: string
@@ -55,10 +58,9 @@ export default function MapPage() {
   useEffect(() => {
     setMounted(true)
     
-    // 在客户端动态导入 leaflet
+    // 在客户端动态导入 leaflet 创建图标
     const initLeaflet = async () => {
       const L = await import('leaflet')
-      await import('leaflet/dist/leaflet.css')
       
       const icon = L.icon({
         iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
