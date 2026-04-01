@@ -306,6 +306,8 @@ export default function MapPage() {
                   const post = postsAtLocation[0]
                   const position: [number, number] = [post.latitude!, post.longitude!]
                   const isSelected = selectedLocationKey === key
+                  // 获取发帖用户的头像信息
+                  const postUser = post.userId === user.id ? user : (user.partner || { id: '', username: 'TA', avatarUrl: null })
                   return (
                     <Marker 
                       key={key} 
@@ -326,8 +328,16 @@ export default function MapPage() {
                       }}
                     >
                       <Popup>
-                        <div className="min-w-[120px] text-center">
-                          <div className="font-bold text-gray-800">
+                        <div className="min-w-[150px]">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Avatar 
+                              username={postUser.username} 
+                              avatarUrl={postUser.avatarUrl} 
+                              size="sm" 
+                            />
+                            <span className="text-xs text-gray-500">{postUser.username}</span>
+                          </div>
+                          <div className="font-bold text-gray-800 text-center border-t pt-2">
                             {post.location || '打卡地点'}
                           </div>
                         </div>
@@ -363,14 +373,6 @@ export default function MapPage() {
                         ? 'bg-pink-50 ring-2 ring-pink-300' 
                         : 'bg-gray-50'
                     }`}
-                    onMouseEnter={() => {
-                      if (postLocationKey && mapInstance) {
-                        setSelectedLocationKey(postLocationKey)
-                        mapInstance.flyTo([post.latitude!, post.longitude!], 12, {
-                          duration: 0.5
-                        })
-                      }
-                    }}
                     onClick={() => {
                       if (postLocationKey) {
                         setSelectedLocationKey(postLocationKey)
