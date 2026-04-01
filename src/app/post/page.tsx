@@ -202,8 +202,53 @@ export default function PostPage() {
     }
   }
 
+  // 反向地理编码：将经纬度转换为实际地址
+  const fetchAddressFromCoords = async (lat: number, lon: number): Promise<string> => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=zh-CN&addressdetails=1`,
+        {
+          headers: {
+            'Accept-Language': 'zh-CN'
+          }
+        }
+      )
+      const data = await response.json()
+      
+      // 构建中文地址：省 + 市 + 区 + 街道
+      const address = data.address
+      let addressString = ''
+      
+      if (address?.city) {
+        addressString += address.city
+      } else if (address?.town) {
+        addressString += address.town
+      } else if (address?.village) {
+        addressString += address.village
+      }
+      
+      if (address?.district) {
+        addressString += address.district
+      }
+      
+      if (address?.road) {
+        addressString += ' ' + address.road
+      }
+      
+      // 如果解析失败，使用默认名称
+      if (!addressString) {
+        addressString = data.display_name || '我的位置'
+      }
+      
+      return addressString
+    } catch (err) {
+      console.error('地址解析失败:', err)
+      return '我的位置'
+    }
+  }
+
   // 获取当前位置
-  const handleGetCurrentLocation = () => {
+  const handleGetCurrentLocation = async () => {
     if (!navigator.geolocation) {
       setError('浏览器不支持地理定位')
       return
@@ -213,13 +258,18 @@ export default function PostPage() {
     setError('')
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLatitude(position.coords.latitude)
-        setLongitude(position.coords.longitude)
-        setLocation('我的位置') // 用户可手动修改
+      async (position) => {
+        const lat = position.coords.latitude
+        const lon = position.coords.longitude
+        setLatitude(lat)
+        setLongitude(lon)
+        
+        // 获取实际地址
+        const address = await fetchAddressFromCoords(lat, lon)
+        setLocation(address)
         setShowLocationInput(true)
         setGettingLocation(false)
-        setMessage('已获取当前位置，请确认或修改位置名称')
+        setMessage(`已获取位置：${address}`)
       },
       (error) => {
         setGettingLocation(false)
