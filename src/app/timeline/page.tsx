@@ -155,6 +155,28 @@ export default function TimelinePage() {
     return date.toLocaleDateString('zh-CN')
   }
 
+  // 提取地址中的城市部分（用于时间轴页面显示）
+  const extractCity = (fullAddress: string): string => {
+    if (!fullAddress) return ''
+    // 地址格式：省 市 区 街道
+    // 只返回市/区部分
+    const parts = fullAddress.split(/\s+/)
+    if (parts.length === 0) return fullAddress
+    
+    // 如果只有 1 部分，直接返回
+    if (parts.length === 1) return parts[0]
+    
+    // 返回前两部分（省 + 市 或 市 + 区）
+    // 例如："上海市 普陀区 长风新村街道 宁夏路" -> "上海市 普陀区"
+    const cityIndex = parts.findIndex(p => p.includes('市') || p.includes('区'))
+    if (cityIndex !== -1 && cityIndex < parts.length - 1) {
+      return parts.slice(0, cityIndex + 2).join(' ')
+    }
+    
+    // 默认返回前两部分
+    return parts.slice(0, 2).join(' ')
+  }
+
   // 渲染头像组件
   const renderAvatar = (avatarUrl: string | null, name: string, size: string = 'w-8 h-8') => {
     if (avatarUrl) {
@@ -1201,7 +1223,7 @@ export default function TimelinePage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                   </svg>
-                                  {post.location}
+                                  {extractCity(post.location)}
                                 </div>
                               )}
                               
@@ -1269,7 +1291,7 @@ export default function TimelinePage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                   </svg>
-                                  {post.location}
+                                  {extractCity(post.location)}
                                 </div>
                               )}
                               
