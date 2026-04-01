@@ -225,10 +225,16 @@ export default function PostPage() {
       else if (address?.village) parts.push(address.village)
       else if (address?.state) parts.push(address.state)
       
-      // 添加区县信息
-      if (address?.district) parts.push(address.district)
-      else if (address?.suburb) parts.push(address.suburb)
-      else if (address?.county) parts.push(address.county)
+      // 添加区县/街道信息（避免重复城市名）
+      if (address?.suburb && address.suburb !== address.city) {
+        parts.push(address.suburb)
+      }
+      if (address?.district && address.district !== address.city) {
+        parts.push(address.district)
+      }
+      if (address?.county && address.county !== address.city) {
+        parts.push(address.county)
+      }
       
       // 添加道路信息
       if (address?.road) parts.push(address.road)
