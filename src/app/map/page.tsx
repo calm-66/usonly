@@ -1,7 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
+import dynamic from 'next/dynamic'
+
+// 动态导入 react-leaflet 组件，避免 SSR 问题
+const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false })
+const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false })
+const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
+const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
+
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 
@@ -29,7 +36,7 @@ interface User {
   } | null
 }
 
-// 修复 Leaflet 默认图标问题
+// 修复 Leaflet 默认图标问题 - 在客户端创建
 const createDefaultIcon = () => {
   return L.icon({
     iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -44,6 +51,7 @@ const createDefaultIcon = () => {
 
 // 地图中心控制组件
 function MapController({ center }: { center: [number, number] }) {
+  const { useMap } = require('react-leaflet')
   const map = useMap()
   useEffect(() => {
     map.flyTo(center, map.getZoom())
@@ -57,8 +65,10 @@ export default function MapPage() {
   const [loading, setLoading] = useState(true)
   const [selectedUserId, setSelectedUserId] = useState<string>('all')
   const [mapCenter, setMapCenter] = useState<[number, number]>([35.8617, 104.1954]) // 中国中心
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const userData = localStorage.getItem('user')
     if (userData) {
       const parsedUser = JSON.parse(userData)
@@ -216,6 +226,10 @@ export default function MapPage() {
                 <p>还没有位置打卡</p>
                 <p className="text-sm">去发布页添加位置吧～</p>
               </div>
+            </div>
+          ) : !mounted ? (
+            <div className="h-96 flex items-center justify-center text-gray-500">
+              加载地图中...
             </div>
           ) : (
             <div className="h-96">
