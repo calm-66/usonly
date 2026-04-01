@@ -75,6 +75,13 @@ const Avatar = ({
   )
 }
 
+// 获取头像背景颜色（与 Avatar 组件逻辑一致）
+function getAvatarColor(username: string): string {
+  const colorIndex = username.charCodeAt(0) % 6
+  const bgColors = ['bg-pink-500', 'bg-purple-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500']
+  return bgColors[colorIndex]
+}
+
 // 地图中心控制组件
 function MapController({ center }: { center: [number, number] }) {
   const { useMap } = require('react-leaflet')
@@ -104,7 +111,6 @@ export default function MapPage() {
   const [selectedUserId, setSelectedUserId] = useState<string>('all')
   const [mapCenter, setMapCenter] = useState<[number, number]>([35.8617, 104.1954]) // 中国中心
   const [mounted, setMounted] = useState(false)
-  const [defaultIcon, setDefaultIcon] = useState<any>(null)
   // 联动状态：选中的地点 key
   const [selectedLocationKey, setSelectedLocationKey] = useState<string | null>(null)
   // 地图实例引用，用于程序控制地图
@@ -114,24 +120,6 @@ export default function MapPage() {
 
   useEffect(() => {
     setMounted(true)
-    
-    // 在客户端动态导入 leaflet 创建图标
-    const initLeaflet = async () => {
-      const L = await import('leaflet')
-      
-      const icon = L.icon({
-        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-      })
-      setDefaultIcon(icon)
-    }
-    
-    initLeaflet()
 
     const userData = localStorage.getItem('user')
     if (userData) {
@@ -278,7 +266,7 @@ export default function MapPage() {
                 <p className="text-sm">去发布页添加位置吧～</p>
               </div>
             </div>
-          ) : !mounted || !defaultIcon ? (
+          ) : !mounted ? (
             <div className="h-96 flex items-center justify-center text-gray-500">
               加载地图中...
             </div>
@@ -301,11 +289,22 @@ export default function MapPage() {
                   const isSelected = selectedLocationKey === key
                   // 获取发帖用户的头像信息
                   const postUser = post.userId === user.id ? user : (user.partner || { id: '', username: 'TA', avatarUrl: null })
+                  const isMyPost = post.userId === user.id
+                  // 动态创建头像图标
+                  const L = require('leaflet')
+                  const avatarIcon = L.divIcon({
+                    className: 'avatar-marker',
+                    html: postUser.avatarUrl 
+                      ? `<img src="${postUser.avatarUrl}" class="w-8 h-8 rounded-full object-cover border-2 ${isMyPost ? 'border-pink-500' : 'border-purple-500'} shadow-lg" />`
+                      : `<div class="w-8 h-8 rounded-full ${getAvatarColor(postUser.username)} flex items-center justify-center text-white text-xs font-medium border-2 ${isMyPost ? 'border-pink-500' : 'border-purple-500'} shadow-lg">${postUser.username.charAt(0).toUpperCase()}</div>`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                  })
                   return (
                     <Marker 
                       key={key} 
                       position={position} 
-                      icon={defaultIcon}
+                      icon={avatarIcon}
                       eventHandlers={{
                         click: () => {
                           setSelectedLocationKey(key)
