@@ -206,86 +206,92 @@ export default function PostPage() {
 
   // 反向地理编码：将经纬度转换为实际地址
   const fetchAddressFromCoords = async (lat: number, lon: number): Promise<string> => {
+    addDebugLog('开始反向地理编码...')
+    
     try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=zh-CN&addressdetails=1`,
-        {
-          headers: {
-            'Accept-Language': 'zh-CN'
-          }
-        }
-      )
-      const data = await response.json()
+      const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=zh-CN&addressdetails=1`
+      addDebugLog(`请求 URL: ${url}`)
       
-      console.log('=== Nominatim API 响应 ===')
-      console.log('完整数据:', data)
-      console.log('address 对象:', data.address)
+      const response = await fetch(url, {
+        headers: {
+          'Accept-Language': 'zh-CN'
+        }
+      })
+      
+      addDebugLog(`HTTP 状态码：${response.status}`)
+      
+      if (!response.ok) {
+        addDebugLog(`错误：HTTP ${response.status} ${response.statusText}`)
+        return '我的位置'
+      }
+      
+      const data = await response.json()
+      addDebugLog('API 响应成功')
+      addDebugLog(`display_name: ${data.display_name}`)
+      
+      // 记录完整的 address 对象
+      if (data.address) {
+        addDebugLog('--- address 对象内容 ---')
+        for (const [key, value] of Object.entries(data.address)) {
+          addDebugLog(`  ${key}: ${value}`)
+        }
+      }
       
       // 构建中文地址：市 + 区 + 街道
       const address = data.address
       const parts: string[] = []
       
-      console.log('--- 地址解析过程 ---')
-      console.log('city:', address?.city)
-      console.log('town:', address?.town)
-      console.log('village:', address?.village)
-      console.log('state:', address?.state)
-      console.log('district:', address?.district)
-      console.log('suburb:', address?.suburb)
-      console.log('county:', address?.county)
-      console.log('road:', address?.road)
-      
       // 添加省级/市级信息
       if (address?.state) {
-        console.log('添加 state:', address.state)
+        addDebugLog(`添加 state: ${address.state}`)
         parts.push(address.state)
       }
       
       // 添加城市/区级信息（如果是区则添加）
       if (address?.city && address.city !== address.state) {
-        console.log('添加 city:', address.city)
+        addDebugLog(`添加 city: ${address.city}`)
         parts.push(address.city)
       } else if (address?.town) {
-        console.log('添加 town:', address.town)
+        addDebugLog(`添加 town: ${address.town}`)
         parts.push(address.town)
       } else if (address?.village) {
-        console.log('添加 village:', address.village)
+        addDebugLog(`添加 village: ${address.village}`)
         parts.push(address.village)
       }
       
       // 添加区县/街道信息（避免与 state 重复）
       if (address?.suburb && address.suburb !== address.state && address.suburb !== address.city) {
-        console.log('添加 suburb:', address.suburb)
+        addDebugLog(`添加 suburb: ${address.suburb}`)
         parts.push(address.suburb)
       }
       if (address?.district && address.district !== address.state && address.district !== address.city) {
-        console.log('添加 district:', address.district)
+        addDebugLog(`添加 district: ${address.district}`)
         parts.push(address.district)
       }
       if (address?.county && address.county !== address.state && address.county !== address.city) {
-        console.log('添加 county:', address.county)
+        addDebugLog(`添加 county: ${address.county}`)
         parts.push(address.county)
       }
       
       // 添加道路信息
       if (address?.road) {
-        console.log('添加 road:', address.road)
+        addDebugLog(`添加 road: ${address.road}`)
         parts.push(address.road)
       }
       
       // 组合地址
-      let addressString = parts.join(' ')
-      console.log('最终地址 parts:', parts)
-      console.log('最终地址字符串:', addressString)
-      console.log('=== 地址解析结束 ===')
+      const addressString = parts.join(' ')
+      addDebugLog(`组合地址：${addressString}`)
       
       // 如果解析失败，使用默认名称
       if (!addressString) {
-        addressString = data.display_name || '我的位置'
+        addDebugLog('地址解析为空，使用 display_name')
+        return data.display_name || '我的位置'
       }
       
       return addressString
-    } catch (err) {
+    } catch (err: any) {
+      addDebugLog(`反向地理编码异常：${err.message}`)
       console.error('地址解析失败:', err)
       return '我的位置'
     }
