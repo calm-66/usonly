@@ -1,0 +1,3 @@
+- 先确保本地preview的改变都已经保存和提交
+- 在本地，把preview合并到main
+- 把本地main推送到github main
