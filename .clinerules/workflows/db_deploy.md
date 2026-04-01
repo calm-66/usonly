@@ -1,0 +1,1 @@
+比较preview分支和main分支数据库定义，在preview分支，目录/useful_scripts/下生成sql迁移脚本。
