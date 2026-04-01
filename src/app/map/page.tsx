@@ -177,20 +177,35 @@ export default function MapPage() {
   const myPostsCount = posts.filter(p => p.userId === user.id).length
   const partnerPostsCount = posts.filter(p => p.userId !== user.id).length
 
+  // 按地点分组（基于所有帖子，不受筛选影响）
+  const allLocationsMap = new Map<string, Post[]>()
+  posts.forEach(post => {
+    const key = `${post.latitude}-${post.longitude}`
+    if (!allLocationsMap.has(key)) {
+      allLocationsMap.set(key, [])
+    }
+    allLocationsMap.get(key)!.push(post)
+  })
+
   // 筛选帖子
   const filteredPosts = selectedUserId === 'all' 
     ? posts 
     : posts.filter(p => p.userId === selectedUserId)
 
-  // 按地点分组
-  const locationsMap = new Map<string, Post[]>()
-  filteredPosts.forEach(post => {
-    const key = `${post.latitude}-${post.longitude}`
-    if (!locationsMap.has(key)) {
-      locationsMap.set(key, [])
-    }
-    locationsMap.get(key)!.push(post)
-  })
+  // 按地点分组（用于地图显示）
+  const locationsMap = selectedUserId === 'all'
+    ? allLocationsMap
+    : (() => {
+        const map = new Map<string, Post[]>()
+        filteredPosts.forEach(post => {
+          const key = `${post.latitude}-${post.longitude}`
+          if (!map.has(key)) {
+            map.set(key, [])
+          }
+          map.get(key)!.push(post)
+        })
+        return map
+      })()
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100">
@@ -240,13 +255,18 @@ export default function MapPage() {
         </button>
         
         {/* 地点数 - 显示两人的头像 */}
-        <div className="bg-white rounded-xl shadow-sm p-3 text-center">
+        <button
+          onClick={() => setSelectedUserId('all')}
+          className={`bg-white rounded-xl shadow-sm p-3 text-center transition ${
+            selectedUserId === 'all' ? 'ring-2 ring-blue-500' : ''
+          }`}
+        >
           <div className="flex justify-center gap-1 mb-1">
             <Avatar username={user.username} avatarUrl={user.avatarUrl} size="sm" />
             {user.partner && <Avatar username={user.partner.username} avatarUrl={user.partner.avatarUrl} size="sm" />}
           </div>
-          <div className="text-lg font-bold text-blue-500">{locationsMap.size}</div>
-        </div>
+          <div className="text-lg font-bold text-blue-500">{allLocationsMap.size}</div>
+        </button>
       </div>
 
         {/* 地图容器 */}
