@@ -374,13 +374,12 @@ export default function MapPage() {
                         : 'bg-gray-50'
                     }`}
                     onClick={() => {
-                      if (postLocationKey) {
+                      if (postLocationKey && mapInstance) {
                         setSelectedLocationKey(postLocationKey)
                         // 地图飞到该位置
-                        const mapElement = document.querySelector('.leaflet-container')
-                        if (mapElement) {
-                          mapElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                        }
+                        mapInstance.flyTo([post.latitude!, post.longitude!], 12, {
+                          duration: 0.5
+                        })
                       }
                     }}
                   >
