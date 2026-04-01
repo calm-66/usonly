@@ -9,9 +9,6 @@ const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLaye
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false })
 const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false })
 
-import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
-
 interface Post {
   id: string
   date: string
@@ -36,19 +33,6 @@ interface User {
   } | null
 }
 
-// 修复 Leaflet 默认图标问题 - 在客户端创建
-const createDefaultIcon = () => {
-  return L.icon({
-    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-  })
-}
-
 // 地图中心控制组件
 function MapController({ center }: { center: [number, number] }) {
   const { useMap } = require('react-leaflet')
@@ -66,9 +50,30 @@ export default function MapPage() {
   const [selectedUserId, setSelectedUserId] = useState<string>('all')
   const [mapCenter, setMapCenter] = useState<[number, number]>([35.8617, 104.1954]) // 中国中心
   const [mounted, setMounted] = useState(false)
+  const [defaultIcon, setDefaultIcon] = useState<any>(null)
 
   useEffect(() => {
     setMounted(true)
+    
+    // 在客户端动态导入 leaflet
+    const initLeaflet = async () => {
+      const L = await import('leaflet')
+      await import('leaflet/dist/leaflet.css')
+      
+      const icon = L.icon({
+        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      })
+      setDefaultIcon(icon)
+    }
+    
+    initLeaflet()
+
     const userData = localStorage.getItem('user')
     if (userData) {
       const parsedUser = JSON.parse(userData)
@@ -227,7 +232,7 @@ export default function MapPage() {
                 <p className="text-sm">去发布页添加位置吧～</p>
               </div>
             </div>
-          ) : !mounted ? (
+          ) : !mounted || !defaultIcon ? (
             <div className="h-96 flex items-center justify-center text-gray-500">
               加载地图中...
             </div>
@@ -247,7 +252,7 @@ export default function MapPage() {
                   const post = postsAtLocation[0]
                   const position: [number, number] = [post.latitude!, post.longitude!]
                   return (
-                    <Marker key={key} position={position} icon={createDefaultIcon()}>
+                    <Marker key={key} position={position} icon={defaultIcon}>
                       <Popup>
                         <div className="min-w-[200px]">
                           <div className="font-bold text-gray-800 mb-2">
