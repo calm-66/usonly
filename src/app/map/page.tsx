@@ -29,30 +29,26 @@ interface User {
   id: string
   username: string
   email: string
+  avatarUrl?: string | null
   partnerId: string | null
   partner?: {
     id: string
     username: string
     email: string
+    avatarUrl?: string | null
   } | null
 }
 
-// 生成头像颜色
-const getColorForUser = (userId: string) => {
-  const colors = [
-    'from-pink-400 to-pink-600',
-    'from-purple-400 to-purple-600',
-    'from-blue-400 to-blue-600',
-    'from-green-400 to-green-600',
-    'from-yellow-400 to-yellow-600',
-    'from-red-400 to-red-600',
-  ]
-  const index = userId.charCodeAt(0) % colors.length
-  return colors[index]
-}
-
-// 头像组件
-const Avatar = ({ username, size = 'md' }: { username: string; size?: 'sm' | 'md' | 'lg' }) => {
+// 头像组件 - 优先使用 avatarUrl，没有则显示首字母
+const Avatar = ({ 
+  username, 
+  avatarUrl,
+  size = 'md' 
+}: { 
+  username: string
+  avatarUrl?: string | null
+  size?: 'sm' | 'md' | 'lg' 
+}) => {
   const firstChar = username.charAt(0)
   const sizeClasses = {
     sm: 'w-6 h-6 text-xs',
@@ -61,6 +57,16 @@ const Avatar = ({ username, size = 'md' }: { username: string; size?: 'sm' | 'md
   }
   const colorIndex = username.charCodeAt(0) % 6
   const bgColors = ['bg-pink-500', 'bg-purple-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500']
+  
+  if (avatarUrl) {
+    return (
+      <img
+        src={avatarUrl}
+        alt={username}
+        className={`${sizeClasses[size]} rounded-full object-cover`}
+      />
+    )
+  }
   
   return (
     <div className={`${sizeClasses[size]} ${bgColors[colorIndex]} rounded-full flex items-center justify-center text-white font-medium`}>
@@ -206,11 +212,11 @@ export default function MapPage() {
             selectedUserId === user.id ? 'ring-2 ring-pink-500' : ''
           }`}
         >
-          <div className="flex justify-center mb-1">
-            <Avatar username={user.username} size="sm" />
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <Avatar username={user.username} avatarUrl={user.avatarUrl} size="sm" />
+            <span className="text-sm text-gray-600 truncate">{user.username}</span>
           </div>
           <div className="text-lg font-bold text-pink-500">{myPostsCount}</div>
-          <div className="text-xs text-gray-500 truncate">{user.username}</div>
         </button>
         
         {/* TA 的打卡 */}
@@ -221,25 +227,26 @@ export default function MapPage() {
             selectedUserId === user.partnerId ? 'ring-2 ring-purple-500' : ''
           }`}
         >
-          <div className="flex justify-center mb-1">
+          <div className="flex items-center justify-center gap-2 mb-1">
             {user.partner ? (
-              <Avatar username={user.partner.username} size="sm" />
+              <>
+                <Avatar username={user.partner.username} avatarUrl={user.partner.avatarUrl} size="sm" />
+                <span className="text-sm text-gray-600 truncate">{user.partner.username}</span>
+              </>
             ) : (
               <div className="w-6 h-6 rounded-full bg-gray-300" />
             )}
           </div>
           <div className="text-lg font-bold text-purple-500">{partnerPostsCount}</div>
-          <div className="text-xs text-gray-500 truncate">{user.partner?.username || '暂无'}</div>
         </button>
         
         {/* 地点数 - 显示两人的头像 */}
         <div className="bg-white rounded-xl shadow-sm p-3 text-center">
           <div className="flex justify-center gap-1 mb-1">
-            <Avatar username={user.username} size="sm" />
-            {user.partner && <Avatar username={user.partner.username} size="sm" />}
+            <Avatar username={user.username} avatarUrl={user.avatarUrl} size="sm" />
+            {user.partner && <Avatar username={user.partner.username} avatarUrl={user.partner.avatarUrl} size="sm" />}
           </div>
           <div className="text-lg font-bold text-blue-500">{locationsMap.size}</div>
-          <div className="text-xs text-gray-500">地点数</div>
         </div>
       </div>
 
@@ -318,7 +325,7 @@ export default function MapPage() {
         {/* 打卡列表 */}
         {filteredPosts.length > 0 && (
           <div className="bg-white rounded-xl shadow-sm p-4">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">打卡记录</h2>
+            <h2 className="text-lg font-bold text-gray-800 mb-4">回忆</h2>
             <div className="space-y-3 max-h-64 overflow-y-auto">
               {filteredPosts.map((post) => (
                 <div key={post.id} className="p-3 bg-gray-50 rounded-lg">
@@ -326,14 +333,12 @@ export default function MapPage() {
                     {/* 头像 */}
                     <Avatar 
                       username={post.userId === user.id ? user.username : user.partner?.username || 'TA'} 
+                      avatarUrl={post.userId === user.id ? user.avatarUrl : user.partner?.avatarUrl}
                       size="md" 
                     />
                     <div className="flex-1 min-w-0">
-                      {/* 用户名和日期 */}
+                      {/* 日期 */}
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-medium text-gray-700">
-                          {post.userId === user.id ? user.username : user.partner?.username || 'TA'}
-                        </span>
                         <span className="text-xs text-gray-400">{post.date}</span>
                       </div>
                       {/* 位置 */}
