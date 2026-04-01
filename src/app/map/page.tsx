@@ -299,8 +299,8 @@ export default function MapPage() {
                 scrollWheelZoom={true}
               >
                 <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://maponline0.bdimg.com/tile/?qt=tile&x={x}&y={y}&z={z}&dims=0&scale=1&styles=pl&udt=1"
+                  attribution='&copy; 百度地图'
                 />
                 <MapInstanceSetter onMapReady={setMapInstance} />
                 {Array.from(locationsMap.entries()).map(([key, postsAtLocation]) => {
