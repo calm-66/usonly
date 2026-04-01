@@ -299,8 +299,9 @@ export default function MapPage() {
                 scrollWheelZoom={true}
               >
                 <TileLayer
-                  url="https://maponline0.bdimg.com/tile/?qt=tile&x={x}&y={y}&z={z}&dims=0&scale=1&styles=pl&udt=1"
-                  attribution='&copy; 百度地图'
+                  url="https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}"
+                  subdomains={['1', '2', '3', '4']}
+                  attribution='&copy; 高德地图'
                 />
                 <MapInstanceSetter onMapReady={setMapInstance} />
                 {Array.from(locationsMap.entries()).map(([key, postsAtLocation]) => {
