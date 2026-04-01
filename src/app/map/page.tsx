@@ -283,7 +283,7 @@ export default function MapPage() {
               加载地图中...
             </div>
           ) : (
-            <div className="h-96">
+            <div className="h-64">
               <MapContainer
                 center={mapCenter}
                 zoom={5}
