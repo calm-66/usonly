@@ -295,7 +295,9 @@ export default function MapPage() {
                   const avatarIcon = L.divIcon({
                     className: 'avatar-marker',
                     html: postUser.avatarUrl 
-                      ? `<img src="${postUser.avatarUrl}" class="w-8 h-8 rounded-full object-cover border-2 ${isMyPost ? 'border-pink-500' : 'border-purple-500'} shadow-lg" />`
+                      ? `<div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; border: 2px solid ${isMyPost ? '#ec4899' : '#a855f8'}; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                           <img src="${postUser.avatarUrl}" style="width: 100%; height: 100%; object-fit: cover;" />
+                         </div>`
                       : `<div class="w-8 h-8 rounded-full ${getAvatarColor(postUser.username)} flex items-center justify-center text-white text-xs font-medium border-2 ${isMyPost ? 'border-pink-500' : 'border-purple-500'} shadow-lg">${postUser.username.charAt(0).toUpperCase()}</div>`,
                     iconSize: [32, 32],
                     iconAnchor: [16, 16],
