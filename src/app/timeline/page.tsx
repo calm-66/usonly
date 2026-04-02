@@ -1157,7 +1157,7 @@ export default function TimelinePage() {
                       </div>
                     )}
                     {post.text && (
-                      <p className="text-gray-700 whitespace-pre-wrap">{post.text}</p>
+                      <p className="text-gray-700 whitespace-pre-wrap break-words">{post.text}</p>
                     )}
                   </div>
                 </div>
@@ -1223,7 +1223,7 @@ export default function TimelinePage() {
                                 </div>
                               )}
                               {post.text && (
-                                <p className="text-sm text-gray-700 whitespace-pre-wrap">{post.text}</p>
+                                <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{post.text}</p>
                               )}
                               {post.location && (
                                 <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
@@ -1295,7 +1295,7 @@ export default function TimelinePage() {
                                 </div>
                               )}
                               {post.text && (
-                                <p className="text-sm text-gray-700 whitespace-pre-wrap">{post.text}</p>
+                                <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{post.text}</p>
                               )}
                               {post.location && (
                                 <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
