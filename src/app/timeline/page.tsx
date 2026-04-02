@@ -1203,10 +1203,14 @@ export default function TimelinePage() {
                           day.myPosts.map((post) => (
                             <div key={post.id} className="bg-pink-50 rounded-lg p-3 border border-pink-100">
                               <div className="flex justify-between items-start mb-2">
-                                {post.title && (
-                                  <span className="text-sm font-medium text-gray-700">{post.title}</span>
+                                {post.title ? (
+                                  <>
+                                    <span className="text-sm font-medium text-gray-700">{post.title}</span>
+                                    <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
+                                  </>
+                                ) : (
+                                  <span className="text-xs text-gray-500 ml-auto">{formatTime(post.createdAt)}</span>
                                 )}
-                                <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
                               </div>
                               {post.imageUrl && (
                                 <div className="mb-2">
@@ -1271,10 +1275,14 @@ export default function TimelinePage() {
                           day.partnerPosts.map((post) => (
                             <div key={post.id} className="bg-purple-50 rounded-lg p-3 border border-purple-100">
                               <div className="flex justify-between items-start mb-2">
-                                {post.title && (
-                                  <span className="text-sm font-medium text-gray-700">{post.title}</span>
+                                {post.title ? (
+                                  <>
+                                    <span className="text-sm font-medium text-gray-700">{post.title}</span>
+                                    <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
+                                  </>
+                                ) : (
+                                  <span className="text-xs text-gray-500 ml-auto">{formatTime(post.createdAt)}</span>
                                 )}
-                                <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
                               </div>
                               {post.imageUrl && (
                                 <div className="mb-2">
