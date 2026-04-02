@@ -648,14 +648,17 @@ export default function TimelinePage() {
       return []
     }
     
-    // 获取最新的帖子日期作为基准时间
-    const latestPostDate = posts.reduce((latest, post) => {
-      const postDate = new Date(post.date + 'T00:00:00')
-      return postDate > latest ? postDate : latest
-    }, new Date(0))
+    // 获取最新的帖子日期字符串（格式：YYYY-MM-DD）
+    const latestDateStr = posts.reduce((latest, post) => {
+      return post.date > latest ? post.date : latest
+    }, '')
     
-    // 将最新帖子时间设置为当天的 23:59:59
-    latestPostDate.setHours(23, 59, 59, 999)
+    // 创建基准日期对象，设置为当天的 23:59:59
+    // 使用日期字符串直接创建，避免时区问题
+    const year = parseInt(latestDateStr.split('-')[0])
+    const month = parseInt(latestDateStr.split('-')[1]) - 1 // 月份从 0 开始
+    const day = parseInt(latestDateStr.split('-')[2])
+    const latestPostDate = new Date(year, month, day, 23, 59, 59, 999)
     
     let cutoffDate = new Date(0)
     
@@ -669,7 +672,12 @@ export default function TimelinePage() {
     
     // 过滤出日期在 cutoffDate 之后的帖子
     return posts.filter(post => {
-      const postDate = new Date(post.date + 'T00:00:00')
+      // 同样使用本地时间创建日期对象
+      const postParts = post.date.split('-')
+      const postYear = parseInt(postParts[0])
+      const postMonth = parseInt(postParts[1]) - 1
+      const postDay = parseInt(postParts[2])
+      const postDate = new Date(postYear, postMonth, postDay, 0, 0, 0, 0)
       return postDate >= cutoffDate
     })
   }
