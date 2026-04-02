@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import HTMLExportModal from '@/components/HTMLExportModal'
+import { uploadImage } from '@/lib/imageUpload'
 
 interface User {
   id: string
@@ -23,8 +24,6 @@ interface User {
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   
   // 用户名编辑相关状态
@@ -179,26 +178,9 @@ export default function ProfilePage() {
     }
   }
 
-  // 处理头像选择
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert('图片大小不能超过 5MB')
-        return
-      }
-      setAvatarFile(file)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
   // 上传头像
-  const handleUploadAvatar = async () => {
-    if (!avatarFile || !user?.id) {
+  const handleUploadAvatar = async (imageUrl: string) => {
+    if (!user?.id) {
       alert('用户信息未加载，请刷新页面后重试')
       return
     }
@@ -217,22 +199,6 @@ export default function ProfilePage() {
       }
       
       const currentUser = data.user
-      
-      const formData = new FormData()
-      formData.append('image', avatarFile)
-
-      // 使用 ImgBB API 上传图片
-      const imgbbRes = await fetch(`https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`, {
-        method: 'POST',
-        body: formData,
-      })
-      const imgbbData = await imgbbRes.json()
-
-      if (!imgbbData.success) {
-        throw new Error('图片上传失败：' + (imgbbData.error?.message || '未知错误'))
-      }
-
-      const imageUrl = imgbbData.data.url
 
       // 更新用户头像
       const updateRes = await fetch('/api/auth/me', {
@@ -512,8 +478,9 @@ export default function ProfilePage() {
                 <input
                   type="file"
                   accept="image/*"
+                  capture="user"
                   className="hidden"
-                  onChange={handleAvatarChange}
+                  id="avatar-input"
                 />
               </label>
             </div>
@@ -567,39 +534,52 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* 头像预览和操作按钮 */}
-          {avatarPreview && (
-            <div className="mt-4 pt-4 border-t flex items-center gap-3">
-              <img src={avatarPreview} alt="预览" className="w-12 h-12 rounded-full object-cover" />
-              <div className="flex gap-2">
+          {/* 头像上传组件 */}
+          <div className="mt-4 pt-4 border-t">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              更换头像
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              capture="user"
+              className="hidden"
+              id="avatar-upload"
+              onChange={async (e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                
+                setUploading(true)
+                try {
+                  const imageUrl = await uploadImage(file)
+                  await handleUploadAvatar(imageUrl)
+                } catch (error: any) {
+                  alert('上传失败：' + (error.message || '请重试'))
+                } finally {
+                  setUploading(false)
+                }
+              }}
+            />
+            <div className="flex items-center gap-3">
+              <label
+                htmlFor="avatar-upload"
+                className="px-4 py-2 bg-pink-500 text-white text-sm rounded-full hover:bg-pink-600 cursor-pointer disabled:opacity-50"
+              >
+                {uploading ? '上传中...' : '选择新头像'}
+              </label>
+              {user.avatarUrl && (
                 <button
-                  onClick={handleUploadAvatar}
-                  disabled={uploading}
-                  className="px-4 py-2 bg-pink-500 text-white text-sm rounded-full hover:bg-pink-600 disabled:opacity-50"
-                >
-                  {uploading ? '上传中...' : '确认更换'}
-                </button>
-                <button
-                  onClick={() => {
-                    setAvatarFile(null)
-                    setAvatarPreview(null)
-                  }}
+                  onClick={handleRemoveAvatar}
                   className="px-4 py-2 bg-gray-200 text-gray-700 text-sm rounded-full hover:bg-gray-300"
                 >
-                  取消
+                  移除头像
                 </button>
-              </div>
+              )}
             </div>
-          )}
-
-          {!user.avatarUrl && !avatarPreview && (
-            <button
-              onClick={handleRemoveAvatar}
-              className="mt-3 text-sm text-gray-500 hover:text-pink-600"
-            >
-              移除头像
-            </button>
-          )}
+            <p className="text-xs text-gray-500 mt-2">
+              支持 JPG、PNG、GIF、WebP 格式，最大 5MB（自动压缩）
+            </p>
+          </div>
         </div>
 
         {/* 配对状态卡片 */}
