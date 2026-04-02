@@ -88,6 +88,9 @@ export default function TimelinePage() {
   const [activeTab, setActiveTab] = useState<'mine' | 'partner' | 'both'>('both')
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   
+  // 控制"我们的"标签页是否显示配对天数
+  const [showPairDaysInTab, setShowPairDaysInTab] = useState(false)
+  
   // 评论相关状态
   const [comments, setComments] = useState<Record<string, Comment[]>>({})
   const [newComment, setNewComment] = useState<string>('')
@@ -1149,16 +1152,6 @@ export default function TimelinePage() {
         </div>
       </header>
 
-      {/* 配对天数显示 */}
-      {showPairDays && (
-        <div className="max-w-3xl mx-auto px-4 mb-2">
-          <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg shadow-sm p-3 text-center">
-            <span className="text-sm text-gray-600">💕 已配对</span>
-            <span className="text-2xl font-bold text-pink-600 mx-2">{pairDays}</span>
-            <span className="text-sm text-gray-600">天</span>
-          </div>
-        </div>
-      )}
 
       {/* 日期筛选弹窗 */}
       {showDateFilter && (
@@ -1372,15 +1365,20 @@ export default function TimelinePage() {
           {/* 配对后才显示另外两个标签 */}
           {user.partnerId && user.partner && (
             <>
-              {/* 我们的标签 - 显示双方头像 + 心形符号 */}
+              {/* 我们的标签 - 显示双方头像 + 心形符号，点击可切换显示天数 */}
               <button
-                onClick={() => setActiveTab('both')}
+                onClick={() => {
+                  setActiveTab('both')
+                  setShowPairDaysInTab(!showPairDaysInTab)
+                }}
                 className={`flex items-center justify-center gap-1 py-2 text-sm font-medium rounded-md transition ${
                   activeTab === 'both' ? 'bg-pink-100 text-pink-600' : 'text-gray-500'
                 } flex-1`}
               >
                 {renderTabAvatar(user.avatarUrl, user.username)}
-                <span className="text-pink-500">❤️</span>
+                <span className="text-pink-500">
+                  ❤️{showPairDaysInTab && showPairDays ? ` ${pairDays}天` : ''}
+                </span>
                 {renderTabAvatar(user.partner.avatarUrl, user.partner.username)}
               </button>
               
