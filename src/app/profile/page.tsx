@@ -21,7 +21,9 @@ interface User {
     username: string
     email: string
     avatarUrl: string | null
+    pairedAt?: string | null
   } | null
+  pairedAt?: string | null
   breakupInitiated?: boolean
   breakupAt?: string | null
   archivedPartnerId?: string | null
