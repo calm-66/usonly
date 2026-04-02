@@ -1132,12 +1132,16 @@ export default function TimelinePage() {
                 <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
                   <div className="p-4">
                     <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <span className="text-xs text-gray-400">
-                          {new Date(post.date).toLocaleDateString('zh-CN')}
-                        </span>
-                      </div>
-                      <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
+                      {post.title ? (
+                        <>
+                          <span className="text-xs text-gray-400">
+                            {new Date(post.date).toLocaleDateString('zh-CN')}
+                          </span>
+                          <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
+                        </>
+                      ) : (
+                        <span className="text-xs text-gray-500 ml-auto">{formatTime(post.createdAt)}</span>
+                      )}
                     </div>
                     {post.title && (
                       <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
