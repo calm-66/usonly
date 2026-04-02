@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       }),
     ])
 
-    // 获取更新后的用户信息（包含伴侣详情）
+    // 获取更新后的用户信息（包含伴侣详情和配对时间）
     const updatedUser = await prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -97,6 +97,7 @@ export async function POST(request: NextRequest) {
             username: true,
             email: true,
             avatarUrl: true,
+            pairedAt: true,
           },
         },
       },

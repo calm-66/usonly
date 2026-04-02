@@ -112,6 +112,9 @@ export default function TimelinePage() {
   const [timeFilter, setTimeFilter] = useState<'all' | '7days' | '30days' | '90days'>('all')
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([])
   const [filteredPartnerPosts, setFilteredPartnerPosts] = useState<Post[]>([])
+  
+  // 日期筛选弹窗状态
+  const [showDateFilter, setShowDateFilter] = useState(false)
 
   // 生成默认头像颜色（根据用户 ID 哈希）
   const getDefaultAvatarColor = (id: string): string => {
@@ -940,6 +943,22 @@ export default function TimelinePage() {
         <div className="max-w-3xl mx-auto px-4 py-3 flex relative">
           <h1 className="text-xl font-bold text-gray-800 absolute left-1/2 -translate-x-1/2">UsOnly</h1>
           <div className="flex items-center ml-auto">
+            {/* 漏斗筛选图标 - 只在已配对时显示 */}
+            {user?.partnerId && (
+              <button
+                onClick={() => setShowDateFilter(true)}
+                className="p-1 hover:bg-gray-100 rounded-full transition mr-2"
+                title="时间筛选"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                {timeFilter !== 'all' && (
+                  <span className="absolute top-2 right-8 w-2 h-2 bg-pink-500 rounded-full"></span>
+                )}
+              </button>
+            )}
+            
             {/* 发布按钮 */}
             <a
               href="/post"
@@ -1074,42 +1093,107 @@ export default function TimelinePage() {
         </div>
       )}
 
-      {/* 时间筛选控件 */}
-      {user?.partnerId && (
-        <div className="max-w-3xl mx-auto px-4 mb-4">
-          <div className="flex bg-white rounded-lg shadow-sm p-1">
-            <button
-              onClick={() => setTimeFilter('all')}
-              className={`flex-1 py-2 text-xs font-medium rounded-md transition ${
-                timeFilter === 'all' ? 'bg-pink-100 text-pink-600' : 'text-gray-500 hover:bg-gray-50'
-              }`}
-            >
-              全部
-            </button>
-            <button
-              onClick={() => setTimeFilter('7days')}
-              className={`flex-1 py-2 text-xs font-medium rounded-md transition ${
-                timeFilter === '7days' ? 'bg-pink-100 text-pink-600' : 'text-gray-500 hover:bg-gray-50'
-              }`}
-            >
-              最近 7 天
-            </button>
-            <button
-              onClick={() => setTimeFilter('30days')}
-              className={`flex-1 py-2 text-xs font-medium rounded-md transition ${
-                timeFilter === '30days' ? 'bg-pink-100 text-pink-600' : 'text-gray-500 hover:bg-gray-50'
-              }`}
-            >
-              最近 30 天
-            </button>
-            <button
-              onClick={() => setTimeFilter('90days')}
-              className={`flex-1 py-2 text-xs font-medium rounded-md transition ${
-                timeFilter === '90days' ? 'bg-pink-100 text-pink-600' : 'text-gray-500 hover:bg-gray-50'
-              }`}
-            >
-              最近 90 天
-            </button>
+      {/* 日期筛选弹窗 */}
+      {showDateFilter && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowDateFilter(false)}
+        >
+          <div
+            className="bg-white w-full max-w-sm rounded-xl p-6 animate-slideUp"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-800">时间筛选</h3>
+              <button
+                onClick={() => setShowDateFilter(false)}
+                className="text-gray-400 hover:text-gray-600 text-xl"
+              >
+                ×
+              </button>
+            </div>
+            <div className="space-y-2">
+              <button
+                onClick={() => {
+                  setTimeFilter('all')
+                  setShowDateFilter(false)
+                }}
+                className={`w-full py-3 px-4 rounded-lg text-left flex items-center justify-between ${
+                  timeFilter === 'all' 
+                    ? 'bg-pink-100 text-pink-600' 
+                    : 'hover:bg-gray-50'
+                }`}
+              >
+                <span className="font-medium">全部</span>
+                {timeFilter === 'all' && (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+              <button
+                onClick={() => {
+                  setTimeFilter('7days')
+                  setShowDateFilter(false)
+                }}
+                className={`w-full py-3 px-4 rounded-lg text-left flex items-center justify-between ${
+                  timeFilter === '7days' 
+                    ? 'bg-pink-100 text-pink-600' 
+                    : 'hover:bg-gray-50'
+                }`}
+              >
+                <span className="font-medium">最近 7 天</span>
+                {timeFilter === '7days' && (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+              <button
+                onClick={() => {
+                  setTimeFilter('30days')
+                  setShowDateFilter(false)
+                }}
+                className={`w-full py-3 px-4 rounded-lg text-left flex items-center justify-between ${
+                  timeFilter === '30days' 
+                    ? 'bg-pink-100 text-pink-600' 
+                    : 'hover:bg-gray-50'
+                }`}
+              >
+                <span className="font-medium">最近 30 天</span>
+                {timeFilter === '30days' && (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+              <button
+                onClick={() => {
+                  setTimeFilter('90days')
+                  setShowDateFilter(false)
+                }}
+                className={`w-full py-3 px-4 rounded-lg text-left flex items-center justify-between ${
+                  timeFilter === '90days' 
+                    ? 'bg-pink-100 text-pink-600' 
+                    : 'hover:bg-gray-50'
+                }`}
+              >
+                <span className="font-medium">最近 90 天</span>
+                {timeFilter === '90days' && (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+            </div>
+            <div className="mt-4 pt-4 border-t">
+              <button
+                onClick={() => setShowDateFilter(false)}
+                className="w-full py-2 text-gray-500 hover:text-gray-700"
+              >
+                取消
+              </button>
+            </div>
           </div>
         </div>
       )}
