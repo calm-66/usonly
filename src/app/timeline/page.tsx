@@ -640,8 +640,15 @@ export default function TimelinePage() {
 
   // 根据筛选条件过滤帖子
   const filterPostsByDate = (posts: Post[]): Post[] => {
+    if (timeFilter === 'all') {
+      return posts // 不过滤，返回所有帖子
+    }
+    
     const now = new Date()
-    let cutoffDate = new Date(0) // 默认不过滤
+    // 将当前时间设置为当天的 23:59:59，确保比较的是日期而不是具体时间
+    now.setHours(23, 59, 59, 999)
+    
+    let cutoffDate = new Date(0)
     
     if (timeFilter === '7days') {
       cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
@@ -651,7 +658,11 @@ export default function TimelinePage() {
       cutoffDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
     }
     
-    return posts.filter(post => new Date(post.date) >= cutoffDate)
+    // 过滤出日期在 cutoffDate 之后的帖子
+    return posts.filter(post => {
+      const postDate = new Date(post.date + 'T00:00:00') // 确保日期解析正确
+      return postDate >= cutoffDate
+    })
   }
 
   // 应用筛选
@@ -660,11 +671,15 @@ export default function TimelinePage() {
     setFilteredPartnerPosts(filterPostsByDate(partnerPosts))
   }, [posts, partnerPosts, timeFilter])
 
-  // 按日期分组
+  // 按日期分组（使用过滤后的数据）
   const groupByDate = (): DayPosts[] => {
+    // 根据 activeTab 决定使用哪组数据
+    let myPostsToUse = filteredPosts
+    let partnerPostsToUse = filteredPartnerPosts
+    
     const allPosts = [
-      ...posts.map(p => ({ ...p, owner: '我' as const })),
-      ...partnerPosts.map(p => ({ ...p, owner: 'TA' as const })),
+      ...myPostsToUse.map(p => ({ ...p, owner: '我' as const })),
+      ...partnerPostsToUse.map(p => ({ ...p, owner: 'TA' as const })),
     ]
 
     const grouped: Record<string, { myPosts: Post[]; partnerPosts: Post[]; title: string | null }> = {}
