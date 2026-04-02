@@ -114,7 +114,7 @@ export default function ImageUploader({
     onChange: (e: ChangeEvent<HTMLInputElement>) => void
     className: string
     disabled: boolean
-    capture?: string
+    capture?: 'user' | 'environment'
   } = {
     type: 'file',
     accept,
