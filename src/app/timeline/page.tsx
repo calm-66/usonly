@@ -1461,9 +1461,9 @@ export default function TimelinePage() {
             ) : (
               <>
                 {groupByDate().map((day) => (
-                  <div key={day.date}>
+                  <div key={day.date} className="border-2 border-pink-200 rounded-xl p-4 bg-white/50 backdrop-blur-sm shadow-sm">
                     {/* 日期头部 */}
-                    <div className="bg-gradient-to-r from-pink-50 to-purple-50 px-4 py-2 rounded-lg mb-2">
+                    <div className="bg-gradient-to-r from-pink-50 to-purple-50 px-4 py-2 rounded-lg mb-3">
                       <span className="text-sm font-bold text-gray-800">
                         {formatDate(day.date)}
                       </span>
@@ -1471,7 +1471,7 @@ export default function TimelinePage() {
                     {/* 帖子列表 */}
                     <div className="space-y-3">
                       {day.myPosts.length > 0 ? day.myPosts.map((post) => (
-                        <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
                           <div className="p-4">
                             {post.title && (
                               <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
@@ -1495,7 +1495,7 @@ export default function TimelinePage() {
                           </div>
                         </div>
                       )) : day.partnerPosts.map((post) => (
-                        <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
                           <div className="p-4">
                             {post.title && (
                               <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
