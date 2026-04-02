@@ -1377,7 +1377,7 @@ export default function TimelinePage() {
               >
                 {renderTabAvatar(user.avatarUrl, user.username)}
                 <span className="text-pink-500">
-                  {showPairDaysInTab && showPairDays ? `❤️ ${pairDays}天 ❤️` : '❤️❤️'}
+                  {showPairDaysInTab && showPairDays ? `❤️ ${pairDays}天 ❤️` : '❤️'}
                 </span>
                 {renderTabAvatar(user.partner.avatarUrl, user.partner.username)}
               </button>
