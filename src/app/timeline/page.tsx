@@ -1433,52 +1433,35 @@ export default function TimelinePage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {displayPosts.map((post, index) => {
-                  // 检查是否需要显示日期头部（第一个帖子或日期变化时）
-                  const prevPost = index > 0 ? displayPosts[index - 1] : null
-                  const showDateHeader = !prevPost || prevPost.date !== post.date
-                  
-                  return (
-                    <div key={post.id}>
-                      {showDateHeader && (
-                        <div className="bg-gradient-to-r from-pink-50 to-purple-50 px-4 py-2 rounded-lg mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-gray-800">
-                              {formatDate(post.date)}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              ({new Date(post.date + 'T00:00:00').toLocaleDateString('zh-CN')})
-                            </span>
-                          </div>
+                {displayPosts.map((post) => (
+                  <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <div className="p-4">
+                      {/* 日期在左上角 */}
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-sm font-bold text-gray-700">
+                          {formatDate(post.date)} ({new Date(post.date + 'T00:00:00').toLocaleDateString('zh-CN')})
+                        </span>
+                        <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
+                      </div>
+                      {post.title && (
+                        <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
+                      )}
+                      {post.imageUrl && (
+                        <div className="mb-3">
+                          <img
+                            src={post.imageUrl}
+                            alt="分享图片"
+                            className="w-full h-48 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
+                            onClick={() => setSelectedImage(post.imageUrl!)}
+                          />
                         </div>
                       )}
-                      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-                        <div className="p-4">
-                          {post.title && (
-                            <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
-                          )}
-                          {post.imageUrl && (
-                            <div className="mb-3">
-                              <img
-                                src={post.imageUrl}
-                                alt="分享图片"
-                                className="w-full h-48 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
-                                onClick={() => setSelectedImage(post.imageUrl!)}
-                              />
-                            </div>
-                          )}
-                          {post.text && (
-                            <p className="text-gray-700 whitespace-pre-wrap break-words mb-2">{post.text}</p>
-                          )}
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs text-gray-500">{post.date}</span>
-                            <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
-                          </div>
-                        </div>
-                      </div>
+                      {post.text && (
+                        <p className="text-gray-700 whitespace-pre-wrap break-words">{post.text}</p>
+                      )}
                     </div>
-                  )
-                })}
+                  </div>
+                ))}
               </div>
             )}
           </div>
