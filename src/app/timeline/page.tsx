@@ -932,6 +932,14 @@ export default function TimelinePage() {
                 )}
               </button>
 
+              {/* 通知遮罩层 - 点击页面其他地方关闭通知 */}
+              {showNotifications && (
+                <div 
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowNotifications(false)}
+                />
+              )}
+              
               {/* 通知下拉面板 */}
               {showNotifications && (
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border z-50 max-h-96 overflow-y-auto">
