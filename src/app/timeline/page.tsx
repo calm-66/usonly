@@ -109,12 +109,17 @@ export default function TimelinePage() {
   const [selectedAppealNotification, setSelectedAppealNotification] = useState<Notification | null>(null)
   
   // 时间筛选相关状态
-  const [timeFilter, setTimeFilter] = useState<'all' | '7days' | '30days' | '90days'>('all')
+  const [timeFilter, setTimeFilter] = useState<'all' | '7days' | '30days' | 'custom'>('all')
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([])
   const [filteredPartnerPosts, setFilteredPartnerPosts] = useState<Post[]>([])
   
   // 日期筛选弹窗状态
   const [showDateFilter, setShowDateFilter] = useState(false)
+  
+  // 自定义时间段状态
+  const [showCustomDateRange, setShowCustomDateRange] = useState(false)
+  const [customStartDate, setCustomStartDate] = useState<string>('')
+  const [customEndDate, setCustomEndDate] = useState<string>('')
 
   // 生成默认头像颜色（根据用户 ID 哈希）
   const getDefaultAvatarColor = (id: string): string => {
@@ -648,29 +653,26 @@ export default function TimelinePage() {
       return []
     }
     
-    // 获取最新的帖子日期字符串（格式：YYYY-MM-DD）
-    const latestDateStr = posts.reduce((latest, post) => {
-      return post.date > latest ? post.date : latest
-    }, '')
-    
-    // 创建基准日期对象，设置为当天的 23:59:59
-    // 使用日期字符串直接创建，避免时区问题
-    const year = parseInt(latestDateStr.split('-')[0])
-    const month = parseInt(latestDateStr.split('-')[1]) - 1 // 月份从 0 开始
-    const day = parseInt(latestDateStr.split('-')[2])
-    const latestPostDate = new Date(year, month, day, 23, 59, 59, 999)
+    // 使用当前系统时间作为基准
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)
     
     let cutoffDate = new Date(0)
+    let endDate = today
     
     if (timeFilter === '7days') {
-      cutoffDate = new Date(latestPostDate.getTime() - 7 * 24 * 60 * 60 * 1000)
+      cutoffDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
     } else if (timeFilter === '30days') {
-      cutoffDate = new Date(latestPostDate.getTime() - 30 * 24 * 60 * 60 * 1000)
-    } else if (timeFilter === '90days') {
-      cutoffDate = new Date(latestPostDate.getTime() - 90 * 24 * 60 * 60 * 1000)
+      cutoffDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
+    } else if (timeFilter === 'custom' && customStartDate && customEndDate) {
+      // 自定义时间段
+      const startParts = customStartDate.split('-')
+      const endParts = customEndDate.split('-')
+      cutoffDate = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]), 0, 0, 0, 0)
+      endDate = new Date(parseInt(endParts[0]), parseInt(endParts[1]) - 1, parseInt(endParts[2]), 23, 59, 59, 999)
     }
     
-    // 过滤出日期在 cutoffDate 之后的帖子
+    // 过滤出日期在 cutoffDate 和 endDate 之间的帖子
     return posts.filter(post => {
       // 同样使用本地时间创建日期对象
       const postParts = post.date.split('-')
@@ -678,7 +680,11 @@ export default function TimelinePage() {
       const postMonth = parseInt(postParts[1]) - 1
       const postDay = parseInt(postParts[2])
       const postDate = new Date(postYear, postMonth, postDay, 0, 0, 0, 0)
-      return postDate >= cutoffDate
+      
+      if (timeFilter === 'custom') {
+        return postDate >= cutoffDate && postDate <= endDate
+      }
+      return postDate >= cutoffDate && postDate <= today
     })
   }
 
@@ -973,26 +979,26 @@ export default function TimelinePage() {
       {/* 顶部导航 */}
       <header className="bg-white shadow-sm sticky top-0 z-40">
         <div className="max-w-3xl mx-auto px-4 py-3 flex relative">
+          {/* 漏斗筛选图标 - 只在已配对时显示 - 放在最左侧 */}
+          {user?.partnerId && (
+            <div className="relative mr-2">
+              <button
+                onClick={() => setShowDateFilter(true)}
+                className="p-1 hover:bg-gray-100 rounded-full transition"
+                title="时间筛选"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+              </button>
+              {timeFilter !== 'all' && (
+                <span className="absolute top-1 right-1 w-2 h-2 bg-pink-500 rounded-full"></span>
+              )}
+            </div>
+          )}
+          
           <h1 className="text-xl font-bold text-gray-800 absolute left-1/2 -translate-x-1/2">UsOnly</h1>
           <div className="flex items-center ml-auto">
-            {/* 漏斗筛选图标 - 只在已配对时显示 */}
-            {user?.partnerId && (
-              <div className="relative mr-2">
-                <button
-                  onClick={() => setShowDateFilter(true)}
-                  className="p-1 hover:bg-gray-100 rounded-full transition"
-                  title="时间筛选"
-                >
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                  </svg>
-                </button>
-                {timeFilter !== 'all' && (
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-pink-500 rounded-full"></span>
-                )}
-              </div>
-            )}
-            
             {/* 发布按钮 */}
             <a
               href="/post"
@@ -1203,17 +1209,17 @@ export default function TimelinePage() {
               </button>
               <button
                 onClick={() => {
-                  setTimeFilter('90days')
                   setShowDateFilter(false)
+                  setShowCustomDateRange(true)
                 }}
                 className={`w-full py-3 px-4 rounded-lg text-left flex items-center justify-between ${
-                  timeFilter === '90days' 
+                  timeFilter === 'custom' 
                     ? 'bg-pink-100 text-pink-600' 
                     : 'hover:bg-gray-50'
                 }`}
               >
-                <span className="font-medium">最近 90 天</span>
-                {timeFilter === '90days' && (
+                <span className="font-medium">自定义</span>
+                {timeFilter === 'custom' && (
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
@@ -1226,6 +1232,75 @@ export default function TimelinePage() {
                 className="w-full py-2 text-gray-500 hover:text-gray-700"
               >
                 取消
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 自定义日期范围弹窗 */}
+      {showCustomDateRange && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowCustomDateRange(false)}
+        >
+          <div
+            className="bg-white w-full max-w-sm rounded-xl p-6 animate-slideUp"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-800">自定义时间范围</h3>
+              <button
+                onClick={() => setShowCustomDateRange(false)}
+                className="text-gray-400 hover:text-gray-600 text-xl"
+              >
+                ×
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">开始日期</label>
+                <input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-pink-300"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">结束日期</label>
+                <input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-pink-300"
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => {
+                  setCustomStartDate('')
+                  setCustomEndDate('')
+                  setTimeFilter('all')
+                  setShowCustomDateRange(false)
+                }}
+                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
+              >
+                清空
+              </button>
+              <button
+                onClick={() => {
+                  if (customStartDate && customEndDate) {
+                    setTimeFilter('custom')
+                    setShowCustomDateRange(false)
+                  } else {
+                    alert('请选择开始和结束日期')
+                  }
+                }}
+                className="flex-1 px-4 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600"
+              >
+                确定
               </button>
             </div>
           </div>
