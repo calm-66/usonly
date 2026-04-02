@@ -1,8 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import HTMLExportModal from '@/components/HTMLExportModal'
 import { uploadImage } from '@/lib/imageUpload'
+
+// 检测是否为移动端设备
+function isMobile(): boolean {
+  if (typeof window === 'undefined') return false
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+}
 
 interface User {
   id: string
@@ -42,6 +48,11 @@ export default function ProfilePage() {
   
   // HTML 导出相关状态
   const [showExportModal, setShowExportModal] = useState(false)
+  
+  // 头像上传相关状态
+  const [showAvatarDialog, setShowAvatarDialog] = useState(false)
+  const [currentCapture, setCurrentCapture] = useState<'user' | 'environment' | undefined>(undefined)
+  const avatarInputRef = useRef<HTMLInputElement>(null)
 
   // 生成默认头像颜色（根据用户 ID 哈希）
   const getDefaultAvatarColor = (id: string): string => {
@@ -471,17 +482,15 @@ export default function ProfilePage() {
           <div className="flex items-center gap-4">
             <div className="relative">
               {renderAvatar(user.avatarUrl, user.username, 'w-20 h-20')}
-              <label className="absolute bottom-0 right-0 bg-pink-500 text-white p-1.5 rounded-full cursor-pointer hover:bg-pink-600 transition">
+              <button
+                type="button"
+                onClick={() => isMobile() ? setShowAvatarDialog(true) : avatarInputRef.current?.click()}
+                className="absolute bottom-0 right-0 bg-pink-500 text-white p-1.5 rounded-full cursor-pointer hover:bg-pink-600 transition"
+              >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                 </svg>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  id="avatar-input"
-                />
-              </label>
+              </button>
             </div>
             <div className="flex-1">
               {editingUsername ? (
@@ -533,51 +542,28 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* 头像上传组件 */}
-          <div className="mt-4 pt-4 border-t">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              更换头像
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              id="avatar-upload"
-              onChange={async (e) => {
-                const file = e.target.files?.[0]
-                if (!file) return
-                
-                setUploading(true)
-                try {
-                  const imageUrl = await uploadImage(file)
-                  await handleUploadAvatar(imageUrl)
-                } catch (error: any) {
-                  alert('上传失败：' + (error.message || '请重试'))
-                } finally {
-                  setUploading(false)
-                }
-              }}
-            />
-            <div className="flex items-center gap-3">
-              <label
-                htmlFor="avatar-upload"
-                className="px-4 py-2 bg-pink-500 text-white text-sm rounded-full hover:bg-pink-600 cursor-pointer disabled:opacity-50"
-              >
-                {uploading ? '上传中...' : '选择新头像'}
-              </label>
-              {user.avatarUrl && (
-                <button
-                  onClick={handleRemoveAvatar}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 text-sm rounded-full hover:bg-gray-300"
-                >
-                  移除头像
-                </button>
-              )}
-            </div>
-            <p className="text-xs text-gray-500 mt-2">
-              支持 JPG、PNG、GIF、WebP 格式，最大 5MB（自动压缩）
-            </p>
-          </div>
+          {/* 隐藏的文件输入 - 用于头像上传 */}
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept="image/*"
+            capture={currentCapture}
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0]
+              if (!file) return
+              
+              setUploading(true)
+              try {
+                const imageUrl = await uploadImage(file)
+                await handleUploadAvatar(imageUrl)
+              } catch (error: any) {
+                alert('上传失败：' + (error.message || '请重试'))
+              } finally {
+                setUploading(false)
+              }
+            }}
+          />
         </div>
 
         {/* 配对状态卡片 */}
@@ -761,6 +747,56 @@ export default function ProfilePage() {
         onClose={() => setShowExportModal(false)} 
         user={user} 
       />
+
+      {/* 移动端头像选择弹窗 */}
+      {showAvatarDialog && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowAvatarDialog(false)}
+        >
+          <div
+            className="bg-white w-full max-w-xs rounded-xl p-6 animate-slideUp"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">更换头像</h3>
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setCurrentCapture('environment')
+                  setShowAvatarDialog(false)
+                  setTimeout(() => avatarInputRef.current?.click(), 100)
+                }}
+                className="w-full py-3 px-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:from-pink-600 hover:to-purple-600 transition flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                📷 拍照
+              </button>
+              <button
+                onClick={() => {
+                  setCurrentCapture(undefined)
+                  setShowAvatarDialog(false)
+                  setTimeout(() => avatarInputRef.current?.click(), 100)
+                }}
+                className="w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                🖼️ 从相册选择
+              </button>
+            </div>
+            <button
+              onClick={() => setShowAvatarDialog(false)}
+              className="w-full mt-3 py-2 text-gray-500 hover:text-gray-700 transition"
+            >
+              取消
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 底部导航 - 3 个按钮 */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t">
