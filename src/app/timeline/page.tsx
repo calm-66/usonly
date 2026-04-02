@@ -1131,18 +1131,6 @@ export default function TimelinePage() {
               displayPosts.map((post) => (
                 <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
                   <div className="p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      {post.title ? (
-                        <>
-                          <span className="text-xs text-gray-400">
-                            {new Date(post.date).toLocaleDateString('zh-CN')}
-                          </span>
-                          <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
-                        </>
-                      ) : (
-                        <span className="text-xs text-gray-500 ml-auto">{formatTime(post.createdAt)}</span>
-                      )}
-                    </div>
                     {post.title && (
                       <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
                     )}
@@ -1157,8 +1145,11 @@ export default function TimelinePage() {
                       </div>
                     )}
                     {post.text && (
-                      <p className="text-gray-700 whitespace-pre-wrap break-words">{post.text}</p>
+                      <p className="text-gray-700 whitespace-pre-wrap break-words mb-2">{post.text}</p>
                     )}
+                    <div className="text-right">
+                      <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
+                    </div>
                   </div>
                 </div>
               ))
@@ -1202,16 +1193,9 @@ export default function TimelinePage() {
                         ) : (
                           day.myPosts.map((post) => (
                             <div key={post.id} className="bg-pink-50 rounded-lg p-3 border border-pink-100">
-                              <div className="flex justify-between items-start mb-2">
-                                {post.title ? (
-                                  <>
-                                    <span className="text-sm font-medium text-gray-700">{post.title}</span>
-                                    <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
-                                  </>
-                                ) : (
-                                  <span className="text-xs text-gray-500 ml-auto">{formatTime(post.createdAt)}</span>
-                                )}
-                              </div>
+                              {post.title && (
+                                <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
+                              )}
                               {post.imageUrl && (
                                 <div className="mb-2">
                                   <img
@@ -1223,10 +1207,10 @@ export default function TimelinePage() {
                                 </div>
                               )}
                               {post.text && (
-                                <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{post.text}</p>
+                                <p className="text-sm text-gray-700 whitespace-pre-wrap break-words mb-2">{post.text}</p>
                               )}
                               {post.location && (
-                                <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
+                                <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
                                   <svg className="w-3 h-3 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -1234,9 +1218,11 @@ export default function TimelinePage() {
                                   {extractCity(post.location)}
                                 </div>
                               )}
-                              
-                              {/* 评论按钮 - 通过颜色区分有评论/无评论状态 */}
-                              <div className="mt-2 flex items-center gap-4">
+                              <div className="flex justify-between items-center">
+                                <div className="text-right flex-1">
+                                  <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
+                                </div>
+                                {/* 评论按钮 - 通过颜色区分有评论/无评论状态 */}
                                 <button
                                   onClick={() => openCommentModal(post)}
                                   className={`text-xs flex items-center gap-1 ${
@@ -1274,16 +1260,9 @@ export default function TimelinePage() {
                         ) : (
                           day.partnerPosts.map((post) => (
                             <div key={post.id} className="bg-purple-50 rounded-lg p-3 border border-purple-100">
-                              <div className="flex justify-between items-start mb-2">
-                                {post.title ? (
-                                  <>
-                                    <span className="text-sm font-medium text-gray-700">{post.title}</span>
-                                    <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
-                                  </>
-                                ) : (
-                                  <span className="text-xs text-gray-500 ml-auto">{formatTime(post.createdAt)}</span>
-                                )}
-                              </div>
+                              {post.title && (
+                                <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
+                              )}
                               {post.imageUrl && (
                                 <div className="mb-2">
                                   <img
@@ -1295,10 +1274,10 @@ export default function TimelinePage() {
                                 </div>
                               )}
                               {post.text && (
-                                <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{post.text}</p>
+                                <p className="text-sm text-gray-700 whitespace-pre-wrap break-words mb-2">{post.text}</p>
                               )}
                               {post.location && (
-                                <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
+                                <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
                                   <svg className="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -1306,9 +1285,11 @@ export default function TimelinePage() {
                                   {extractCity(post.location)}
                                 </div>
                               )}
-                              
-                              {/* 评论按钮 - 通过颜色区分有评论/无评论状态 */}
-                              <div className="mt-2 flex items-center gap-4">
+                              <div className="flex justify-between items-center">
+                                <div className="text-right flex-1">
+                                  <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
+                                </div>
+                                {/* 评论按钮 - 通过颜色区分有评论/无评论状态 */}
                                 <button
                                   onClick={() => openCommentModal(post)}
                                   className={`text-xs flex items-center gap-1 ${
