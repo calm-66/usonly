@@ -54,6 +54,15 @@ export default function ProfilePage() {
   const [currentCapture, setCurrentCapture] = useState<'user' | 'environment' | undefined>(undefined)
   const avatarInputRef = useRef<HTMLInputElement>(null)
 
+  // 计算配对天数
+  const calculatePairDays = (pairedAt: string | null | undefined): number => {
+    if (!pairedAt) return 0
+    const start = new Date(pairedAt)
+    const now = new Date()
+    const diffTime = now.getTime() - start.getTime()
+    return Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1 // +1 因为当天也算 1 天
+  }
+
   // 生成默认头像颜色（根据用户 ID 哈希）
   const getDefaultAvatarColor = (id: string): string => {
     const colors = [
@@ -572,6 +581,17 @@ export default function ProfilePage() {
 
           {user.partnerId && user.partner ? (
             <div className="space-y-4">
+              {/* 配对天数显示 */}
+              {(user.partner.pairedAt || user.pairedAt) && (
+                <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg p-4 text-center">
+                  <p className="text-sm text-gray-600 mb-1">💕 已配对</p>
+                  <p className="text-3xl font-bold text-pink-600">
+                    {calculatePairDays(user.partner.pairedAt || user.pairedAt)}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">天</p>
+                </div>
+              )}
+
               {/* 伴侣信息 */}
               <div className="flex items-center gap-3 p-3 bg-pink-50 rounded-lg">
                 {renderAvatar(user.partner.avatarUrl, user.partner.username, 'w-12 h-12')}

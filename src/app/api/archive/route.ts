@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '归档关系不匹配' }, { status: 403 });
     }
 
-    // 获取归档的用户信息
+    // 获取归档的用户信息（包含 pairedAt）
     const archivedUser = await prisma.user.findUnique({
       where: { id: queryUserId },
       select: {
@@ -55,6 +55,7 @@ export async function GET(request: NextRequest) {
         username: true,
         avatarUrl: true,
         archivedAt: true,
+        pairedAt: true,
       },
     });
 
@@ -84,12 +85,13 @@ export async function GET(request: NextRequest) {
     // 合并双方的帖子
     const allPosts = [...userPosts, ...partnerPosts];
 
-    // 构建归档信息
+    // 构建归档信息（包含 pairedAt）
     const archivedInfo = {
       partnerId: queryUserId,
       partnerUsername: archivedUser.username,
       partnerAvatarUrl: archivedUser.avatarUrl,
       archivedAt: archivedUser.archivedAt || new Date(),
+      pairedAt: archivedUser.pairedAt,
       postCount: allPosts.length,
     };
 

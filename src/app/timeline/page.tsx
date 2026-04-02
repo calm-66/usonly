@@ -41,6 +41,7 @@ interface User {
   } | null
   breakupInitiated?: boolean
   breakupAt?: string | null
+  pairedAt?: string | null
 }
 
 interface Comment {
@@ -105,6 +106,11 @@ export default function TimelinePage() {
   const [appealLoading, setAppealLoading] = useState(false)
   const [showAppealResponseModal, setShowAppealResponseModal] = useState(false)
   const [selectedAppealNotification, setSelectedAppealNotification] = useState<Notification | null>(null)
+  
+  // 时间筛选相关状态
+  const [timeFilter, setTimeFilter] = useState<'all' | '7days' | '30days' | '90days'>('all')
+  const [filteredPosts, setFilteredPosts] = useState<Post[]>([])
+  const [filteredPartnerPosts, setFilteredPartnerPosts] = useState<Post[]>([])
 
   // 生成默认头像颜色（根据用户 ID 哈希）
   const getDefaultAvatarColor = (id: string): string => {
@@ -129,6 +135,15 @@ export default function TimelinePage() {
   // 获取首字母
   const getInitial = (str: string): string => {
     return str.charAt(0).toUpperCase()
+  }
+
+  // 计算配对天数
+  const calculatePairDays = (pairedAt: string | null | undefined): number => {
+    if (!pairedAt) return 0
+    const start = new Date(pairedAt)
+    const now = new Date()
+    const diffTime = now.getTime() - start.getTime()
+    return Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1 // +1 因为当天也算 1 天
   }
 
   // 格式化时间显示 HH:MM
@@ -619,6 +634,28 @@ export default function TimelinePage() {
     setNewComment('')
   }
 
+  // 根据筛选条件过滤帖子
+  const filterPostsByDate = (posts: Post[]): Post[] => {
+    const now = new Date()
+    let cutoffDate = new Date(0) // 默认不过滤
+    
+    if (timeFilter === '7days') {
+      cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    } else if (timeFilter === '30days') {
+      cutoffDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    } else if (timeFilter === '90days') {
+      cutoffDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
+    }
+    
+    return posts.filter(post => new Date(post.date) >= cutoffDate)
+  }
+
+  // 应用筛选
+  useEffect(() => {
+    setFilteredPosts(filterPostsByDate(posts))
+    setFilteredPartnerPosts(filterPostsByDate(partnerPosts))
+  }, [posts, partnerPosts, timeFilter])
+
   // 按日期分组
   const groupByDate = (): DayPosts[] => {
     const allPosts = [
@@ -650,8 +687,8 @@ export default function TimelinePage() {
   }
 
   const getDisplayPosts = () => {
-    if (activeTab === 'mine') return posts.map(p => ({ ...p, owner: '我' as const }))
-    if (activeTab === 'partner') return partnerPosts.map(p => ({ ...p, owner: 'TA' as const }))
+    if (activeTab === 'mine') return filteredPosts.map(p => ({ ...p, owner: '我' as const }))
+    if (activeTab === 'partner') return filteredPartnerPosts.map(p => ({ ...p, owner: 'TA' as const }))
     return []
   }
 
@@ -689,6 +726,10 @@ export default function TimelinePage() {
 
   const dayPosts = groupByDate()
   const displayPosts = getDisplayPosts()
+  
+  // 计算配对天数显示
+  const pairDays = calculatePairDays(user?.partner?.pairedAt || user?.pairedAt)
+  const showPairDays = user?.partnerId && pairDays > 0
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00')
@@ -1021,6 +1062,57 @@ export default function TimelinePage() {
         </div>
       </header>
 
+      {/* 配对天数显示 */}
+      {showPairDays && (
+        <div className="max-w-3xl mx-auto px-4 mb-2">
+          <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg shadow-sm p-3 text-center">
+            <span className="text-sm text-gray-600">💕 已配对</span>
+            <span className="text-2xl font-bold text-pink-600 mx-2">{pairDays}</span>
+            <span className="text-sm text-gray-600">天</span>
+          </div>
+        </div>
+      )}
+
+      {/* 时间筛选控件 */}
+      {user?.partnerId && (
+        <div className="max-w-3xl mx-auto px-4 mb-4">
+          <div className="flex bg-white rounded-lg shadow-sm p-1">
+            <button
+              onClick={() => setTimeFilter('all')}
+              className={`flex-1 py-2 text-xs font-medium rounded-md transition ${
+                timeFilter === 'all' ? 'bg-pink-100 text-pink-600' : 'text-gray-500 hover:bg-gray-50'
+              }`}
+            >
+              全部
+            </button>
+            <button
+              onClick={() => setTimeFilter('7days')}
+              className={`flex-1 py-2 text-xs font-medium rounded-md transition ${
+                timeFilter === '7days' ? 'bg-pink-100 text-pink-600' : 'text-gray-500 hover:bg-gray-50'
+              }`}
+            >
+              最近 7 天
+            </button>
+            <button
+              onClick={() => setTimeFilter('30days')}
+              className={`flex-1 py-2 text-xs font-medium rounded-md transition ${
+                timeFilter === '30days' ? 'bg-pink-100 text-pink-600' : 'text-gray-500 hover:bg-gray-50'
+              }`}
+            >
+              最近 30 天
+            </button>
+            <button
+              onClick={() => setTimeFilter('90days')}
+              className={`flex-1 py-2 text-xs font-medium rounded-md transition ${
+                timeFilter === '90days' ? 'bg-pink-100 text-pink-600' : 'text-gray-500 hover:bg-gray-50'
+              }`}
+            >
+              最近 90 天
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 挽回配对横幅 */}
       {showAppealBanner && user?.partnerId && (
         <div className="max-w-3xl mx-auto px-4 mb-4">
@@ -1133,7 +1225,17 @@ export default function TimelinePage() {
             {displayPosts.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <p>还没有分享</p>
-                <a href="/post" className="text-pink-600 hover:underline">去发布第一条</a>
+                {timeFilter !== 'all' && (
+                  <button
+                    onClick={() => setTimeFilter('all')}
+                    className="text-pink-600 hover:underline text-sm mt-1"
+                  >
+                    切换为"全部"时间范围
+                  </button>
+                )}
+                {!timeFilter && (
+                  <a href="/post" className="text-pink-600 hover:underline">去发布第一条</a>
+                )}
               </div>
             ) : (
               displayPosts.map((post) => (
@@ -1168,7 +1270,17 @@ export default function TimelinePage() {
             {dayPosts.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <p>还没有分享</p>
-                <a href="/post" className="text-pink-600 hover:underline">去发布第一条</a>
+                {timeFilter !== 'all' && (
+                  <button
+                    onClick={() => setTimeFilter('all')}
+                    className="text-pink-600 hover:underline text-sm mt-1"
+                  >
+                    切换为"全部"时间范围
+                  </button>
+                )}
+                {!timeFilter && (
+                  <a href="/post" className="text-pink-600 hover:underline">去发布第一条</a>
+                )}
               </div>
             ) : (
               dayPosts.map((day) => (

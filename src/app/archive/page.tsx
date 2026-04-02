@@ -42,6 +42,7 @@ interface ArchiveInfo {
   partnerUsername: string
   partnerAvatarUrl: string | null
   archivedAt: string
+  pairedAt?: string | null
   postCount: number
 }
 
@@ -128,6 +129,15 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
         {getInitial(name)}
       </div>
     )
+  }
+
+  // 计算配对天数（从 pairedAt 到 archivedAt）
+  const calculatePairDays = (pairedAt: string | null | undefined, archivedAt: string): number => {
+    if (!pairedAt) return 0
+    const start = new Date(pairedAt)
+    const end = new Date(archivedAt)
+    const diffTime = end.getTime() - start.getTime()
+    return Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1 // +1 因为当天也算 1 天
   }
 
   // 格式化时间显示 HH:MM
@@ -358,6 +368,17 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
         {/* 归档信息卡片 */}
         {archiveInfo && (
           <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+            {/* 配对天数显示 */}
+            {archiveInfo.pairedAt && (
+              <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg p-3 text-center mb-3">
+                <p className="text-sm text-gray-600 mb-1">💕 已配对</p>
+                <p className="text-2xl font-bold text-pink-600">
+                  {calculatePairDays(archiveInfo.pairedAt, archiveInfo.archivedAt)}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">天</p>
+              </div>
+            )}
+
             <div className="flex items-center gap-3 mb-3">
               {renderAvatar(archiveInfo.partnerAvatarUrl, archiveInfo.partnerUsername, 'w-10 h-10')}
               <div className="flex-1">
