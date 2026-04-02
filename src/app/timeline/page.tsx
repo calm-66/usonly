@@ -644,23 +644,32 @@ export default function TimelinePage() {
       return posts // 不过滤，返回所有帖子
     }
     
-    const now = new Date()
-    // 将当前时间设置为当天的 23:59:59，确保比较的是日期而不是具体时间
-    now.setHours(23, 59, 59, 999)
+    if (posts.length === 0) {
+      return []
+    }
+    
+    // 获取最新的帖子日期作为基准时间
+    const latestPostDate = posts.reduce((latest, post) => {
+      const postDate = new Date(post.date + 'T00:00:00')
+      return postDate > latest ? postDate : latest
+    }, new Date(0))
+    
+    // 将最新帖子时间设置为当天的 23:59:59
+    latestPostDate.setHours(23, 59, 59, 999)
     
     let cutoffDate = new Date(0)
     
     if (timeFilter === '7days') {
-      cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+      cutoffDate = new Date(latestPostDate.getTime() - 7 * 24 * 60 * 60 * 1000)
     } else if (timeFilter === '30days') {
-      cutoffDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+      cutoffDate = new Date(latestPostDate.getTime() - 30 * 24 * 60 * 60 * 1000)
     } else if (timeFilter === '90days') {
-      cutoffDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
+      cutoffDate = new Date(latestPostDate.getTime() - 90 * 24 * 60 * 60 * 1000)
     }
     
     // 过滤出日期在 cutoffDate 之后的帖子
     return posts.filter(post => {
-      const postDate = new Date(post.date + 'T00:00:00') // 确保日期解析正确
+      const postDate = new Date(post.date + 'T00:00:00')
       return postDate >= cutoffDate
     })
   }
