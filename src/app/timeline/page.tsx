@@ -728,6 +728,28 @@ export default function TimelinePage() {
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   }
 
+  // 按日期分组显示个人帖子（用于 activeTab !== 'both' 的情况）
+  const groupPersonalPostsByDate = (): { date: string; posts: Post[] }[] => {
+    const postsToUse = activeTab === 'mine' ? filteredPosts : filteredPartnerPosts
+    
+    // 按日期分组
+    const grouped: Record<string, Post[]> = {}
+    postsToUse.forEach(post => {
+      if (!grouped[post.date]) {
+        grouped[post.date] = []
+      }
+      grouped[post.date].push(post)
+    })
+
+    // 转换为数组并按日期排序（最新的日期在前）
+    return Object.entries(grouped)
+      .map(([date, posts]) => ({
+        date,
+        posts: posts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+      }))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  }
+
   const getDisplayPosts = () => {
     if (activeTab === 'mine') return filteredPosts.map(p => ({ ...p, owner: '我' as const }))
     if (activeTab === 'partner') return filteredPartnerPosts.map(p => ({ ...p, owner: 'TA' as const }))
@@ -773,6 +795,7 @@ export default function TimelinePage() {
   const pairDays = calculatePairDays(user?.partner?.pairedAt || user?.pairedAt)
   const showPairDays = user?.partnerId && pairDays > 0
 
+  // 格式化日期：返回 "今天"、"昨天" 或 "2026/5/31" 格式
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00')
     
@@ -788,7 +811,11 @@ export default function TimelinePage() {
     } else if (dateStr === yesterdayStr) {
       return '昨天'
     } else {
-      return date.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' })
+      // 格式化为 2026/5/31 格式
+      const year = date.getFullYear()
+      const month = date.getMonth() + 1
+      const day = date.getDate()
+      return `${year}/${month}/${day}`
     }
   }
 
@@ -1432,37 +1459,70 @@ export default function TimelinePage() {
                 )}
               </div>
             ) : (
-              <div className="space-y-4">
-                {displayPosts.map((post) => (
-                  <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
-                    <div className="p-4">
-                      {/* 日期在左上角 */}
-                      <div className="flex justify-between items-center mb-3">
-                        <span className="text-sm font-bold text-gray-700">
-                          {formatDate(post.date)} ({new Date(post.date + 'T00:00:00').toLocaleDateString('zh-CN')})
-                        </span>
-                        <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
-                      </div>
-                      {post.title && (
-                        <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
-                      )}
-                      {post.imageUrl && (
-                        <div className="mb-3">
-                          <img
-                            src={post.imageUrl}
-                            alt="分享图片"
-                            className="w-full h-48 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
-                            onClick={() => setSelectedImage(post.imageUrl!)}
-                          />
+              <>
+                {groupByDate().map((day) => (
+                  <div key={day.date}>
+                    {/* 日期头部 */}
+                    <div className="bg-gradient-to-r from-pink-50 to-purple-50 px-4 py-2 rounded-lg mb-2">
+                      <span className="text-sm font-bold text-gray-800">
+                        {formatDate(day.date)}
+                      </span>
+                    </div>
+                    {/* 帖子列表 */}
+                    <div className="space-y-3">
+                      {day.myPosts.length > 0 ? day.myPosts.map((post) => (
+                        <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                          <div className="p-4">
+                            {post.title && (
+                              <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
+                            )}
+                            {post.imageUrl && (
+                              <div className="mb-3">
+                                <img
+                                  src={post.imageUrl}
+                                  alt="分享图片"
+                                  className="w-full h-48 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
+                                  onClick={() => setSelectedImage(post.imageUrl!)}
+                                />
+                              </div>
+                            )}
+                            {post.text && (
+                              <p className="text-gray-700 whitespace-pre-wrap break-words">{post.text}</p>
+                            )}
+                            <div className="flex justify-end">
+                              <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
+                            </div>
+                          </div>
                         </div>
-                      )}
-                      {post.text && (
-                        <p className="text-gray-700 whitespace-pre-wrap break-words">{post.text}</p>
-                      )}
+                      )) : day.partnerPosts.map((post) => (
+                        <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                          <div className="p-4">
+                            {post.title && (
+                              <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
+                            )}
+                            {post.imageUrl && (
+                              <div className="mb-3">
+                                <img
+                                  src={post.imageUrl}
+                                  alt="分享图片"
+                                  className="w-full h-48 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
+                                  onClick={() => setSelectedImage(post.imageUrl!)}
+                                />
+                              </div>
+                            )}
+                            {post.text && (
+                              <p className="text-gray-700 whitespace-pre-wrap break-words">{post.text}</p>
+                            )}
+                            <div className="flex justify-end">
+                              <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
-              </div>
+              </>
             )}
           </div>
         ) : (
@@ -1486,15 +1546,10 @@ export default function TimelinePage() {
               dayPosts.map((day) => (
                 <div key={day.date} className="bg-white rounded-xl shadow-sm overflow-hidden">
                   {/* 日期头部 */}
-                  <div className="bg-gradient-to-r from-pink-50 to-purple-50 px-4 py-3 border-b">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg font-bold text-gray-800">
-                        {formatDate(day.date)}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        ({new Date(day.date).toLocaleDateString('zh-CN')})
-                      </span>
-                    </div>
+                  <div className="bg-gradient-to-r from-pink-50 to-purple-50 px-4 py-2">
+                    <span className="text-sm font-bold text-gray-800">
+                      {formatDate(day.date)}
+                    </span>
                   </div>
 
                   {/* 并排内容 - 保持并排布局 */}
