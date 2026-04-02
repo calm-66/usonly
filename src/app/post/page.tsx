@@ -325,7 +325,6 @@ export default function PostPage() {
                 previewSize="w-full h-48"
                 placeholder="选择图片"
                 accept="image/*"
-                capture="environment"
               />
             </div>
 

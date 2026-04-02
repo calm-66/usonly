@@ -478,7 +478,6 @@ export default function ProfilePage() {
                 <input
                   type="file"
                   accept="image/*"
-                  capture="user"
                   className="hidden"
                   id="avatar-input"
                 />
@@ -542,7 +541,6 @@ export default function ProfilePage() {
             <input
               type="file"
               accept="image/*"
-              capture="user"
               className="hidden"
               id="avatar-upload"
               onChange={async (e) => {
