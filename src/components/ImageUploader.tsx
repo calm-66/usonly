@@ -212,7 +212,7 @@ export default function ImageUploader({
             </button>
           </div>
         ) : (
-          /* 已选择图片时显示预览 */}
+          /* 已选择图片时显示预览 */
           <div className="relative">
             <img
               src={previewUrl}
