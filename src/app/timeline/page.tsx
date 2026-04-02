@@ -1218,10 +1218,7 @@ export default function TimelinePage() {
                                   {extractCity(post.location)}
                                 </div>
                               )}
-                              <div className="flex justify-between items-center">
-                                <div className="text-right flex-1">
-                                  <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
-                                </div>
+                              <div className="flex justify-between items-center mt-2">
                                 {/* 评论按钮 - 通过颜色区分有评论/无评论状态 */}
                                 <button
                                   onClick={() => openCommentModal(post)}
@@ -1236,6 +1233,7 @@ export default function TimelinePage() {
                                   </svg>
                                   评论
                                 </button>
+                                <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
                               </div>
                             </div>
                           ))
@@ -1285,10 +1283,7 @@ export default function TimelinePage() {
                                   {extractCity(post.location)}
                                 </div>
                               )}
-                              <div className="flex justify-between items-center">
-                                <div className="text-right flex-1">
-                                  <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
-                                </div>
+                              <div className="flex justify-between items-center mt-2">
                                 {/* 评论按钮 - 通过颜色区分有评论/无评论状态 */}
                                 <button
                                   onClick={() => openCommentModal(post)}
@@ -1303,6 +1298,7 @@ export default function TimelinePage() {
                                   </svg>
                                   评论
                                 </button>
+                                <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
                               </div>
                             </div>
                           ))
