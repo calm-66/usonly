@@ -1461,9 +1461,13 @@ export default function TimelinePage() {
             ) : (
               <>
                 {groupByDate().map((day) => (
-                  <div key={day.date} className="border-2 border-pink-200 rounded-xl p-4 bg-white/50 backdrop-blur-sm shadow-sm">
+                  <div key={day.date} className={`border-2 rounded-xl p-4 bg-white/50 backdrop-blur-sm shadow-sm ${
+                    activeTab === 'mine' ? 'border-pink-200' : 'border-purple-200'
+                  }`}>
                     {/* 日期头部 */}
-                    <div className="bg-gradient-to-r from-pink-50 to-purple-50 px-4 py-2 rounded-lg mb-3">
+                    <div className={`bg-gradient-to-r px-4 py-2 rounded-lg mb-3 ${
+                      activeTab === 'mine' ? 'from-pink-50 to-purple-50' : 'from-purple-50 to-pink-50'
+                    }`}>
                       <span className="text-sm font-bold text-gray-800">
                         {formatDate(day.date)}
                       </span>
