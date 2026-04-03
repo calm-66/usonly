@@ -68,10 +68,7 @@ export function sendNotification(config: NotificationConfig): void {
  * @param data 解析后的 webhook 数据
  */
 export function sendBuildNotification(data: NotificationData): void {
-  const config: NotificationConfig = {
-    sound: true,
-    timeout: data.status === 'failed' ? 30 : 10, // 失败时显示更久
-  };
+  let config: NotificationConfig;
 
   // 根据来源显示不同的图标前缀
   const sourceIcon = data.source === 'github' ? '🐙' : '🔔';
@@ -79,30 +76,47 @@ export function sendBuildNotification(data: NotificationData): void {
   switch (data.status) {
     case 'succeeded':
     case 'success':
-      config.title = `${sourceIcon} UsOnly Build 成功`;
-      config.message = `项目：${data.projectName}\n预览：${data.deploymentUrl}`;
+      config = {
+        title: `${sourceIcon} UsOnly Build 成功`,
+        message: `项目：${data.projectName}\n预览：${data.deploymentUrl}`,
+        sound: true,
+        timeout: 10
+      };
       break;
 
     case 'failed':
     case 'failure':
-      config.title = `${sourceIcon} UsOnly Build 失败`;
       // 失败时显示详细错误信息，截断过长的内容
       const errorMsg = data.errorMessage 
         ? truncateString(data.errorMessage, 500)
         : '未知错误';
-      config.message = `项目：${data.projectName}\n错误：${errorMsg}`;
+      config = {
+        title: `${sourceIcon} UsOnly Build 失败`,
+        message: `项目：${data.projectName}\n错误：${errorMsg}`,
+        sound: true,
+        timeout: 30
+      };
       break;
 
     case 'created':
     case 'pending':
-      config.title = `${sourceIcon} UsOnly Build 开始`;
-      const branchInfo = data.source === 'github' 
-        ? data.branch 
-        : data.commitRef;
-      config.message = `项目：${data.projectName}\n分支：${branchInfo || 'main'}`;
-      config.sound = false; // 开始构建时不播放声音
-      config.timeout = 5;
+      // 使用类型守卫访问 branch 或 commitRef
+      const branchInfo = 'branch' in data ? data.branch : data.commitRef;
+      config = {
+        title: `${sourceIcon} UsOnly Build 开始`,
+        message: `项目：${data.projectName}\n分支：${branchInfo || 'main'}`,
+        sound: false, // 开始构建时不播放声音
+        timeout: 5
+      };
       break;
+      
+    default:
+      config = {
+        title: `${sourceIcon} UsOnly Build`,
+        message: `项目：${data.projectName}`,
+        sound: true,
+        timeout: 10
+      };
   }
 
   sendNotification(config);
