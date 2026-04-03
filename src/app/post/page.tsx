@@ -282,7 +282,7 @@ export default function PostPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                标题（可选）
+                标题
               </label>
               <input
                 type="text"
@@ -294,7 +294,7 @@ export default function PostPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                图片（可选）
+                图片
               </label>
               <ImageUploader
                 value={imageUrl ? imageUrl : null}
@@ -312,7 +312,7 @@ export default function PostPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                文字内容（可选）
+                文字内容
               </label>
               <textarea
                 value={text}
@@ -326,7 +326,7 @@ export default function PostPage() {
             {/* 位置选择器 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                位置（可选）
+                位置
               </label>
               {!showLocationInput ? (
                 <button
