@@ -58,11 +58,6 @@ export function parseGitHubWebhook(payload: GitHubDeploymentStatusPayload): Noti
     status = 'pending';
   }
 
-  // 调试日志：打印原始 ref
-  console.log('[DEBUG] 原始 ref:', payload.deployment.ref);
-  console.log('[DEBUG] ref 类型:', typeof payload.deployment.ref);
-  console.log('[DEBUG] ref 是否为空:', !payload.deployment.ref);
-  
   // 优先从 deployment_status.environment 字段推断分支名
   // Preview -> preview, Production -> main
   let branch = 'unknown';
@@ -79,8 +74,6 @@ export function parseGitHubWebhook(payload: GitHubDeploymentStatusPayload): Noti
     }
     branch = refBranch || 'unknown';
   }
-  
-  console.log('[DEBUG] 解析后的 branch:', branch);
 
   return {
     status,

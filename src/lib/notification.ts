@@ -32,23 +32,17 @@ export interface GitHubWebhookData {
  * @param config 通知配置
  */
 export function sendNotification(config: NotificationConfig): void {
-  console.log('[NOTIFICATION] 准备发送系统通知...');
-  console.log('[NOTIFICATION] 配置:', JSON.stringify(config, null, 2));
-  
   const cp = require('child_process');
   const path = require('path');
   const os = require('os');
   
   // 使用项目根目录（process.cwd()）来计算 SnoreToast 路径
-  // 因为在 Next.js 编译后 __dirname 会指向错误的目录
   const is64Bit = os.arch() === 'x64';
   const snoreToastPath = path.join(
     process.cwd(),
     'node_modules/node-notifier/vendor/snoreToast',
     'snoretoast-' + (is64Bit ? 'x64' : 'x86') + '.exe'
   );
-  
-  console.log('[NOTIFICATION] SnoreToast 路径:', snoreToastPath);
   
   const args: string[] = [];
   args.push('-t', config.title);
@@ -58,19 +52,17 @@ export function sendNotification(config: NotificationConfig): void {
     args.push('-s', 'Notification.Default');
   }
   
-  // 使用 execFile 异步执行
-  cp.execFile(snoreToastPath, args, (err: Error | null, stdout: string, stderr: string) => {
-    if (err) {
-      console.error('[NOTIFICATION] SnoreToast 执行错误:', err);
-      console.error('[NOTIFICATION] stderr:', stderr);
-      console.error('[NOTIFICATION] stdout:', stdout);
-    } else {
-      console.log('[NOTIFICATION] SnoreToast 执行成功');
-      console.log('[NOTIFICATION] stdout:', stdout);
+  // 使用 execFile 异步执行，不记录日志
+  // SnoreToast 返回码说明：
+  // 0 = Success, 1 = Hidden, 2 = Dismissed, 3 = TimedOut (都是正常状态)
+  // 只有 -1 = Failed 才是真正的错误
+  cp.execFile(snoreToastPath, args, (err: Error | null) => {
+    // 只有 code === -1 才是真正的错误，其他情况（包括 code 3 超时）都是正常的
+    if (err && (err as any).code === -1) {
+      console.error('SnoreToast 执行失败:', err);
     }
+    // 其他返回码（0/1/2/3/4/5）都是正常状态，不记录日志
   });
-  
-  console.log('[NOTIFICATION] SnoreToast 已调用');
 }
 
 /**
