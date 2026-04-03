@@ -1,5 +1,6 @@
-import notifier from 'node-notifier';
-import path from 'path';
+// 动态导入 node-notifier（仅用于 Windows 本地通知）
+// 使用 require 避免 TypeScript 类型检查问题
+const notifier = require('node-notifier');
 
 /**
  * 通知配置接口
