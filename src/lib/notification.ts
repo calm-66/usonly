@@ -35,27 +35,41 @@ export function sendNotification(config: NotificationConfig): void {
   console.log('[NOTIFICATION] 准备发送系统通知...');
   console.log('[NOTIFICATION] 配置:', JSON.stringify(config, null, 2));
   
-  try {
-    notifier.notify({
-      title: config.title,
-      message: config.message,
-      icon: config.icon,
-      sound: config.sound ?? true,
-      timeout: config.timeout ?? 10,
-      // Windows 特定选项
-      wait: false,
-      priority: 0,
-    }, (err: Error | null) => {
-      if (err) {
-        console.error('[NOTIFICATION] 发送失败:', err);
-      } else {
-        console.log('[NOTIFICATION] 发送成功回调');
-      }
-    });
-    console.log('[NOTIFICATION] notifier.notify 已调用');
-  } catch (error) {
-    console.error('[NOTIFICATION] 异常:', error);
+  const cp = require('child_process');
+  const path = require('path');
+  const os = require('os');
+  
+  // 直接使用 SnoreToast 可执行文件
+  const is64Bit = os.arch() === 'x64';
+  const snoreToastPath = path.join(
+    __dirname,
+    '../../node_modules/node-notifier/vendor/snoreToast',
+    'snoretoast-' + (is64Bit ? 'x64' : 'x86') + '.exe'
+  );
+  
+  console.log('[NOTIFICATION] SnoreToast 路径:', snoreToastPath);
+  
+  const args: string[] = [];
+  args.push('-t', config.title);
+  args.push('-m', config.message);
+  
+  if (config.sound !== false) {
+    args.push('-s', 'Notification.Default');
   }
+  
+  // 使用 execFile 异步执行
+  cp.execFile(snoreToastPath, args, (err: Error | null, stdout: string, stderr: string) => {
+    if (err) {
+      console.error('[NOTIFICATION] SnoreToast 执行错误:', err);
+      console.error('[NOTIFICATION] stderr:', stderr);
+      console.error('[NOTIFICATION] stdout:', stdout);
+    } else {
+      console.log('[NOTIFICATION] SnoreToast 执行成功');
+      console.log('[NOTIFICATION] stdout:', stdout);
+    }
+  });
+  
+  console.log('[NOTIFICATION] SnoreToast 已调用');
 }
 
 /**
