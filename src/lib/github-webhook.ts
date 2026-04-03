@@ -39,7 +39,7 @@ export interface NotificationData {
   commitSha?: string;
   branch?: string;
   errorMessage?: string;
-  source: 'vercel' | 'github';
+  source: 'github';
 }
 
 /**
