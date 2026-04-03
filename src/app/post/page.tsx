@@ -9,7 +9,6 @@ interface Post {
   title: string | null
   imageUrl: string | null
   text: string | null
-  isLatePost: boolean
   latitude?: number | null
   longitude?: number | null
   location?: string | null
@@ -33,7 +32,6 @@ export default function PostPage() {
   const [title, setTitle] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [text, setText] = useState('')
-  const [isLatePost, setIsLatePost] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -50,7 +48,7 @@ export default function PostPage() {
     if (userData) {
       const parsedUser = JSON.parse(userData)
       setUser(parsedUser)
-      // 默认日期为今天
+      // 固定日期为今天
       const today = new Date().toISOString().split('T')[0]
       setDate(today)
       loadPosts(parsedUser)
@@ -91,7 +89,6 @@ export default function PostPage() {
           title: title || null,
           imageUrl: imageUrl || null,
           text: text || null,
-          isLatePost,
           latitude: latitude || null,
           longitude: longitude || null,
           location: location || null,
@@ -105,7 +102,6 @@ export default function PostPage() {
       // 重置表单
       setImageUrl('')
       setText('')
-      setIsLatePost(false)
       setLatitude(null)
       setLongitude(null)
       setLocation('')
@@ -144,13 +140,6 @@ export default function PostPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = e.target.value
-    setDate(newDate)
-    const isToday = newDate === new Date().toISOString().split('T')[0]
-    setIsLatePost(!isToday)
   }
 
   // 反向地理编码：将经纬度转换为实际地址（使用百度地图 API）
@@ -286,16 +275,9 @@ export default function PostPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 日期
               </label>
-              <input
-                type="date"
-                value={date}
-                onChange={handleDateChange}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-              />
-              {date !== today && (
-                <p className="text-xs text-gray-500 mt-1">补传 {date} 的分享</p>
-              )}
+              <div className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-600">
+                {today}
+              </div>
             </div>
 
             <div>
