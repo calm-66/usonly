@@ -13,9 +13,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     // 调试日志：打印原始请求
-    console.log('[DEBUG] === 收到 GitHub webhook 请求 ===');
-    console.log('[DEBUG] 原始 body:', JSON.stringify(body, null, 2));
-    console.log('[DEBUG] deployment.ref:', body.deployment?.ref);
+    console.log('\n============ [DEBUG] 原始请求数据 ============');
+    console.log('完整 body:', JSON.stringify(body, null, 2));
+    console.log('deployment.ref 值:', body.deployment?.ref);
+    console.log('deployment.ref 类型:', typeof body.deployment?.ref);
+    console.log('============================================\n');
     
     const parsedData = parseGitHubWebhook(body);
 
@@ -29,22 +31,22 @@ export async function POST(request: NextRequest) {
       second: '2-digit'
     }).replace(/\//g, '-');
 
-    // 调试日志：打印解析后的数据
-    console.log('[DEBUG] 解析后的数据:', {
-      status: parsedData.status,
-      branch: parsedData.branch,
-      commitSha: parsedData.commitSha,
-      projectName: parsedData.projectName
-    });
+    // 打印日志 - 包含调试信息
+    console.log('\n============ [DEBUG] 解析后的数据 ============');
+    console.log('status:', parsedData.status);
+    console.log('branch:', parsedData.branch);
+    console.log('branch 类型:', typeof parsedData.branch);
+    console.log('commitSha:', parsedData.commitSha);
+    console.log('projectName:', parsedData.projectName);
+    console.log('============================================\n');
 
-    // 打印日志
-    console.log('\n========================================');
+    console.log('========================================');
     console.log('🐙 GitHub Deployment Notification');
     console.log('========================================');
     console.log(`时间：${timestamp}`);
     console.log(`状态：${parsedData.status}`);
     console.log(`项目：${parsedData.projectName}`);
-    console.log(`分支：${parsedData.branch}`);
+    console.log(`分支：${parsedData.branch || '(空)'}`);
     console.log(`提交：${parsedData.commitSha}`);
     if (parsedData.deploymentUrl) {
       console.log(`部署 URL: ${parsedData.deploymentUrl}`);
