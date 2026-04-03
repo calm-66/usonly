@@ -10,11 +10,16 @@ import { sendUserRegisteredNotification, UserRegisteredNotificationData } from '
  */
 export async function POST(request: NextRequest) {
   try {
+    console.log('[Webhook] 收到用户注册通知请求')
+    
     const body = await request.json()
+    console.log('[Webhook] 请求体:', JSON.stringify(body, null, 2))
+    
     const { type, username, email, registeredAt, source } = body as UserRegisteredNotificationData
 
     // 验证必填字段
     if (!type || type !== 'user_registered') {
+      console.error('[Webhook] 验证失败：无效的通知类型', type)
       return NextResponse.json(
         { error: '无效的通知类型' },
         { status: 400 }
@@ -22,6 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!username || !email || !registeredAt) {
+      console.error('[Webhook] 验证失败：缺少必填字段', { username, email, registeredAt })
       return NextResponse.json(
         { error: '缺少必填字段' },
         { status: 400 }
@@ -29,6 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 发送 Windows 本地通知
+    console.log('[Webhook] 开始发送本地通知')
     sendUserRegisteredNotification({
       type: 'user_registered',
       username,
@@ -44,6 +51,7 @@ export async function POST(request: NextRequest) {
     console.log(`时间：${new Date().toISOString()}`)
     console.log(`用户名：${username}`)
     console.log(`邮箱：${email}`)
+    console.log(`来源：${source || 'vercel'}`)
     console.log('========================================')
 
     return NextResponse.json({

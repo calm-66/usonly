@@ -145,6 +145,9 @@ interface UserRegisteredNotificationConfig {
  * @param data 用户注册通知数据
  */
 export function sendUserRegisteredNotification(data: UserRegisteredNotificationData): void {
+  console.log('[通知] 开始发送用户注册通知')
+  console.log('[通知] 通知数据:', JSON.stringify(data, null, 2))
+  
   // 格式化注册时间
   const registeredDate = new Date(data.registeredAt);
   const formattedTime = registeredDate.toLocaleString('zh-CN', {
@@ -163,7 +166,12 @@ export function sendUserRegisteredNotification(data: UserRegisteredNotificationD
     timeout: 15
   };
 
+  console.log('[通知] 通知配置:', { title: config.title, message: config.message })
+  console.log('[通知] 调用 sendNotification 发送通知')
+  
   sendNotification(config);
+  
+  console.log('[通知] 通知发送完成')
 }
 
 /**

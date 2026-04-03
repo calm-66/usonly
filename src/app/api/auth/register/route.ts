@@ -56,18 +56,37 @@ export async function POST(request: NextRequest) {
 
     // 发送注册通知（生产环境）
     // 只在 WEBHOOK_URL 配置时发送（本地开发可选）
+    console.log('[注册通知] 用户注册成功:', { username, email })
+    console.log('[注册通知] WEBHOOK_URL:', process.env.WEBHOOK_URL ? '已配置' : '未配置')
+    
     if (process.env.WEBHOOK_URL) {
-      fetch(`${process.env.WEBHOOK_URL}/api/user-registered`, {
+      const webhookUrl = `${process.env.WEBHOOK_URL}/api/user-registered`
+      const webhookBody = {
+        type: 'user_registered',
+        username,
+        email,
+        registeredAt: new Date().toISOString(),
+        source: 'vercel'
+      }
+      
+      console.log('[注册通知] 发送 Webhook 到:', webhookUrl)
+      console.log('[注册通知] Webhook 请求体:', JSON.stringify(webhookBody, null, 2))
+      
+      fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'user_registered',
-          username,
-          email,
-          registeredAt: new Date().toISOString(),
-          source: 'vercel'
+        body: JSON.stringify(webhookBody)
+      })
+        .then(res => {
+          console.log('[注册通知] Webhook 响应状态:', res.status)
+          return res.json()
         })
-      }).catch(console.error)
+        .then(data => {
+          console.log('[注册通知] Webhook 响应数据:', data)
+        })
+        .catch(err => {
+          console.error('[注册通知] Webhook 发送失败:', err)
+        })
     }
 
     return NextResponse.json({
