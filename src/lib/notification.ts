@@ -32,16 +32,30 @@ export interface GitHubWebhookData {
  * @param config 通知配置
  */
 export function sendNotification(config: NotificationConfig): void {
-  notifier.notify({
-    title: config.title,
-    message: config.message,
-    icon: config.icon,
-    sound: config.sound ?? true,
-    timeout: config.timeout ?? 10,
-    // Windows 特定选项
-    wait: false,
-    priority: 0,
-  });
+  console.log('[NOTIFICATION] 准备发送系统通知...');
+  console.log('[NOTIFICATION] 配置:', JSON.stringify(config, null, 2));
+  
+  try {
+    notifier.notify({
+      title: config.title,
+      message: config.message,
+      icon: config.icon,
+      sound: config.sound ?? true,
+      timeout: config.timeout ?? 10,
+      // Windows 特定选项
+      wait: false,
+      priority: 0,
+    }, (err: Error | null) => {
+      if (err) {
+        console.error('[NOTIFICATION] 发送失败:', err);
+      } else {
+        console.log('[NOTIFICATION] 发送成功回调');
+      }
+    });
+    console.log('[NOTIFICATION] notifier.notify 已调用');
+  } catch (error) {
+    console.error('[NOTIFICATION] 异常:', error);
+  }
 }
 
 /**
