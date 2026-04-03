@@ -3,6 +3,13 @@
 const notifier = require('node-notifier');
 
 /**
+ * 类型守卫：判断是否为 VercelWebhookData
+ */
+function isVercelData(data: NotificationData): data is VercelWebhookData {
+  return data.source === 'vercel' || data.source === undefined;
+}
+
+/**
  * 通知配置接口
  */
 interface NotificationConfig {
@@ -101,7 +108,7 @@ export function sendBuildNotification(data: NotificationData): void {
     case 'created':
     case 'pending':
       // 使用类型守卫访问 branch 或 commitRef
-      const branchInfo = 'branch' in data ? data.branch : data.commitRef;
+      const branchInfo = isVercelData(data) ? data.commitRef : data.branch;
       config = {
         title: `${sourceIcon} UsOnly Build 开始`,
         message: `项目：${data.projectName}\n分支：${branchInfo || 'main'}`,
