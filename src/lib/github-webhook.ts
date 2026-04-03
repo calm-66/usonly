@@ -68,6 +68,19 @@ export function parseGitHubWebhook(payload: GitHubDeploymentStatusPayload): Noti
     branch = branch.substring('refs/heads/'.length);
   }
   
+  // 如果 ref 为空，从 environment 字段推断
+  if (!branch || branch.trim() === '') {
+    const env = payload.deployment_status.environment?.toLowerCase() || '';
+    if (env.includes('preview')) {
+      branch = 'preview';
+    } else if (env.includes('production')) {
+      branch = 'main';
+    } else {
+      branch = payload.deployment.ref || 'unknown';
+    }
+    console.log('[DEBUG] 从 environment 推断 branch:', branch);
+  }
+  
   console.log('[DEBUG] 解析后的 branch:', branch);
 
   return {
