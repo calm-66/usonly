@@ -380,9 +380,9 @@ export default function TimelinePage() {
       ]
 
       // 根据 userId 设置正确的 owner
-      const postsWithOwner = allPosts.map((p: Post) => ({
+      const postsWithOwner = allPosts.map((p: Post): Post => ({
         ...p,
-        owner: (p.userId === userData.id ? '我' : 'TA') as const,
+        owner: p.userId === userData.id ? '我' : 'TA',
       }))
 
       // 分类存储
