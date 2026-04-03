@@ -1475,33 +1475,9 @@ export default function TimelinePage() {
                         {formatDate(day.date)}
                       </span>
                     </div>
-                    {/* 帖子列表 */}
+                    {/* 帖子列表 - 根据 activeTab 决定显示哪组数据 */}
                     <div className="space-y-3">
-                      {day.myPosts.length > 0 ? day.myPosts.map((post) => (
-                        <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                          <div className="p-4">
-                            {post.title && (
-                              <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
-                            )}
-                            {post.imageUrl && (
-                              <div className="mb-3">
-                                <img
-                                  src={post.imageUrl}
-                                  alt="分享图片"
-                                  className="w-full h-48 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
-                                  onClick={() => setSelectedImage(post.imageUrl!)}
-                                />
-                              </div>
-                            )}
-                            {post.text && (
-                              <p className="text-gray-700 whitespace-pre-wrap break-words">{post.text}</p>
-                            )}
-                            <div className="flex justify-end">
-                              <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      )) : day.partnerPosts.map((post) => (
+                      {activeTab === 'mine' && day.myPosts.length > 0 && day.myPosts.map((post) => (
                         <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
                           <div className="p-4">
                             {post.title && (
@@ -1526,6 +1502,37 @@ export default function TimelinePage() {
                           </div>
                         </div>
                       ))}
+                      {activeTab === 'partner' && day.partnerPosts.length > 0 && day.partnerPosts.map((post) => (
+                        <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+                          <div className="p-4">
+                            {post.title && (
+                              <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
+                            )}
+                            {post.imageUrl && (
+                              <div className="mb-3">
+                                <img
+                                  src={post.imageUrl}
+                                  alt="分享图片"
+                                  className="w-full h-48 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
+                                  onClick={() => setSelectedImage(post.imageUrl!)}
+                                />
+                              </div>
+                            )}
+                            {post.text && (
+                              <p className="text-gray-700 whitespace-pre-wrap break-words">{post.text}</p>
+                            )}
+                            <div className="flex justify-end">
+                              <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {/* 空状态提示 */}
+                      {((activeTab === 'mine' && day.myPosts.length === 0) || (activeTab === 'partner' && day.partnerPosts.length === 0)) && (
+                        <div className="text-center py-4 text-gray-400 text-sm bg-gray-50 rounded-lg">
+                          暂无分享
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
