@@ -72,21 +72,11 @@ export async function POST(request: NextRequest) {
       console.log('[注册通知] 发送 Webhook 到:', webhookUrl)
       console.log('[注册通知] Webhook 请求体:', JSON.stringify(webhookBody, null, 2))
       
-      fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(webhookBody)
+      // 异步发送 Webhook，不阻塞注册响应
+      // 使用 fire-and-forget 模式，添加超时和重试处理
+      sendWebhookWithRetry(webhookUrl, webhookBody).catch(err => {
+        console.error('[注册通知] Webhook 最终失败:', err)
       })
-        .then(res => {
-          console.log('[注册通知] Webhook 响应状态:', res.status)
-          return res.json()
-        })
-        .then(data => {
-          console.log('[注册通知] Webhook 响应数据:', data)
-        })
-        .catch(err => {
-          console.error('[注册通知] Webhook 发送失败:', err)
-        })
     }
 
     return NextResponse.json({
@@ -100,4 +90,62 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+/**
+ * 带重试机制的 Webhook 发送函数
+ * @param url Webhook 目标 URL
+ * @param body 请求体
+ * @param maxRetries 最大重试次数（默认 2 次）
+ * @param timeout 超时时间（默认 5000ms）
+ */
+async function sendWebhookWithRetry(
+  url: string,
+  body: object,
+  maxRetries: number = 2,
+  timeout: number = 5000
+): Promise<void> {
+  let lastError: Error | null = null
+  
+  for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
+    try {
+      console.log(`[注册通知] 第 ${attempt} 次尝试发送 Webhook`)
+      
+      // 使用 AbortController 实现超时控制
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), timeout)
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      })
+      
+      clearTimeout(timeoutId)
+      
+      if (response.ok) {
+        const data = await response.json()
+        console.log(`[注册通知] Webhook 发送成功 (第 ${attempt} 次尝试)`)
+        console.log('[注册通知] Webhook 响应数据:', data)
+        return
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+    } catch (error: any) {
+      lastError = error
+      console.error(`[注册通知] 第 ${attempt} 次尝试失败:`, error.message || error)
+      
+      // 如果不是最后一次尝试，等待一段时间后重试
+      if (attempt <= maxRetries) {
+        const delay = 1000 * attempt // 指数退避：1s, 2s
+        console.log(`[注册通知] 等待 ${delay}ms 后重试...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+    }
+  }
+  
+  // 所有重试都失败
+  console.error('[注册通知] 所有重试都失败，放弃发送')
+  throw lastError
 }
