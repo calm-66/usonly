@@ -57,13 +57,19 @@ export function parseGitHubWebhook(payload: GitHubDeploymentStatusPayload): Noti
     status = 'pending';
   }
 
+  // 从 ref 中提取分支名 (例如：refs/heads/main -> main)
+  let branch = payload.deployment.ref;
+  if (branch && branch.startsWith('refs/heads/')) {
+    branch = branch.substring('refs/heads/'.length);
+  }
+
   return {
     status,
     projectName: payload.repository.name,
     deploymentId: payload.deployment.id.toString(),
     deploymentUrl: payload.deployment_status.environment_url,
     commitSha: payload.deployment.sha.substring(0, 7),
-    branch: payload.deployment.ref,
+    branch: branch,
     source: 'github'
   };
 }
