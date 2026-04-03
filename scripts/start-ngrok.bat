@@ -3,8 +3,8 @@ echo ========================================
 echo   Starting ngrok tunnel...
 echo ========================================
 echo.
-echo This will expose http://localhost:3001 to the public internet
+echo This will expose http://localhost:3000 to the public internet
 echo.
 echo Press Ctrl+C to stop
 echo.
-npx ngrok http 3001
+npx ngrok http 3000
