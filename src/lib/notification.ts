@@ -37,7 +37,7 @@ interface GitHubWebhookData {
   commitSha?: string;
   branch?: string;
   errorMessage?: string;
-  source: 'github';
+  source: 'vercel' | 'github';
 }
 
 /**
