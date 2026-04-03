@@ -29,7 +29,7 @@ GitHub Actions 触发 workflow
 本地 Next.js API route 处理请求
        │
        ▼
-Windows 系统通知弹窗
+Windows 系统会通知弹窗
 ```
 
 ---
