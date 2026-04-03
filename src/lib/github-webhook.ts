@@ -21,6 +21,7 @@ export interface GitHubDeploymentStatusPayload {
     sha: string;
     ref: string;
     environment: string;
+    message?: string;  // Git commit message (从 workflow 传递)
   };
   repository: {
     name: string;
@@ -76,13 +77,12 @@ export function parseGitHubWebhook(payload: GitHubDeploymentStatusPayload): Noti
     branch = refBranch || 'unknown';
   }
 
-  // 获取 commit message（从 deployment_status.description）
-  let commitMessage = payload.deployment_status.description || '';
-  
-  // 如果没有 description，尝试从 deployment 获取
-  if (!commitMessage && (payload.deployment as any).description) {
-    commitMessage = (payload.deployment as any).description;
-  }
+  // 获取 commit message
+  // 1. 优先从 deployment.message 获取（从 workflow 传递）
+  // 2. 回退到 deployment_status.description
+  let commitMessage = payload.deployment.message || 
+                      payload.deployment_status.description || 
+                      '';
 
   return {
     status,
