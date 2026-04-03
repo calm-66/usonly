@@ -62,7 +62,6 @@ model Post {
   title     String?       // 标题（可选）
   imageUrl  String?       // 图片 URL（可选）
   text      String?       // 文字内容（可选）
-  isLatePost Boolean      @default(false) // 是否补传
   // 位置相关字段（地图打卡）
   latitude    Float?      // 纬度
   longitude   Float?      // 经度
