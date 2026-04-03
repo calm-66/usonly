@@ -120,6 +120,53 @@ export function sendBuildNotification(data: GitHubWebhookData): void {
 }
 
 /**
+ * 用户注册通知数据接口
+ */
+export interface UserRegisteredNotificationData {
+  type: 'user_registered';        // 固定标识
+  username: string;                // 新注册用户名
+  email: string;                   // 新注册邮箱
+  registeredAt: string;            // ISO 时间戳
+  source: 'vercel';                // 来源标识
+}
+
+/**
+ * 用户注册通知配置接口
+ */
+interface UserRegisteredNotificationConfig {
+  title: string;                   // 通知标题（如："👤 UsOnly 新用户注册"）
+  message: string;                 // 通知内容（用户名、邮箱、时间）
+  sound?: boolean;                 // 是否播放声音
+  timeout?: number;                // 超时时间（秒）
+}
+
+/**
+ * 发送用户注册的 Windows 本地通知
+ * @param data 用户注册通知数据
+ */
+export function sendUserRegisteredNotification(data: UserRegisteredNotificationData): void {
+  // 格式化注册时间
+  const registeredDate = new Date(data.registeredAt);
+  const formattedTime = registeredDate.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+
+  const config: UserRegisteredNotificationConfig = {
+    title: '👤 UsOnly 新用户注册',
+    message: `用户名：${data.username}\n邮箱：${data.email}\n时间：${formattedTime}`,
+    sound: true,
+    timeout: 15
+  };
+
+  sendNotification(config);
+}
+
+/**
  * 截断字符串到指定长度
  * @param str 原字符串
  * @param maxLength 最大长度

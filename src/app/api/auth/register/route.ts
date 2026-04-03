@@ -54,6 +54,22 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // 发送注册通知（生产环境）
+    // 只在 WEBHOOK_URL 配置时发送（本地开发可选）
+    if (process.env.WEBHOOK_URL) {
+      fetch(`${process.env.WEBHOOK_URL}/api/user-registered`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'user_registered',
+          username,
+          email,
+          registeredAt: new Date().toISOString(),
+          source: 'vercel'
+        })
+      }).catch(console.error)
+    }
+
     return NextResponse.json({
       message: '注册成功',
       user,
