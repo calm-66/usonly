@@ -40,11 +40,14 @@ export async function POST(request: NextRequest) {
     console.log('projectName:', parsedData.projectName);
     console.log('============================================\n');
 
+    // 根据状态显示符号
+    const statusSymbol = parsedData.status === 'success' ? '✅' : (parsedData.status === 'failure' ? '❌' : '⏳');
+    
     console.log('========================================');
-    console.log('🐙 GitHub Deployment Notification');
+    console.log('GitHub Deployment Notification');
     console.log('========================================');
     console.log(`时间：${timestamp}`);
-    console.log(`状态：${parsedData.status}`);
+    console.log(`状态：${statusSymbol} ${parsedData.status}`);
     console.log(`项目：${parsedData.projectName}`);
     console.log(`分支：${parsedData.branch || '(空)'}`);
     console.log(`提交：${parsedData.commitSha}`);
