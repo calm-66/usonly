@@ -1054,6 +1054,70 @@ const url = `https://api.map.baidu.com/reverse_geocoding/v3/?ak=${AK}&output=jso
 
 ---
 
+### V2.4 - Vercel 部署通知系统 ✨
+
+#### 产品定位
+- **实时部署通知**：Vercel 部署完成时实时通知开发者
+- **本地弹窗提醒**：Windows 系统通知弹窗（SnoreToast）
+- **终端日志输出**：在本地开发服务器显示部署详情
+
+#### 功能特性
+- [x] GitHub Actions 监听 Vercel 部署状态
+- [x] 部署完成时发送 webhook 通知
+- [x] Windows 本地弹窗通知（SnoreToast）
+- [x] 终端实时日志输出
+- [x] 支持 branch 识别（preview/main）
+- [x] 显示完整 commit message
+
+#### 技术实现
+- [x] `.github/workflows/vercel-deploy-notification.yml` - GitHub Actions 配置
+  - 监听 `deployment_status` 事件
+  - 调用 GitHub API 获取 commit message
+  - 发送 webhook 到项目服务器
+- [x] `/api/webhook/github` - Webhook 接收端点
+  - 解析 GitHub webhook payload
+  - 提取部署状态、branch、commit 等信息
+  - 输出格式化日志
+- [x] `src/lib/github-webhook.ts` - GitHub webhook 解析工具
+- [x] `src/lib/notification.ts` - Windows 系统通知工具
+
+#### 通知内容
+| 字段 | 说明 | 示例 |
+|------|------|------|
+| 时间 | 部署完成时间 | 2026-04-03 19:00:00 |
+| 状态 | 成功/失败/进行中 | ✅ success |
+| 项目 | 项目名称 | usonly |
+| 分支 | 部署分支 | preview/main |
+| 提交 | commit SHA + message | abc1234 feat: add new feature |
+| 部署 URL | Vercel 预览地址 | https://usonly-...vercel.app |
+
+#### 终端输出示例
+```
+GitHub Deployment Notification
+时间：2026-04-03 19:00:00
+状态：✅ success
+项目：usonly
+分支：preview
+提交：abc1234 feat: add new feature
+部署 URL: https://usonly-...vercel.app
+```
+
+#### 新增文件
+| 文件路径 | 功能 |
+|---------|------|
+| `.github/workflows/vercel-deploy-notification.yml` | Vercel 部署通知工作流 |
+| `src/app/api/webhook/github/route.ts` | GitHub 部署通知 Webhook 端点 |
+| `src/lib/github-webhook.ts` | GitHub webhook 解析工具 |
+| `src/lib/notification.ts` | Windows 系统通知工具 |
+
+#### 技术亮点
+- **GitHub API 调用**：使用内置 `GITHUB_TOKEN` 获取 commit 详情
+- **分支智能识别**：从 `deployment_status.environment` 推断分支（Preview → preview, Production → main）
+- **SnoreToast 集成**：使用 `node-notifier` 库调用 Windows 通知
+- **无额外配置**：使用 GitHub 内置 token，无需额外 API Key
+
+---
+
 ## 十、未来迭代方向（产品思路）
 
 ### 短期迭代
@@ -1099,7 +1163,16 @@ const url = `https://api.map.baidu.com/reverse_geocoding/v3/?ak=${AK}&output=jso
    - 生成 Prisma 客户端：prisma generate
    - 构建 Next.js：next build
          ↓
-5. 访问域名查看效果
+5. GitHub Actions 触发部署通知
+   - 监听 deployment_status 事件
+   - 调用 GitHub API 获取 commit message
+   - 发送 webhook 到项目服务器
+         ↓
+6. 本地服务器接收通知
+   - Windows 弹窗提醒
+   - 终端显示部署详情
+         ↓
+7. 访问域名查看效果
 ```
 
 ---
@@ -1160,6 +1233,22 @@ const url = `https://api.map.baidu.com/reverse_geocoding/v3/?ak=${AK}&output=jso
 |---------|------|---------|
 | `src/app/map/page.tsx` | 地图定位页面 | MapContainer, Marker, Popup, MapInstanceSetter, MapController |
 
+### 新增 API（V2.4）
+| 文件路径 | 功能 | HTTP 方法 |
+|---------|------|---------|
+| `src/app/api/webhook/github/route.ts` | GitHub 部署通知 Webhook | POST |
+
+### 新增工具（V2.4）
+| 文件路径 | 功能 |
+|---------|------|
+| `src/lib/github-webhook.ts` | GitHub webhook 解析工具 |
+| `src/lib/notification.ts` | Windows 系统通知工具 |
+
+### GitHub Actions（V2.4）
+| 文件路径 | 功能 |
+|---------|------|
+| `.github/workflows/vercel-deploy-notification.yml` | Vercel 部署通知工作流 |
+
 ---
 
 ## 总结
@@ -1183,9 +1272,9 @@ UsOnly 是一个典型的**全栈 Web 应用**，包含：
 
 ---
 
-*文档版本：2.3*  
+*文档版本：2.4*  
 *最后更新：2026-04-03*  
-*本次更新：V2.3 时间轴 UI 重构与体验优化 ✨*
+*本次更新：V2.4 Vercel 部署通知系统 ✨*
 
 ---
 
