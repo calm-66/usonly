@@ -1,0 +1,34 @@
+name: Vercel Deploy Notification
+
+on:
+  deployment_status:
+    states: [success, failure]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send notification to webhook
+        run: |
+          curl -X POST "${{ secrets.WEBHOOK_URL }}/api/webhook/github" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "action": "created",
+              "deployment_status": {
+                "state": "${{ github.event.deployment_status.state }}",
+                "environment_url": "${{ github.event.deployment_status.environment_url }}",
+                "log_url": "${{ github.event.deployment_status.log_url }}",
+                "description": "${{ github.event.deployment_status.description }}"
+              },
+              "deployment": {
+                "id": "${{ github.event.deployment_status.deployment_id }}",
+                "sha": "${{ github.sha }}",
+                "ref": "${{ github.ref_name }}",
+                "environment": "${{ github.event.deployment_status.environment }}"
+              },
+              "repository": {
+                "name": "${{ github.event.repository.name }}",
+                "full_name": "${{ github.event.repository.full_name }}",
+                "html_url": "${{ github.event.repository.html_url }}"
+              }
+            }'
