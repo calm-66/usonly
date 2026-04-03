@@ -10,7 +10,6 @@ interface Post {
   title: string | null
   imageUrl: string | null
   text: string | null
-  isLatePost: boolean
   createdAt: string
   owner: '我' | 'TA'
   latitude?: number | null
@@ -1376,13 +1375,13 @@ export default function TimelinePage() {
                   setActiveTab('both')
                   setShowPairDaysInTab(!showPairDaysInTab)
                 }}
-                className={`flex items-center justify-center gap-1 py-2 text-sm font-medium rounded-md transition ${
+                className={`flex items-center justify-center gap-0.5 py-2 text-sm font-medium rounded-md transition ${
                   activeTab === 'both' ? 'bg-pink-100 text-pink-600' : 'text-gray-500'
-                } flex-1`}
+                } flex-1 min-w-0`}
               >
                 {renderTabAvatar(user.avatarUrl, user.username)}
-                <span className="text-pink-500">
-                  {showPairDaysInTab && showPairDays ? `❤️ ${pairDays}天 ❤️` : '❤️'}
+                <span className="text-pink-500 text-xs whitespace-nowrap">
+                  {showPairDaysInTab && showPairDays ? `${pairDays}d` : '❤️'}
                 </span>
                 {renderTabAvatar(user.partner.avatarUrl, user.partner.username)}
               </button>
