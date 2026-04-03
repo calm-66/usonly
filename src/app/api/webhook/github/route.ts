@@ -26,22 +26,31 @@ export async function POST(request: NextRequest) {
     // 根据状态显示符号
     const statusSymbol = parsedData.status === 'success' ? '✅' : (parsedData.status === 'failure' ? '❌' : '⏳');
     
+    console.log('');
     console.log('========================================');
     console.log('GitHub Deployment Notification');
     console.log('========================================');
+    console.log('');
     console.log(`时间：${timestamp}`);
+    console.log('');
     console.log(`状态：${statusSymbol} ${parsedData.status}`);
+    console.log('');
     console.log(`项目：${parsedData.projectName}`);
+    console.log('');
     console.log(`分支：${parsedData.branch || '(空)'}`);
+    console.log('');
     // 显示完整的提交信息：SHA + commit message
     const commitInfo = parsedData.commitMessage 
       ? `${parsedData.commitSha} ${parsedData.commitMessage}`
       : parsedData.commitSha;
     console.log(`提交：${commitInfo}`);
+    console.log('');
     if (parsedData.deploymentUrl) {
       console.log(`部署 URL: ${parsedData.deploymentUrl}`);
+      console.log('');
     }
     console.log('========================================');
+    console.log('');
 
     // 发送 Windows 系统通知
     sendBuildNotification(parsedData);
