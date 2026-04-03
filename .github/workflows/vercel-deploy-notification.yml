@@ -23,7 +23,7 @@ jobs:
               "deployment": {
                 "id": "${{ github.event.deployment_status.deployment_id }}",
                 "sha": "${{ github.sha }}",
-                "ref": "${{ github.ref_name }}",
+                "ref": "${{ github.event.deployment_status.deployment.ref }}",
                 "environment": "${{ github.event.deployment_status.environment }}"
               },
               "repository": {
