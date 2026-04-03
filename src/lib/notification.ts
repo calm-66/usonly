@@ -3,13 +3,6 @@
 const notifier = require('node-notifier');
 
 /**
- * 类型守卫：判断是否为 VercelWebhookData
- */
-function isVercelData(data: NotificationData): data is VercelWebhookData {
-  return data.source === 'vercel' || data.source === undefined;
-}
-
-/**
  * 通知配置接口
  */
 interface NotificationConfig {
@@ -21,23 +14,9 @@ interface NotificationConfig {
 }
 
 /**
- * Vercel Webhook 解析后的数据结构
- */
-interface VercelWebhookData {
-  status: 'created' | 'succeeded' | 'failed';
-  projectName: string;
-  deploymentId: string;
-  deploymentUrl?: string;
-  commitRef?: string;
-  errorMessage?: string;
-  errorCode?: string;
-  source?: 'vercel';
-}
-
-/**
  * GitHub Webhook 解析后的数据结构
  */
-interface GitHubWebhookData {
+export interface GitHubWebhookData {
   status: 'success' | 'failure' | 'pending';
   projectName: string;
   deploymentId: string;
@@ -45,13 +24,8 @@ interface GitHubWebhookData {
   commitSha?: string;
   branch?: string;
   errorMessage?: string;
-  source: 'vercel' | 'github';
+  source: 'github';
 }
-
-/**
- * 通用通知数据类型
- */
-export type NotificationData = VercelWebhookData | GitHubWebhookData;
 
 /**
  * 发送 Windows 系统通知
@@ -71,17 +45,16 @@ export function sendNotification(config: NotificationConfig): void {
 }
 
 /**
- * 根据 Build 状态发送通知（支持 Vercel 和 GitHub）
- * @param data 解析后的 webhook 数据
+ * 根据 Build 状态发送通知
+ * @param data GitHub webhook 解析后的数据
  */
-export function sendBuildNotification(data: NotificationData): void {
+export function sendBuildNotification(data: GitHubWebhookData): void {
   let config: NotificationConfig;
 
   // 根据来源显示不同的图标前缀
-  const sourceIcon = data.source === 'github' ? '🐙' : '🔔';
+  const sourceIcon = '🐙';
   
   switch (data.status) {
-    case 'succeeded':
     case 'success':
       config = {
         title: `${sourceIcon} UsOnly Build 成功`,
@@ -91,7 +64,6 @@ export function sendBuildNotification(data: NotificationData): void {
       };
       break;
 
-    case 'failed':
     case 'failure':
       // 失败时显示详细错误信息，截断过长的内容
       const errorMsg = data.errorMessage 
@@ -105,13 +77,10 @@ export function sendBuildNotification(data: NotificationData): void {
       };
       break;
 
-    case 'created':
     case 'pending':
-      // 使用类型守卫访问 branch 或 commitRef
-      const branchInfo = isVercelData(data) ? data.commitRef : data.branch;
       config = {
         title: `${sourceIcon} UsOnly Build 开始`,
-        message: `项目：${data.projectName}\n分支：${branchInfo || 'main'}`,
+        message: `项目：${data.projectName}\n分支：${data.branch || 'main'}`,
         sound: false, // 开始构建时不播放声音
         timeout: 5
       };
