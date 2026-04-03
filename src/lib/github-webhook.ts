@@ -14,6 +14,7 @@ export interface GitHubDeploymentStatusPayload {
     environment_url: string;
     log_url: string;
     description: string;
+    environment?: string;  // Vercel 部署的环境名称（Preview 或 Production）
   };
   deployment: {
     id: string;
