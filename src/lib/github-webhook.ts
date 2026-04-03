@@ -38,6 +38,7 @@ export interface NotificationData {
   deploymentId: string;
   deploymentUrl?: string;
   commitSha?: string;
+  commitMessage?: string;  // Git commit message
   branch?: string;
   errorMessage?: string;
   source: 'github';
@@ -75,12 +76,21 @@ export function parseGitHubWebhook(payload: GitHubDeploymentStatusPayload): Noti
     branch = refBranch || 'unknown';
   }
 
+  // 获取 commit message（从 deployment_status.description）
+  let commitMessage = payload.deployment_status.description || '';
+  
+  // 如果没有 description，尝试从 deployment 获取
+  if (!commitMessage && (payload.deployment as any).description) {
+    commitMessage = (payload.deployment as any).description;
+  }
+
   return {
     status,
     projectName: payload.repository.name,
     deploymentId: payload.deployment.id.toString(),
     deploymentUrl: payload.deployment_status.environment_url,
     commitSha: payload.deployment.sha.substring(0, 7),
+    commitMessage: commitMessage,
     branch: branch,
     source: 'github'
   };

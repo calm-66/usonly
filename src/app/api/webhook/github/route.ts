@@ -33,7 +33,11 @@ export async function POST(request: NextRequest) {
     console.log(`状态：${statusSymbol} ${parsedData.status}`);
     console.log(`项目：${parsedData.projectName}`);
     console.log(`分支：${parsedData.branch || '(空)'}`);
-    console.log(`提交：${parsedData.commitSha}`);
+    // 显示完整的提交信息：SHA + commit message
+    const commitInfo = parsedData.commitMessage 
+      ? `${parsedData.commitSha} ${parsedData.commitMessage}`
+      : parsedData.commitSha;
+    console.log(`提交：${commitInfo}`);
     if (parsedData.deploymentUrl) {
       console.log(`部署 URL: ${parsedData.deploymentUrl}`);
     }
