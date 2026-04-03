@@ -56,25 +56,26 @@ export async function POST(request: NextRequest) {
 
     // 发送注册通知（生产环境）
     // 只在 WEBHOOK_URL 配置时发送（本地开发可选）
-    console.log('[注册通知] 用户注册成功:', { username, email })
-    console.log('[注册通知] WEBHOOK_URL:', process.env.WEBHOOK_URL ? '已配置' : '未配置')
-    
+    // 使用立即执行的异步函数，确保每次请求的数据独立
     if (process.env.WEBHOOK_URL) {
       const webhookUrl = `${process.env.WEBHOOK_URL}/api/user-registered`
-      const webhookBody = {
+      // 立即创建请求体副本，避免闭包问题
+      const webhookBodyCopy = JSON.stringify({
         type: 'user_registered',
-        username,
-        email,
+        username: username,
+        email: email,
         registeredAt: new Date().toISOString(),
         source: 'vercel'
-      }
+      })
       
+      console.log('[注册通知] 用户注册成功:', { username, email })
+      console.log('[注册通知] WEBHOOK_URL:', process.env.WEBHOOK_URL ? '已配置' : '未配置')
       console.log('[注册通知] 发送 Webhook 到:', webhookUrl)
-      console.log('[注册通知] Webhook 请求体:', JSON.stringify(webhookBody, null, 2))
+      console.log('[注册通知] Webhook 请求体:', webhookBodyCopy)
       
       // 异步发送 Webhook，不阻塞注册响应
-      // 使用 fire-and-forget 模式，添加超时和重试处理
-      sendWebhookWithRetry(webhookUrl, webhookBody).catch(err => {
+      // 使用字符串副本确保数据不会被修改
+      sendWebhookWithRetry(webhookUrl, webhookBodyCopy).catch(err => {
         console.error('[注册通知] Webhook 最终失败:', err)
       })
     }
@@ -95,13 +96,13 @@ export async function POST(request: NextRequest) {
 /**
  * 带重试机制的 Webhook 发送函数
  * @param url Webhook 目标 URL
- * @param body 请求体
+ * @param bodyJson 请求体 JSON 字符串（已序列化，避免闭包问题）
  * @param maxRetries 最大重试次数（默认 2 次）
  * @param timeout 超时时间（默认 5000ms）
  */
 async function sendWebhookWithRetry(
   url: string,
-  body: object,
+  bodyJson: string,
   maxRetries: number = 2,
   timeout: number = 5000
 ): Promise<void> {
@@ -118,7 +119,7 @@ async function sendWebhookWithRetry(
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: bodyJson,  // 直接使用字符串，不再序列化
         signal: controller.signal
       })
       
