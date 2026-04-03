@@ -9,7 +9,6 @@ interface Post {
   title: string | null
   imageUrl: string | null
   text: string | null
-  isLatePost: boolean
   createdAt: string
   comments?: Comment[]
 }

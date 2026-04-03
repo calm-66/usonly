@@ -10,7 +10,6 @@ interface Post {
   title: string | null
   imageUrl: string | null
   text: string | null
-  isLatePost: boolean
   createdAt: string
   owner: '我' | 'TA'
 }
