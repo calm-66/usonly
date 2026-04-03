@@ -39,11 +39,12 @@ export function sendNotification(config: NotificationConfig): void {
   const path = require('path');
   const os = require('os');
   
-  // 直接使用 SnoreToast 可执行文件
+  // 使用项目根目录（process.cwd()）来计算 SnoreToast 路径
+  // 因为在 Next.js 编译后 __dirname 会指向错误的目录
   const is64Bit = os.arch() === 'x64';
   const snoreToastPath = path.join(
-    __dirname,
-    '../../node_modules/node-notifier/vendor/snoreToast',
+    process.cwd(),
+    'node_modules/node-notifier/vendor/snoreToast',
     'snoretoast-' + (is64Bit ? 'x64' : 'x86') + '.exe'
   );
   
