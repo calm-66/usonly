@@ -1463,79 +1463,80 @@ export default function TimelinePage() {
               </div>
             ) : (
               <>
-                {groupByDate().map((day) => (
-                  <div key={day.date} className={`border-2 rounded-xl p-4 bg-white/50 backdrop-blur-sm shadow-sm ${
-                    activeTab === 'mine' ? 'border-pink-200' : 'border-purple-200'
-                  }`}>
-                    {/* 日期头部 */}
-                    <div className={`bg-gradient-to-r px-4 py-2 rounded-lg mb-3 ${
-                      activeTab === 'mine' ? 'from-pink-50 to-purple-50' : 'from-purple-50 to-pink-50'
+                {groupByDate().map((day) => {
+                  // 根据 activeTab 判断是否有帖子需要显示
+                  const hasPosts = activeTab === 'mine' ? day.myPosts.length > 0 : day.partnerPosts.length > 0
+                  // 如果没有帖子，跳过渲染该日期
+                  if (!hasPosts) return null
+                  
+                  return (
+                    <div key={day.date} className={`border-2 rounded-xl p-4 bg-white/50 backdrop-blur-sm shadow-sm ${
+                      activeTab === 'mine' ? 'border-pink-200' : 'border-purple-200'
                     }`}>
-                      <span className="text-sm font-bold text-gray-800">
-                        {formatDate(day.date)}
-                      </span>
-                    </div>
-                    {/* 帖子列表 - 根据 activeTab 决定显示哪组数据 */}
-                    <div className="space-y-3">
-                      {activeTab === 'mine' && day.myPosts.length > 0 && day.myPosts.map((post) => (
-                        <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                          <div className="p-4">
-                            {post.title && (
-                              <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
-                            )}
-                            {post.imageUrl && (
-                              <div className="mb-3">
-                                <img
-                                  src={post.imageUrl}
-                                  alt="分享图片"
-                                  className="w-full h-48 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
-                                  onClick={() => setSelectedImage(post.imageUrl!)}
-                                />
+                      {/* 日期头部 */}
+                      <div className={`bg-gradient-to-r px-4 py-2 rounded-lg mb-3 ${
+                        activeTab === 'mine' ? 'from-pink-50 to-purple-50' : 'from-purple-50 to-pink-50'
+                      }`}>
+                        <span className="text-sm font-bold text-gray-800">
+                          {formatDate(day.date)}
+                        </span>
+                      </div>
+                      {/* 帖子列表 - 根据 activeTab 决定显示哪组数据 */}
+                      <div className="space-y-3">
+                        {activeTab === 'mine' && day.myPosts.map((post) => (
+                          <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+                            <div className="p-4">
+                              {post.title && (
+                                <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
+                              )}
+                              {post.imageUrl && (
+                                <div className="mb-3">
+                                  <img
+                                    src={post.imageUrl}
+                                    alt="分享图片"
+                                    className="w-full h-48 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
+                                    onClick={() => setSelectedImage(post.imageUrl!)}
+                                  />
+                                </div>
+                              )}
+                              {post.text && (
+                                <p className="text-gray-700 whitespace-pre-wrap break-words">{post.text}</p>
+                              )}
+                              <div className="flex justify-end">
+                                <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
                               </div>
-                            )}
-                            {post.text && (
-                              <p className="text-gray-700 whitespace-pre-wrap break-words">{post.text}</p>
-                            )}
-                            <div className="flex justify-end">
-                              <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                      {activeTab === 'partner' && day.partnerPosts.length > 0 && day.partnerPosts.map((post) => (
-                        <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                          <div className="p-4">
-                            {post.title && (
-                              <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
-                            )}
-                            {post.imageUrl && (
-                              <div className="mb-3">
-                                <img
-                                  src={post.imageUrl}
-                                  alt="分享图片"
-                                  className="w-full h-48 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
-                                  onClick={() => setSelectedImage(post.imageUrl!)}
-                                />
+                        ))}
+                        {activeTab === 'partner' && day.partnerPosts.map((post) => (
+                          <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+                            <div className="p-4">
+                              {post.title && (
+                                <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
+                              )}
+                              {post.imageUrl && (
+                                <div className="mb-3">
+                                  <img
+                                    src={post.imageUrl}
+                                    alt="分享图片"
+                                    className="w-full h-48 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
+                                    onClick={() => setSelectedImage(post.imageUrl!)}
+                                  />
+                                </div>
+                              )}
+                              {post.text && (
+                                <p className="text-gray-700 whitespace-pre-wrap break-words">{post.text}</p>
+                              )}
+                              <div className="flex justify-end">
+                                <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
                               </div>
-                            )}
-                            {post.text && (
-                              <p className="text-gray-700 whitespace-pre-wrap break-words">{post.text}</p>
-                            )}
-                            <div className="flex justify-end">
-                              <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                      {/* 空状态提示 */}
-                      {((activeTab === 'mine' && day.myPosts.length === 0) || (activeTab === 'partner' && day.partnerPosts.length === 0)) && (
-                        <div className="text-center py-4 text-gray-400 text-sm bg-gray-50 rounded-lg">
-                          暂无分享
-                        </div>
-                      )}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </>
             )}
           </div>
