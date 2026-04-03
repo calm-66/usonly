@@ -63,23 +63,21 @@ export function parseGitHubWebhook(payload: GitHubDeploymentStatusPayload): Noti
   console.log('[DEBUG] ref 类型:', typeof payload.deployment.ref);
   console.log('[DEBUG] ref 是否为空:', !payload.deployment.ref);
   
-  // 从 ref 中提取分支名 (例如：refs/heads/main -> main)
-  let branch = payload.deployment.ref;
-  if (branch && branch.startsWith('refs/heads/')) {
-    branch = branch.substring('refs/heads/'.length);
-  }
-  
-  // 如果 ref 为空，从 environment 字段推断
-  if (!branch || branch.trim() === '') {
-    const env = payload.deployment_status.environment?.toLowerCase() || '';
-    if (env.includes('preview')) {
-      branch = 'preview';
-    } else if (env.includes('production')) {
-      branch = 'main';
-    } else {
-      branch = payload.deployment.ref || 'unknown';
+  // 优先从 deployment_status.environment 字段推断分支名
+  // Preview -> preview, Production -> main
+  let branch = 'unknown';
+  const env = payload.deployment_status.environment?.toLowerCase() || '';
+  if (env.includes('preview')) {
+    branch = 'preview';
+  } else if (env.includes('production')) {
+    branch = 'main';
+  } else {
+    // 回退：从 deployment.ref 获取
+    let refBranch = payload.deployment.ref;
+    if (refBranch && refBranch.startsWith('refs/heads/')) {
+      refBranch = refBranch.substring('refs/heads/'.length);
     }
-    console.log('[DEBUG] 从 environment 推断 branch:', branch);
+    branch = refBranch || 'unknown';
   }
   
   console.log('[DEBUG] 解析后的 branch:', branch);
