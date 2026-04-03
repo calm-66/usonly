@@ -371,18 +371,23 @@ export default function TimelinePage() {
       ])
 
       const myData = await myRes.json()
-      if (myData.posts) {
-        const postsWithOwner = myData.posts.map((p: Post) => ({ ...p, owner: '我' as const }))
-        setPosts(postsWithOwner)
-      }
+      const partnerData = partnerRes ? await partnerRes.json() : null
 
-      if (partnerRes) {
-        const partnerData = await partnerRes.json()
-        if (partnerData.posts) {
-          const postsWithOwner = partnerData.posts.map((p: Post) => ({ ...p, owner: 'TA' as const }))
-          setPartnerPosts(postsWithOwner)
-        }
-      }
+      // 合并所有帖子，然后根据 userId 判断 owner
+      const allPosts: Post[] = [
+        ...(myData.posts || []),
+        ...(partnerData?.posts || []),
+      ]
+
+      // 根据 userId 设置正确的 owner
+      const postsWithOwner = allPosts.map((p: Post) => ({
+        ...p,
+        owner: (p.userId === userData.id ? '我' : 'TA') as const,
+      }))
+
+      // 分类存储
+      setPosts(postsWithOwner.filter(p => p.owner === '我'))
+      setPartnerPosts(postsWithOwner.filter(p => p.owner === 'TA'))
     } catch (error) {
       console.error('加载分享失败:', error)
     } finally {
