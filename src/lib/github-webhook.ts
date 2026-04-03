@@ -57,11 +57,18 @@ export function parseGitHubWebhook(payload: GitHubDeploymentStatusPayload): Noti
     status = 'pending';
   }
 
+  // 调试日志：打印原始 ref
+  console.log('[DEBUG] 原始 ref:', payload.deployment.ref);
+  console.log('[DEBUG] ref 类型:', typeof payload.deployment.ref);
+  console.log('[DEBUG] ref 是否为空:', !payload.deployment.ref);
+  
   // 从 ref 中提取分支名 (例如：refs/heads/main -> main)
   let branch = payload.deployment.ref;
   if (branch && branch.startsWith('refs/heads/')) {
     branch = branch.substring('refs/heads/'.length);
   }
+  
+  console.log('[DEBUG] 解析后的 branch:', branch);
 
   return {
     status,

@@ -8,6 +8,14 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
+      - name: Debug - Print ref info
+        run: |
+          echo "=== DEBUG INFO ==="
+          echo "github.ref: ${{ github.ref }}"
+          echo "github.event.deployment_status.deployment.ref: ${{ github.event.deployment_status.deployment.ref }}"
+          echo "github.event.repository.default_branch: ${{ github.event.repository.default_branch }}"
+          echo "=================="
+      
       - name: Send notification to webhook
         run: |
           curl -X POST "${{ secrets.WEBHOOK_URL }}/api/webhook/github" \

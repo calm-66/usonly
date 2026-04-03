@@ -11,6 +11,12 @@ import { sendBuildNotification } from '@/lib/notification';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    
+    // 调试日志：打印原始请求
+    console.log('[DEBUG] === 收到 GitHub webhook 请求 ===');
+    console.log('[DEBUG] 原始 body:', JSON.stringify(body, null, 2));
+    console.log('[DEBUG] deployment.ref:', body.deployment?.ref);
+    
     const parsedData = parseGitHubWebhook(body);
 
     // 生成时间戳
@@ -22,6 +28,14 @@ export async function POST(request: NextRequest) {
       minute: '2-digit',
       second: '2-digit'
     }).replace(/\//g, '-');
+
+    // 调试日志：打印解析后的数据
+    console.log('[DEBUG] 解析后的数据:', {
+      status: parsedData.status,
+      branch: parsedData.branch,
+      commitSha: parsedData.commitSha,
+      projectName: parsedData.projectName
+    });
 
     // 打印日志
     console.log('\n========================================');
