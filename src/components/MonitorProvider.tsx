@@ -39,7 +39,7 @@ export default function MonitorProvider({ children }: MonitorProviderProps) {
     
     const script = document.createElement('script');
     script.src = 'https://monitor-git-dev-calm-66s-projects.vercel.app/monitor.js';
-    script.setAttribute('data-project-id', 'UsOnly-Preview');
+    script.setAttribute('data-project-id', '28cc0e0a-aa4e-4421-b1d9-e311e34d2eed');
     script.setAttribute('data-api-key', 'mk_5Tms2UqLLBMDV24adDeCDRlpSK4CcHAO');
     script.setAttribute('data-endpoint', 'https://monitor-git-dev-calm-66s-projects.vercel.app/api/events');
     script.async = true;
