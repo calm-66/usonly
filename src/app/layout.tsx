@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Script from "next/script";
+import MonitorProvider from "@/components/MonitorProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,15 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <head />
       <body>
-        <Script 
-          src="https://monitor-70t6v0k0q-calm-66s-projects.vercel.app/monitor.js"
-          data-project-id="UsOnly"
-          data-api-key="mk_DB6w9D2sJ4flZnNdOWPRAgJ6A8tl9F5D"
-          strategy="afterInteractive"
-        />
-        {children}
+        <MonitorProvider>
+          {children}
+        </MonitorProvider>
       </body>
     </html>
   );
