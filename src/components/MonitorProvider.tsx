@@ -28,8 +28,8 @@ export default function MonitorProvider({ children }: MonitorProviderProps) {
     
     script.onload = () => {
       console.log('[Monitor] ✅ Script loaded successfully');
-      console.log('[Monitor] Window.Monitor type:', typeof window.Monitor);
-      console.log('[Monitor] Window.Monitor:', window.Monitor);
+      console.log('[Monitor] Window.Monitor type:', typeof (window as any).Monitor);
+      console.log('[Monitor] Window.Monitor:', (window as any).Monitor);
       setIsLoaded(true);
     };
     
