@@ -16,7 +16,22 @@ import { prisma } from '@/lib/prisma';
  * }
  * 
  * 可选的 API Key 认证（通过 MONITOR_API_KEY 环境变量配置）
+ * 
+ * CORS: 允许所有域名访问（因为这是公开统计数据）
  */
+
+// CORS 配置 - 允许所有域名访问
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, X-API-Key',
+};
+
+// 处理 OPTIONS 预检请求
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: CORS_HEADERS });
+}
+
 export async function GET(request: NextRequest) {
   try {
     // 可选的 API Key 认证
@@ -26,7 +41,7 @@ export async function GET(request: NextRequest) {
     if (expectedKey && apiKey !== expectedKey) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { status: 401, headers: CORS_HEADERS }
       );
     }
 
@@ -66,12 +81,12 @@ export async function GET(request: NextRequest) {
         newUsersThisWeek,
         newUsersThisMonth
       }
-    });
+    }, { headers: CORS_HEADERS });
   } catch (error) {
     console.error('Error in /api/monitor/stats:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: CORS_HEADERS }
     );
   }
 }
