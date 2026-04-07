@@ -13,6 +13,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
+      <head>
+        <script 
+          src="https://monitor-70t6v0k0q-calm-66s-projects.vercel.app/monitor.js"
+          data-project-id="UsOnly"
+          data-api-key="mk_DB6w9D2sJ4flZnNdOWPRAgJ6A8tl9F5D"
+        />
+      </head>
       <body>{children}</body>
     </html>
   );
