@@ -50,6 +50,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // 更新最后登录时间
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() }
+    })
+
     // 返回用户信息（不包含密码）
     const { password: _, ...userWithoutPassword } = user
     return NextResponse.json({

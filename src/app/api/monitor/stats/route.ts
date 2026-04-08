@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 /**
- * 标准化用户统计 API - 用于 Monitor Dashboard 显示注册用户数
+ * 标准化用户统计 API - 用于 Monitor Dashboard 显示用户数据
  * 
  * 响应格式:
  * {
@@ -12,6 +12,8 @@ import { prisma } from '@/lib/prisma';
  *     newUsersToday?: number,    // 今日新增用户
  *     newUsersThisWeek?: number, // 本周新增用户
  *     newUsersThisMonth?: number // 本月新增用户
+ *     dailyVisitors?: Array<{ date: string, count: number }>,     // 每日访问用户数（30 天）
+ *     dailyActiveUsers?: Array<{ date: string, count: number }>   // 每日登录用户数（30 天）
  *   }
  * }
  * 
@@ -73,13 +75,45 @@ export async function GET(request: NextRequest) {
       where: { createdAt: { gte: monthStart } }
     });
 
+    // 获取 30 天前的日期
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
+
+    // 获取每日登录用户数（基于 lastLoginAt）
+    const dailyActiveUsersResult = await prisma.user.groupBy({
+      by: ['lastLoginAt'],
+      _count: { id: true },
+      where: {
+        lastLoginAt: { gte: thirtyDaysAgo }
+      },
+      orderBy: {
+        lastLoginAt: 'asc'
+      }
+    });
+
+    // 按日期分组统计登录用户数
+    const dailyActiveUsersMap = new Map<string, number>();
+    dailyActiveUsersResult.forEach((item: { lastLoginAt: Date | null; _count: { id: number } }) => {
+      if (item.lastLoginAt) {
+        const dateKey = item.lastLoginAt.toISOString().split('T')[0];
+        dailyActiveUsersMap.set(dateKey, (dailyActiveUsersMap.get(dateKey) || 0) + item._count.id);
+      }
+    });
+
+    const dailyActiveUsers = Array.from(dailyActiveUsersMap.entries()).map(([date, count]) => ({
+      date,
+      count
+    }));
+
     return NextResponse.json({
       success: true,
       data: {
         totalUsers,
         newUsersToday,
         newUsersThisWeek,
-        newUsersThisMonth
+        newUsersThisMonth,
+        dailyActiveUsers
       }
     }, { headers: CORS_HEADERS });
   } catch (error) {
