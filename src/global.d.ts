@@ -10,17 +10,19 @@ declare module 'leaflet/dist/leaflet.css' {
   export default css
 }
 
-// 声明 Monitor 全局类型
-interface MonitorInterface {
-  init: (options: { projectId: string; apiKey: string; endpoint?: string; batchSize?: number; flushInterval?: number }) => void;
-  trackPageview: (customData?: Record<string, any>) => void;
-  trackEvent: (eventName: string, eventData?: Record<string, any>) => void;
-  trackClick: (selector: string, eventName?: string) => void;
-  flush: () => void;
-  destroy: () => void;
-}
+// 声明 Monitor 全局类型 - 扩展 Window 接口
+export {}
 
 declare global {
+  interface MonitorInterface {
+    init: (options: { projectId: string; apiKey: string; endpoint?: string; batchSize?: number; flushInterval?: number }) => void;
+    trackPageview: (customData?: Record<string, any>) => void;
+    trackEvent: (eventName: string, eventData?: Record<string, any>) => void;
+    trackClick: (selector: string, eventName?: string) => void;
+    flush: () => void;
+    destroy: () => void;
+  }
+
   interface Window {
     Monitor?: MonitorInterface;
   }
