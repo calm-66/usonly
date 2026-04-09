@@ -94,7 +94,8 @@ function getCurrentEnvironment(): string {
   const hostname = window.location.hostname;
   
   // 检查是否是 preview 环境（Vercel preview URL）
-  if (hostname.includes('usonly-preview') || hostname.includes('vercel.app')) {
+  // Vercel preview URL 格式：xxx-preview.vercel.app 或 xxx-git-xxx-preview.vercel.app
+  if (hostname.includes('-preview') || hostname.includes('vercel.app')) {
     return 'preview';
   }
   
