@@ -40,11 +40,14 @@ export async function GET(request: NextRequest) {
     const apiKey = request.headers.get('X-API-Key');
     const expectedKey = process.env.MONITOR_API_KEY;
     
-    if (expectedKey && apiKey !== expectedKey) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401, headers: CORS_HEADERS }
-      );
+    // 只有在设置了 MONITOR_API_KEY 时才进行认证
+    if (expectedKey) {
+      if (!apiKey || apiKey !== expectedKey) {
+        return NextResponse.json(
+          { success: false, error: 'Unauthorized' },
+          { status: 401, headers: CORS_HEADERS }
+        );
+      }
     }
 
     // 获取总用户数
