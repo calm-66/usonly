@@ -81,30 +81,50 @@ export async function GET(request: NextRequest) {
     thirtyDaysAgo.setHours(0, 0, 0, 0);
 
     // 获取每日登录用户数（基于 lastLoginAt）
-    const dailyActiveUsersResult = await prisma.user.groupBy({
-      by: ['lastLoginAt'],
-      _count: { id: true },
+    // 按日期分组统计，每天登录的用户数（去重）
+    const dailyActiveUsersMap = new Map<string, number>();
+    
+    // 初始化 30 天内所有日期为 0
+    for (let i = 0; i < 30; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+      const nextDay = new Date(date);
+      nextDay.setDate(nextDay.getDate() + 1);
+      const dateKey = date.toISOString().split('T')[0];
+      dailyActiveUsersMap.set(dateKey, 0);
+    }
+    
+    // 获取所有用户，按 lastLoginAt 统计每天登录的用户数
+    const allUsers = await prisma.user.findMany({
       where: {
         lastLoginAt: { gte: thirtyDaysAgo }
       },
-      orderBy: {
-        lastLoginAt: 'asc'
+      select: {
+        id: true,
+        lastLoginAt: true
       }
     });
-
-    // 按日期分组统计登录用户数
-    const dailyActiveUsersMap = new Map<string, number>();
-    dailyActiveUsersResult.forEach((item: { lastLoginAt: Date | null; _count: { id: number } }) => {
-      if (item.lastLoginAt) {
-        const dateKey = item.lastLoginAt.toISOString().split('T')[0];
-        dailyActiveUsersMap.set(dateKey, (dailyActiveUsersMap.get(dateKey) || 0) + item._count.id);
+    
+    // 按日期分组统计（每个用户每天只计一次）
+    const userDateMap = new Map<string, Set<string>>(); // date -> Set<userId>
+    allUsers.forEach((user: { id: string; lastLoginAt: Date | null }) => {
+      if (user.lastLoginAt) {
+        const dateKey = user.lastLoginAt.toISOString().split('T')[0];
+        if (!userDateMap.has(dateKey)) {
+          userDateMap.set(dateKey, new Set());
+        }
+        userDateMap.get(dateKey)?.add(user.id);
       }
     });
-
-    const dailyActiveUsers = Array.from(dailyActiveUsersMap.entries()).map(([date, count]) => ({
-      date,
-      count
-    }));
+    
+    // 转换为最终格式
+    const dailyActiveUsers = Array.from(dailyActiveUsersMap.entries())
+      .map(([date]) => ({
+        date,
+        count: userDateMap.get(date)?.size || 0
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
 
     return NextResponse.json({
       success: true,
