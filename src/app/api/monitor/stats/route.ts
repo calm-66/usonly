@@ -29,9 +29,12 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type, X-API-Key',
 };
 
-// 处理 OPTIONS 预检请求
+// 处理 OPTIONS 预检请求 - 使用 204 No Content 状态码
 export async function OPTIONS() {
-  return NextResponse.json({}, { headers: CORS_HEADERS });
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS
+  });
 }
 
 export async function GET(request: NextRequest) {
