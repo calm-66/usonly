@@ -6,11 +6,38 @@ interface MonitorProviderProps {
   children: React.ReactNode;
 }
 
-// 环境变量配置（默认值用于开发环境）
+/**
+ * 环境变量配置
+ * 使用独立的 Project ID 和 API Key 区分 Preview 和 Production 环境
+ * 
+ * Vercel 环境变量配置：
+ * - NEXT_PUBLIC_MONITOR_PREVIEW_PROJECT_ID: Preview 环境 Project ID
+ * - NEXT_PUBLIC_MONITOR_PREVIEW_API_KEY: Preview 环境 API Key
+ * - NEXT_PUBLIC_MONITOR_PRODUCTION_PROJECT_ID: Production 环境 Project ID
+ * - NEXT_PUBLIC_MONITOR_PRODUCTION_API_KEY: Production 环境 API Key
+ */
 const MONITOR_CONFIG = {
   scriptUrl: process.env.NEXT_PUBLIC_MONITOR_SCRIPT_URL || 'https://monitor-git-dev-calm-66s-projects.vercel.app/monitor.js',
-  projectId: process.env.NEXT_PUBLIC_MONITOR_PROJECT_ID || '',
-  apiKey: process.env.NEXT_PUBLIC_MONITOR_API_KEY || '',
+  
+  // 根据当前运行环境选择配置
+  projectId: (function() {
+    const isPreview = typeof window !== 'undefined' 
+      ? (window.location.hostname.includes('-preview') || window.location.hostname.includes('vercel.app'))
+      : false;
+    return isPreview 
+      ? process.env.NEXT_PUBLIC_MONITOR_PREVIEW_PROJECT_ID 
+      : process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_PROJECT_ID;
+  })(),
+  
+  apiKey: (function() {
+    const isPreview = typeof window !== 'undefined' 
+      ? (window.location.hostname.includes('-preview') || window.location.hostname.includes('vercel.app'))
+      : false;
+    return isPreview 
+      ? process.env.NEXT_PUBLIC_MONITOR_PREVIEW_API_KEY 
+      : process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_API_KEY;
+  })(),
+  
   endpoint: process.env.NEXT_PUBLIC_MONITOR_ENDPOINT || 'https://monitor-git-dev-calm-66s-projects.vercel.app/api/events',
 };
 
@@ -19,7 +46,7 @@ export default function MonitorProvider({ children }: MonitorProviderProps) {
     // 检查必要配置是否存在
     if (!MONITOR_CONFIG.projectId || !MONITOR_CONFIG.apiKey) {
       if (process.env.NODE_ENV === 'development') {
-        console.warn('[Monitor] Missing required configuration. Please set NEXT_PUBLIC_MONITOR_PROJECT_ID and NEXT_PUBLIC_MONITOR_API_KEY in your .env file.');
+        console.warn('[Monitor] Missing required configuration. Please set NEXT_PUBLIC_MONITOR_PREVIEW_* and NEXT_PUBLIC_MONITOR_PRODUCTION_* in your .env file.');
       }
       return;
     }
@@ -40,31 +67,10 @@ export default function MonitorProvider({ children }: MonitorProviderProps) {
     
     script.onload = () => {
       if (process.env.NODE_ENV === 'development') {
-        console.log('[Monitor] Script loaded successfully');
-      }
-      
-      // 脚本加载完成后，初始化环境标识
-      if (window.Monitor) {
-        // 获取当前环境（preview 或 main）
-        const currentEnv = getCurrentEnvironment();
-        
-        // 重写 trackPageview 以添加环境标识
-        const originalTrackPageview = window.Monitor.trackPageview;
-        window.Monitor.trackPageview = function(customData) {
-          return originalTrackPageview({
-            ...customData,
-            environment: currentEnv
-          });
-        };
-        
-        // 重写 trackEvent 以添加环境标识
-        const originalTrackEvent = window.Monitor.trackEvent;
-        window.Monitor.trackEvent = function(eventName, eventData) {
-          return originalTrackEvent(eventName, {
-            ...eventData,
-            environment: currentEnv
-          });
-        };
+        console.log('[Monitor] Script loaded successfully', { 
+          projectId: MONITOR_CONFIG.projectId,
+          isPreview: window.location.hostname.includes('-preview') || window.location.hostname.includes('vercel.app')
+        });
       }
     };
     
@@ -82,23 +88,4 @@ export default function MonitorProvider({ children }: MonitorProviderProps) {
   }, []);
 
   return <>{children}</>;
-}
-
-/**
- * 获取当前环境标识
- * 根据域名判断是 preview 还是 main 环境
- */
-function getCurrentEnvironment(): string {
-  if (typeof window === 'undefined') return 'unknown';
-  
-  const hostname = window.location.hostname;
-  
-  // 检查是否是 preview 环境（Vercel preview URL）
-  // Vercel preview URL 格式：xxx-preview.vercel.app 或 xxx-git-xxx-preview.vercel.app
-  if (hostname.includes('-preview') || hostname.includes('vercel.app')) {
-    return 'preview';
-  }
-  
-  // 默认为 main/production 环境
-  return 'main';
 }
