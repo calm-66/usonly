@@ -88,18 +88,6 @@ export async function GET(request: NextRequest) {
 
     // 获取每日登录用户数（基于 lastLoginAt）
     // 按日期分组统计，每天登录的用户数（去重）
-    const dailyActiveUsersMap = new Map<string, number>();
-    
-    // 初始化 30 天内所有日期为 0
-    for (let i = 0; i < 30; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      date.setHours(0, 0, 0, 0);
-      const nextDay = new Date(date);
-      nextDay.setDate(nextDay.getDate() + 1);
-      const dateKey = date.toISOString().split('T')[0];
-      dailyActiveUsersMap.set(dateKey, 0);
-    }
     
     // 获取所有用户，按 lastLoginAt 统计每天登录的用户数
     const allUsers = await prisma.user.findMany({
@@ -124,11 +112,11 @@ export async function GET(request: NextRequest) {
       }
     });
     
-    // 转换为最终格式
-    const dailyActiveUsers = Array.from(dailyActiveUsersMap.entries())
-      .map(([date]) => ({
+    // 转换为最终格式（只包含有登录数据的日期）
+    const dailyActiveUsers = Array.from(userDateMap.entries())
+      .map(([date, userIdSet]) => ({
         date,
-        count: userDateMap.get(date)?.size || 0
+        count: userIdSet.size
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
