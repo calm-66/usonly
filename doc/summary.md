@@ -1117,6 +1117,121 @@ GitHub Deployment Notification
 
 ---
 
+### V2.5 - 自动登录功能 ✨
+
+#### 产品定位
+- **无缝登录体验**：用户登录后自动保存 session，下次访问自动登录
+- **安全性**：使用加密安全的 token，服务器端验证
+- **滑动过期**：30 天有效期，每次验证自动续期
+
+#### 功能特性
+- [x] SessionToken 数据模型管理用户登录会话
+- [x] 登录成功后自动生成 token 并存入 localStorage
+- [x] 页面加载时验证 token 有效性
+- [x] Token 无效/过期自动跳转登录页
+- [x] 登出时同时清除服务器端 session 和本地数据
+- [x] 只记住邮箱（不保存密码）
+
+#### 技术实现
+- [x] `src/lib/auth.ts` - 认证工具库
+  - `generateSessionToken()` - 使用 crypto.randomBytes 生成加密 token
+  - `validateSessionToken()` - 验证 token 有效性（支持滑动过期）
+  - `createSessionToken()` - 创建 session 并返回 token
+  - `deleteSessionToken()` - 删除 session（登出）
+  - `cleanupExpiredSessions()` - 清理过期 session
+- [x] `/api/auth/session` - Session 验证 API
+- [x] `/api/auth/logout` - 登出 API
+- [x] `/api/auth/login` - 登录成功后生成 token
+- [x] 数据库 SessionToken 表
+
+#### 工作流程
+
+**登录流程**：
+```
+用户输入邮箱/密码
+    ↓
+POST /api/auth/login
+    ↓
+验证密码 → 创建 SessionToken → 返回 {user, token}
+    ↓
+localStorage.setItem('sessionToken', token)
+localStorage.setItem('user', user)
+    ↓
+跳转到 /timeline
+```
+
+**自动登录流程**：
+```
+访问 /timeline
+    ↓
+读取 localStorage.sessionToken
+    ↓
+POST /api/auth/session 验证 token
+    ↓
+有效：返回 user 信息，滑动续期 30 天
+无效/过期：清除 localStorage，跳转回 /
+```
+
+**登出流程**：
+```
+点击登出
+    ↓
+POST /api/auth/logout 删除服务器端 session
+    ↓
+清除 localStorage
+    ↓
+跳转到 /
+```
+
+#### 新增文件
+| 文件路径 | 功能 |
+|---------|------|
+| `src/lib/auth.ts` | 认证工具库 |
+| `src/app/api/auth/session/route.ts` | Session 验证 API |
+| `src/app/api/auth/logout/route.ts` | 登出 API |
+| `scripts/add-session-token-table.sql` | 数据库迁移脚本 |
+
+#### 修改文件
+| 文件路径 | 修改内容 |
+|---------|---------|
+| `prisma/schema.prisma` | 添加 SessionToken 模型 |
+| `src/app/api/auth/login/route.ts` | 登录生成 token |
+| `src/app/page.tsx` | 自动登录检查 |
+| `src/app/timeline/page.tsx` | Token 验证、登出逻辑 |
+
+#### 数据库变更
+- **SessionToken 表**：
+  - `id` (UUID) - 主键
+  - `userId` (String) - 外键关联 User 表
+  - `token` (String) - 唯一索引
+  - `expiresAt` (DateTime) - 过期时间
+  - `createdAt` (DateTime) - 创建时间
+  - `updatedAt` (DateTime) - 更新时间
+- **索引**：`token`, `userId`
+- **外键约束**：`userId` → `User.id` (级联删除)
+
+#### 数据库迁移 SQL
+```sql
+-- 执行 scripts/add-session-token-table.sql
+CREATE TABLE "SessionToken" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "userId" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "SessionToken_pkey" PRIMARY KEY ("id")
+);
+```
+
+#### 技术亮点
+- **加密安全**：使用 `crypto.randomBytes(32)` 生成 64 字符十六进制 token
+- **滑动过期**：每次验证成功自动续期 30 天，用户无需重复登录
+- **服务器验证**：客户端只存储 token，每次需要验证时调用 API
+- **安全性**：不存储密码，只保存用户信息和 token
+
+---
+
 ## 十、未来迭代方向（产品思路）
 
 ### 短期迭代
