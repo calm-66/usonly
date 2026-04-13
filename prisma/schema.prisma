@@ -38,6 +38,21 @@ model User {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   lastLoginAt DateTime? // 最后登录时间
+  sessions    SessionToken[] // 关联的 session token
+}
+
+// Session Token 表 - 用于自动登录
+model SessionToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([token])
+  @@index([userId])
 }
 
 // 配对请求表

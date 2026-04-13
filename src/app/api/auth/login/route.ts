@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { createSessionToken } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -58,9 +59,15 @@ export async function POST(request: NextRequest) {
 
     // 返回用户信息（不包含密码）
     const { password: _, ...userWithoutPassword } = user
+    
+    // 生成 session token
+    const { token, expiresAt } = await createSessionToken(user.id)
+    
     return NextResponse.json({
       message: '登录成功',
       user: userWithoutPassword,
+      token,
+      expiresAt: expiresAt.toISOString(),
     })
   } catch (error) {
     console.error('登录错误:', error)

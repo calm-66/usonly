@@ -251,16 +251,60 @@ export default function TimelinePage() {
   }
 
   useEffect(() => {
-    const userData = localStorage.getItem('user')
-    if (userData) {
-      const parsedUser = JSON.parse(userData)
-      setUser(parsedUser)
-      loadPosts(parsedUser)
-      loadNotifications(parsedUser)
-      checkAppealStatus(parsedUser)
-      // 从服务器获取最新用户信息（包含伴侣的 breakupInitiated 状态）
-      fetchLatestUserInfo(parsedUser)
+    // 先验证 session token，实现自动登录
+    const checkAuthAndLoad = async () => {
+      const sessionToken = localStorage.getItem('sessionToken')
+      const userData = localStorage.getItem('user')
+      
+      // 如果没有 session token，但有用户数据，尝试从旧数据加载（兼容旧版本）
+      if (!sessionToken && userData) {
+        const parsedUser = JSON.parse(userData)
+        setUser(parsedUser)
+        loadPosts(parsedUser)
+        loadNotifications(parsedUser)
+        checkAppealStatus(parsedUser)
+        fetchLatestUserInfo(parsedUser)
+        return
+      }
+      
+      // 有 session token，验证是否有效
+      if (sessionToken) {
+        try {
+          const res = await fetch('/api/auth/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: sessionToken }),
+          })
+          
+          if (res.ok) {
+            const data = await res.json()
+            // Token 有效，使用服务器返回的用户数据
+            setUser(data.user)
+            localStorage.setItem('user', JSON.stringify(data.user))
+            loadPosts(data.user)
+            loadNotifications(data.user)
+            checkAppealStatus(data.user)
+            fetchLatestUserInfo(data.user)
+          } else {
+            // Token 无效或过期，清除本地数据并跳转到登录页
+            localStorage.removeItem('sessionToken')
+            localStorage.removeItem('user')
+            window.location.href = '/'
+          }
+        } catch (error) {
+          console.error('验证 session 失败:', error)
+          // 验证失败，清除本地数据并跳转到登录页
+          localStorage.removeItem('sessionToken')
+          localStorage.removeItem('user')
+          window.location.href = '/'
+        }
+      } else {
+        // 没有任何认证信息，跳转到登录页
+        window.location.href = '/'
+      }
     }
+    
+    checkAuthAndLoad()
   }, [])
 
   // 从服务器获取最新用户信息
@@ -763,7 +807,24 @@ export default function TimelinePage() {
     return []
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const sessionToken = localStorage.getItem('sessionToken')
+    
+    // 调用登出 API 清除服务器端的 session
+    if (sessionToken) {
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: sessionToken }),
+        })
+      } catch (error) {
+        console.error('登出失败:', error)
+      }
+    }
+    
+    // 清除本地数据
+    localStorage.removeItem('sessionToken')
     localStorage.removeItem('user')
     window.location.href = '/'
   }

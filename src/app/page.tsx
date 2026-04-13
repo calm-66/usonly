@@ -11,17 +11,40 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    // 检查 localStorage 中是否有用户信息，用于预填充登录表单
-    const userData = localStorage.getItem('user')
-    if (userData) {
-      const user = JSON.parse(userData)
-      if (user && user.email) {
-        setEmail(user.email)
+    // 检查是否有有效的 session token，如果有则自动登录
+    const checkAutoLogin = async () => {
+      const sessionToken = localStorage.getItem('sessionToken')
+      const userData = localStorage.getItem('user')
+      
+      if (sessionToken && userData) {
+        try {
+          // 验证 session token 是否有效
+          const res = await fetch('/api/auth/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: sessionToken }),
+          })
+          
+          if (res.ok) {
+            // Token 有效，直接跳转到时间轴
+            window.location.href = '/timeline'
+            return
+          }
+        } catch (error) {
+          console.error('自动登录检查失败:', error)
+        }
       }
-      if (user && user.password) {
-        setPassword(user.password)
+      
+      // Token 无效或不存在，预填充邮箱（如果之前有保存）
+      if (userData) {
+        const user = JSON.parse(userData)
+        if (user && user.email) {
+          setEmail(user.email)
+        }
       }
     }
+    
+    checkAutoLogin()
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,12 +69,20 @@ export default function Home() {
       }
 
       if (isLogin) {
+        // 登录成功：保存用户信息和 session token
         localStorage.setItem('user', JSON.stringify(data.user))
+        if (data.token) {
+          localStorage.setItem('sessionToken', data.token)
+        }
         // 登录成功直接跳转到时间轴
         window.location.href = '/timeline'
       } else {
         alert('注册成功！')
+        // 注册成功：保存用户信息和 session token
         localStorage.setItem('user', JSON.stringify(data.user))
+        if (data.token) {
+          localStorage.setItem('sessionToken', data.token)
+        }
         // 注册成功也直接跳转到时间轴
         window.location.href = '/timeline'
       }
