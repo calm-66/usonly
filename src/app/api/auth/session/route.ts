@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateSessionToken } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 
 /**
  * 验证 session token 并返回用户信息
@@ -25,6 +26,12 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       )
     }
+
+    // 更新最后登录时间（用于 Monitor 统计活跃用户）
+    await prisma.user.update({
+      where: { id: result.user.id },
+      data: { lastLoginAt: new Date() }
+    })
 
     return NextResponse.json({
       user: result.user,
