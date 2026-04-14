@@ -10,7 +10,7 @@
 const MONITOR_CONFIG = {
   projectId: process.env.NEXT_PUBLIC_MONITOR_PROJECT_ID || '',
   apiKey: process.env.NEXT_PUBLIC_MONITOR_API_KEY || '',
-  endpoint: process.env.NEXT_PUBLIC_MONITOR_ENDPOINT || 'https://monitor-git-dev-calm-66s-projects.vercel.app/api/events',
+  endpoint: process.env.NEXT_PUBLIC_MONITOR_ENDPOINT || '',
 };
 
 // 事件队列
@@ -49,8 +49,11 @@ export function initMonitor() {
  */
 export function trackLogin(userId: string, username: string) {
   if (!MONITOR_CONFIG.projectId || !MONITOR_CONFIG.apiKey) {
+    console.warn('[Monitor] Not initialized - missing config');
     return;
   }
+
+  console.log('[Monitor] trackLogin called:', { userId, username });
 
   const payload = {
     eventType: 'custom',
@@ -69,6 +72,7 @@ export function trackLogin(userId: string, username: string) {
   };
 
   queueEvent(payload);
+  flushEvents(); // 立即发送登录事件
 }
 
 /**
