@@ -7,10 +7,16 @@
  */
 
 // Monitor 配置（从环境变量获取）
+// 根据 Vercel 环境动态选择配置
+const isProduction = process.env.VERCEL_ENV === 'production';
 const MONITOR_CONFIG = {
-  projectId: process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_PROJECT_ID || '',
-  apiKey: process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_API_KEY || '',
-  endpoint: process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_ENDPOINT || '',
+  projectId: isProduction
+    ? (process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_PROJECT_ID || '')
+    : (process.env.NEXT_PUBLIC_MONITOR_PREVIEW_PROJECT_ID || ''),
+  apiKey: isProduction
+    ? (process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_API_KEY || '')
+    : (process.env.NEXT_PUBLIC_MONITOR_PREVIEW_API_KEY || ''),
+  endpoint: process.env.NEXT_PUBLIC_MONITOR_ENDPOINT || '',
 };
 
 // 事件队列
