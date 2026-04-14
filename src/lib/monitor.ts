@@ -8,16 +8,31 @@
 
 // Monitor 配置（从环境变量获取）
 // 根据 Vercel 环境动态选择配置
-const isProduction = process.env.VERCEL_ENV === 'production';
+// VERCEL_ENV 在客户端不可用，所以默认使用 PRODUCTION 配置
+const isProduction = typeof process.env.VERCEL_ENV !== 'undefined' 
+  ? process.env.VERCEL_ENV === 'production'
+  : true; // 客户端默认使用 production 配置
+
 const MONITOR_CONFIG = {
   projectId: isProduction
-    ? (process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_PROJECT_ID || '')
+    ? (process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_PROJECT_ID || process.env.NEXT_PUBLIC_MONITOR_PREVIEW_PROJECT_ID || '')
     : (process.env.NEXT_PUBLIC_MONITOR_PREVIEW_PROJECT_ID || ''),
   apiKey: isProduction
-    ? (process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_API_KEY || '')
+    ? (process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_API_KEY || process.env.NEXT_PUBLIC_MONITOR_PREVIEW_API_KEY || '')
     : (process.env.NEXT_PUBLIC_MONITOR_PREVIEW_API_KEY || ''),
   endpoint: process.env.NEXT_PUBLIC_MONITOR_ENDPOINT || '',
 };
+
+// 调试日志（仅在客户端）
+if (typeof window !== 'undefined') {
+  console.log('[Monitor] Config loaded:', {
+    isProduction,
+    VERCEL_ENV: process.env.VERCEL_ENV,
+    projectId: MONITOR_CONFIG.projectId ? '***' + MONITOR_CONFIG.projectId.slice(-8) : 'MISSING',
+    apiKey: MONITOR_CONFIG.apiKey ? '***' + MONITOR_CONFIG.apiKey.slice(-8) : 'MISSING',
+    endpoint: MONITOR_CONFIG.endpoint || 'MISSING',
+  });
+}
 
 // 事件队列
 let eventQueue: any[] = [];
