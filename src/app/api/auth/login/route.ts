@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createSessionToken } from '@/lib/auth'
+import { trackLogin } from '@/lib/monitor'
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,6 +57,9 @@ export async function POST(request: NextRequest) {
       where: { id: user.id },
       data: { lastLoginAt: new Date() }
     })
+
+    // 上报登录事件到 Monitor（用于 Active Users 统计）
+    trackLogin(user.id, user.username)
 
     // 返回用户信息（不包含密码）
     const { password: _, ...userWithoutPassword } = user
