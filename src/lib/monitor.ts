@@ -10,7 +10,7 @@
  * - 服务器端转发到 Monitor，API Key 保存在服务器端不暴露
  */
 
-// 调试事件分发
+// 调试事件分发（仅客户端）
 function emitDebugEvent(type: string, status: 'pending' | 'success' | 'error', message?: string, event?: any) {
   if (typeof window !== 'undefined') {
     const debugEvent = {
@@ -20,14 +20,22 @@ function emitDebugEvent(type: string, status: 'pending' | 'success' | 'error', m
       message,
       event,
     };
-    window.dispatchEvent(new CustomEvent('monitor_debug_event', { detail: debugEvent }));
+    try {
+      window.dispatchEvent(new CustomEvent('monitor_debug_event', { detail: debugEvent }));
+    } catch (e) {
+      // 忽略事件发送失败
+    }
   }
 }
 
-// 发送配置信息
+// 发送配置信息（仅客户端）
 function emitDebugConfig(config: any) {
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('monitor_debug_config', { detail: config }));
+    try {
+      window.dispatchEvent(new CustomEvent('monitor_debug_config', { detail: config }));
+    } catch (e) {
+      // 忽略事件发送失败
+    }
   }
 }
 
@@ -185,7 +193,15 @@ async function sendEvents(events: any[], retryCount = 0) {
 
   try {
     // 发送到本地 API route，由服务器端转发到 Monitor
-    const response = await fetch('/api/monitor', {
+    // 使用绝对 URL 以支持服务器端调用
+    const baseUrl = typeof window !== 'undefined'
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    
+    const url = `${baseUrl}/api/monitor`;
+    console.log('[Monitor] Sending to URL:', url);
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -201,6 +217,7 @@ async function sendEvents(events: any[], retryCount = 0) {
     const data = await response.json();
     emitDebugEvent('send', 'success', 'Events sent successfully', { events, response: data });
     console.log('[Monitor] Events sent successfully:', data);
+    return data;
   } catch (error) {
     emitDebugEvent('send', 'error', 'Failed to send events', { error: String(error), events, retryCount });
     console.error('[Monitor] Send error:', error);
