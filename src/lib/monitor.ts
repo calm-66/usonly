@@ -42,12 +42,23 @@ function emitDebugConfig(config: any) {
 // 事件队列
 let eventQueue: any[] = [];
 let isFlushing = false;
-let flushTimer: NodeJS.Timeout | null = null;
+let isInitialized = false; // 防止重复初始化
 
 /**
  * 初始化 Monitor（在客户端调用）
+ * 
+ * 实时发送模式：
+ * - 每个事件都会立即发送，不等待队列满或定时刷新
+ * - 保留页面卸载时的刷新逻辑作为保险
  */
 export function initMonitor() {
+  // 防止重复初始化
+  if (isInitialized) {
+    console.log('[Monitor] Already initialized, skipping');
+    return;
+  }
+  isInitialized = true;
+
   // 获取配置信息用于调试
   const debugConfig = {
     VERCEL_ENV: process.env.VERCEL_ENV || 'undefined',
@@ -57,18 +68,15 @@ export function initMonitor() {
   };
   
   emitDebugConfig(debugConfig);
-  emitDebugEvent('init', 'success', 'Monitor initialized', debugConfig);
+  emitDebugEvent('init', 'success', 'Monitor initialized (real-time mode)', debugConfig);
 
-  // 启动定时刷新
-  flushTimer = setInterval(flushEvents, 60000); // 1 分钟刷新
-
-  // 页面卸载时刷新
+  // 页面卸载时刷新（作为保险）
   if (typeof window !== 'undefined') {
     window.addEventListener('beforeunload', flushEvents);
     window.addEventListener('pagehide', flushEvents);
   }
 
-  console.log('[Monitor] Initialized', debugConfig);
+  console.log('[Monitor] Initialized (real-time mode)', debugConfig);
 }
 
 /**
@@ -100,8 +108,7 @@ export function trackLogin(userId: string, username: string, ipAddress?: string)
   }
 
   emitDebugEvent('trackLogin', 'pending', 'Sending login event', payload);
-  queueEvent(payload);
-  flushEvents(); // 立即发送登录事件
+  queueEvent(payload); // queueEvent 已经自动调用 flushEvents()
 }
 
 /**
@@ -150,15 +157,12 @@ export function trackEvent(eventName: string, eventData?: any) {
 }
 
 /**
- * 队列事件
+ * 队列事件 - 实时发送模式
+ * 每个事件都会立即发送
  */
 function queueEvent(payload: any) {
   eventQueue.push(payload);
-
-  // 达到批量大小时立即刷新
-  if (eventQueue.length >= 10) {
-    flushEvents();
-  }
+  flushEvents(); // 实时发送：每次事件都立即发送
 }
 
 /**
@@ -259,17 +263,14 @@ export function flush() {
 }
 
 /**
- * 销毁（清理定时器）
+ * 销毁（实时发送模式不需要清理定时器）
  */
 export function destroy() {
-  if (flushTimer) {
-    clearInterval(flushTimer);
-    flushTimer = null;
-  }
   if (typeof window !== 'undefined') {
     window.removeEventListener('beforeunload', flushEvents);
     window.removeEventListener('pagehide', flushEvents);
   }
   eventQueue = [];
+  isInitialized = false;
   console.log('[Monitor] Destroyed');
 }

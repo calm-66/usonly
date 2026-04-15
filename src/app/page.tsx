@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { initMonitor } from '@/lib/monitor'
 
 export default function Home() {
   const [isLogin, setIsLogin] = useState(true)
@@ -12,9 +11,6 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    // 初始化 Monitor
-    initMonitor()
-
     // 检查是否有有效的 session token，如果有则自动登录
     const checkAutoLogin = async () => {
       const sessionToken = localStorage.getItem('sessionToken')
