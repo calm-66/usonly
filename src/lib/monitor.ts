@@ -186,6 +186,10 @@ async function flushEvents() {
     eventQueue = [...eventsToSend, ...eventQueue];
   } finally {
     isFlushing = false;
+    // 检查是否有新事件到达，如果有，继续发送
+    if (eventQueue.length > 0) {
+      flushEvents();
+    }
   }
 }
 
