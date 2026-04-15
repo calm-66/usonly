@@ -141,6 +141,12 @@ async function flushEvents() {
 async function sendEvents(events: any[], retryCount = 0) {
   const maxRetries = 3;
 
+  // 检查配置是否有效
+  if (!MONITOR_CONFIG.apiKey || !MONITOR_CONFIG.projectId) {
+    console.error('[Monitor] Cannot send events - missing configuration');
+    return;
+  }
+
   try {
     const response = await fetch(MONITOR_CONFIG.endpoint, {
       method: 'POST',
