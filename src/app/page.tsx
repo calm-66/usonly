@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { trackLogin } from '@/lib/monitor'
 
 export default function Home() {
   const [isLogin, setIsLogin] = useState(true)
@@ -27,7 +28,11 @@ export default function Home() {
           
           if (res.ok) {
             const data = await res.json()
-            // Token 有效，直接跳转到时间轴
+            // Token 有效，上报登录事件（自动登录）
+            const user = JSON.parse(userData)
+            trackLogin(user.id, user.username)
+            console.log('[Monitor] Auto-login tracked:', user.id)
+            // 直接跳转到时间轴
             window.location.href = '/timeline'
             return
           }
@@ -75,6 +80,9 @@ export default function Home() {
         if (data.token) {
           localStorage.setItem('sessionToken', data.token)
         }
+        // 上报登录事件（手动登录）
+        trackLogin(data.user.id, data.user.username)
+        console.log('[Monitor] Manual login tracked:', data.user.id)
         // 登录成功直接跳转到时间轴
         window.location.href = '/timeline'
       } else {
