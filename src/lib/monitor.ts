@@ -8,18 +8,16 @@
 
 // Monitor 配置（从环境变量获取）
 // 根据 Vercel 环境动态选择配置
-// VERCEL_ENV 在客户端不可用，所以默认使用 PRODUCTION 配置
-const isProduction = typeof process.env.VERCEL_ENV !== 'undefined' 
-  ? process.env.VERCEL_ENV === 'production'
-  : true; // 客户端默认使用 production 配置
+// VERCEL_ENV 环境变量需要在 Vercel 中手动设置：production 或 preview
+const isProduction = process.env.VERCEL_ENV === 'production';
 
 const MONITOR_CONFIG = {
   projectId: isProduction
-    ? (process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_PROJECT_ID || process.env.NEXT_PUBLIC_MONITOR_PREVIEW_PROJECT_ID || '')
-    : (process.env.NEXT_PUBLIC_MONITOR_PREVIEW_PROJECT_ID || ''),
+    ? process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_PROJECT_ID
+    : process.env.NEXT_PUBLIC_MONITOR_PREVIEW_PROJECT_ID,
   apiKey: isProduction
-    ? (process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_API_KEY || process.env.NEXT_PUBLIC_MONITOR_PREVIEW_API_KEY || '')
-    : (process.env.NEXT_PUBLIC_MONITOR_PREVIEW_API_KEY || ''),
+    ? process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_API_KEY
+    : process.env.NEXT_PUBLIC_MONITOR_PREVIEW_API_KEY,
   endpoint: process.env.NEXT_PUBLIC_MONITOR_ENDPOINT || '',
 };
 
