@@ -15,28 +15,19 @@ interface MonitorProviderProps {
  * - NEXT_PUBLIC_MONITOR_PREVIEW_API_KEY: Preview 环境 API Key
  * - NEXT_PUBLIC_MONITOR_PRODUCTION_PROJECT_ID: Production 环境 Project ID
  * - NEXT_PUBLIC_MONITOR_PRODUCTION_API_KEY: Production 环境 API Key
+ * - VERCEL_ENV: Vercel 环境变量（preview 或 production）
  */
 const MONITOR_CONFIG = {
   scriptUrl: process.env.NEXT_PUBLIC_MONITOR_SCRIPT_URL || 'https://monitor-git-dev-calm-66s-projects.vercel.app/monitor.js',
   
-  // 根据当前运行环境选择配置
-  projectId: (function() {
-    const isPreview = typeof window !== 'undefined' 
-      ? (window.location.hostname.includes('-preview') || window.location.hostname.includes('vercel.app'))
-      : false;
-    return isPreview 
-      ? process.env.NEXT_PUBLIC_MONITOR_PREVIEW_PROJECT_ID 
-      : process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_PROJECT_ID;
-  })(),
+  // 根据 Vercel 环境选择配置
+  projectId: process.env.VERCEL_ENV === 'preview'
+    ? process.env.NEXT_PUBLIC_MONITOR_PREVIEW_PROJECT_ID
+    : process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_PROJECT_ID,
   
-  apiKey: (function() {
-    const isPreview = typeof window !== 'undefined' 
-      ? (window.location.hostname.includes('-preview') || window.location.hostname.includes('vercel.app'))
-      : false;
-    return isPreview 
-      ? process.env.NEXT_PUBLIC_MONITOR_PREVIEW_API_KEY 
-      : process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_API_KEY;
-  })(),
+  apiKey: process.env.VERCEL_ENV === 'preview'
+    ? process.env.NEXT_PUBLIC_MONITOR_PREVIEW_API_KEY
+    : process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_API_KEY,
   
   endpoint: process.env.NEXT_PUBLIC_MONITOR_ENDPOINT || 'https://monitor-git-dev-calm-66s-projects.vercel.app/api/events',
 };
