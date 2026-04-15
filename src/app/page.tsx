@@ -28,10 +28,11 @@ export default function Home() {
           
           if (res.ok) {
             const data = await res.json()
-            // Token 有效，上报登录事件（自动登录）
+            // Token 有效，获取客户端真实 IP 并上报登录事件（自动登录）
             const user = JSON.parse(userData)
-            trackLogin(user.id, user.username)
-            console.log('[Monitor] Auto-login tracked:', user.id)
+            const clientIp = await getClientIp()
+            trackLogin(user.id, user.username, clientIp || undefined)
+            console.log('[Monitor] Auto-login tracked:', user.id, 'IP:', clientIp)
             // 直接跳转到时间轴
             window.location.href = '/timeline'
             return
@@ -80,9 +81,10 @@ export default function Home() {
         if (data.token) {
           localStorage.setItem('sessionToken', data.token)
         }
-        // 上报登录事件（手动登录）
-        trackLogin(data.user.id, data.user.username)
-        console.log('[Monitor] Manual login tracked:', data.user.id)
+        // 获取客户端真实 IP 并上报登录事件
+        const clientIp = await getClientIp()
+        trackLogin(data.user.id, data.user.username, clientIp || undefined)
+        console.log('[Monitor] Manual login tracked:', data.user.id, 'IP:', clientIp)
         // 登录成功直接跳转到时间轴
         window.location.href = '/timeline'
       } else {
@@ -100,6 +102,20 @@ export default function Home() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // 获取客户端真实 IP 地址
+  const getClientIp = async (): Promise<string | null> => {
+    try {
+      const res = await fetch('/api/client-ip')
+      if (res.ok) {
+        const data = await res.json()
+        return data.ip
+      }
+    } catch (error) {
+      console.error('Failed to get client IP:', error)
+    }
+    return null
   }
 
   return (
