@@ -34,8 +34,11 @@ export async function POST(request: NextRequest) {
       data: { lastLoginAt: new Date() }
     })
 
-    // 上报登录事件到 Monitor（用于 Active Users 统计）
-    trackLogin(result.user.id, result.user.username)
+    // 获取客户端 IP 并上报登录事件到 Monitor（用于 Active Users 统计）
+    const clientIP = request.headers.get('x-forwarded-for')?.split(',')?.[0]?.trim() || 
+                     request.headers.get('x-real-ip') || 
+                     undefined;
+    trackLogin(result.user.id, result.user.username, clientIP)
 
     return NextResponse.json({
       user: result.user,

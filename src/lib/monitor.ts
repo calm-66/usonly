@@ -67,16 +67,17 @@ export function initMonitor() {
  * 追踪登录事件
  * @param userId - 用户 ID
  * @param username - 用户名
+ * @param ipAddress - 可选的客户端 IP 地址
  */
-export function trackLogin(userId: string, username: string) {
+export function trackLogin(userId: string, username: string, ipAddress?: string) {
   if (!MONITOR_CONFIG.projectId || !MONITOR_CONFIG.apiKey) {
     console.warn('[Monitor] Not initialized - missing config');
     return;
   }
 
-  console.log('[Monitor] trackLogin called:', { userId, username });
+  console.log('[Monitor] trackLogin called:', { userId, username, ipAddress });
 
-  const payload = {
+  const payload: any = {
     eventType: 'custom',
     eventName: 'login',
     pageUrl: typeof window !== 'undefined' ? window.location.href : '',
@@ -91,6 +92,11 @@ export function trackLogin(userId: string, username: string) {
       eventType: 'user_login',
     },
   };
+
+  // 如果提供了客户端 IP，添加到 payload 中
+  if (ipAddress) {
+    payload.ipAddress = ipAddress;
+  }
 
   queueEvent(payload);
   flushEvents(); // 立即发送登录事件
