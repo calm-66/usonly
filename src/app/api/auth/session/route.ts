@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateSessionToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { trackLogin } from '@/lib/monitor'
 
 /**
  * 验证 session token 并返回用户信息
@@ -32,6 +33,9 @@ export async function POST(request: NextRequest) {
       where: { id: result.user.id },
       data: { lastLoginAt: new Date() }
     })
+
+    // 上报登录事件到 Monitor（用于 Active Users 统计）
+    trackLogin(result.user.id, result.user.username)
 
     return NextResponse.json({
       user: result.user,

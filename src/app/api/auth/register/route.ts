@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { trackLogin } from '@/lib/monitor'
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,6 +54,9 @@ export async function POST(request: NextRequest) {
         partnerId: true,
       },
     })
+
+    // 上报登录事件到 Monitor（用于 Active Users 统计）
+    trackLogin(user.id, user.username)
 
     return NextResponse.json({
       message: '注册成功',
