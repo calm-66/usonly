@@ -10,6 +10,27 @@
  * - 服务器端转发到 Monitor，API Key 保存在服务器端不暴露
  */
 
+// 调试事件分发
+function emitDebugEvent(type: string, status: 'pending' | 'success' | 'error', message?: string, event?: any) {
+  if (typeof window !== 'undefined') {
+    const debugEvent = {
+      timestamp: new Date().toISOString(),
+      type,
+      status,
+      message,
+      event,
+    };
+    window.dispatchEvent(new CustomEvent('monitor_debug_event', { detail: debugEvent }));
+  }
+}
+
+// 发送配置信息
+function emitDebugConfig(config: any) {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('monitor_debug_config', { detail: config }));
+  }
+}
+
 // 事件队列
 let eventQueue: any[] = [];
 let isFlushing = false;
@@ -19,6 +40,17 @@ let flushTimer: NodeJS.Timeout | null = null;
  * 初始化 Monitor（在客户端调用）
  */
 export function initMonitor() {
+  // 获取配置信息用于调试
+  const debugConfig = {
+    VERCEL_ENV: process.env.VERCEL_ENV || 'undefined',
+    hasEndpoint: !!process.env.NEXT_PUBLIC_MONITOR_ENDPOINT,
+    hasScriptUrl: !!process.env.NEXT_PUBLIC_MONITOR_SCRIPT_URL,
+    endpoint: process.env.NEXT_PUBLIC_MONITOR_ENDPOINT || 'MISSING',
+  };
+  
+  emitDebugConfig(debugConfig);
+  emitDebugEvent('init', 'success', 'Monitor initialized', debugConfig);
+
   // 启动定时刷新
   flushTimer = setInterval(flushEvents, 60000); // 1 分钟刷新
 
@@ -28,7 +60,7 @@ export function initMonitor() {
     window.addEventListener('pagehide', flushEvents);
   }
 
-  console.log('[Monitor] Initialized');
+  console.log('[Monitor] Initialized', debugConfig);
 }
 
 /**
@@ -38,8 +70,6 @@ export function initMonitor() {
  * @param ipAddress - 可选的客户端 IP 地址
  */
 export function trackLogin(userId: string, username: string, ipAddress?: string) {
-  console.log('[Monitor] trackLogin called:', { userId, username, ipAddress });
-
   const payload: any = {
     eventType: 'custom',
     eventName: 'login',
@@ -61,6 +91,7 @@ export function trackLogin(userId: string, username: string, ipAddress?: string)
     payload.ipAddress = ipAddress;
   }
 
+  emitDebugEvent('trackLogin', 'pending', 'Sending login event', payload);
   queueEvent(payload);
   flushEvents(); // 立即发送登录事件
 }
@@ -138,6 +169,7 @@ async function flushEvents() {
     await sendEvents(eventsToSend);
   } catch (error) {
     console.error('[Monitor] Flush failed:', error);
+    emitDebugEvent('flush', 'error', 'Failed to flush events', { error: String(error), events: eventsToSend });
     // 重试失败后将事件重新加入队列
     eventQueue = [...eventsToSend, ...eventQueue];
   } finally {
@@ -162,12 +194,15 @@ async function sendEvents(events: any[], retryCount = 0) {
     });
 
     if (!response.ok) {
-      throw new Error(`Network response was not ok: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`Network response was not ok: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    emitDebugEvent('send', 'success', 'Events sent successfully', { events, response: data });
     console.log('[Monitor] Events sent successfully:', data);
   } catch (error) {
+    emitDebugEvent('send', 'error', 'Failed to send events', { error: String(error), events, retryCount });
     console.error('[Monitor] Send error:', error);
 
     // 重试机制（指数退避）
