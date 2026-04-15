@@ -4,33 +4,11 @@
  * 使用方法：
  * 1. 在页面加载时调用 initMonitor() 初始化
  * 2. 在登录成功时调用 trackLogin(userId, username) 上报登录事件
+ * 
+ * 安全架构：
+ * - 客户端发送数据到 /api/monitor
+ * - 服务器端转发到 Monitor，API Key 保存在服务器端不暴露
  */
-
-// Monitor 配置（从环境变量获取）
-// 根据 Vercel 环境动态选择配置
-// VERCEL_ENV 环境变量需要在 Vercel 中手动设置：production 或 preview
-const isProduction = process.env.VERCEL_ENV === 'production';
-
-const MONITOR_CONFIG = {
-  projectId: isProduction
-    ? process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_PROJECT_ID
-    : process.env.NEXT_PUBLIC_MONITOR_PREVIEW_PROJECT_ID,
-  apiKey: isProduction
-    ? process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_API_KEY
-    : process.env.NEXT_PUBLIC_MONITOR_PREVIEW_API_KEY,
-  endpoint: process.env.NEXT_PUBLIC_MONITOR_ENDPOINT || '',
-};
-
-// 调试日志（仅在客户端）
-if (typeof window !== 'undefined') {
-  console.log('[Monitor] Config loaded:', {
-    isProduction,
-    VERCEL_ENV: process.env.VERCEL_ENV,
-    projectId: MONITOR_CONFIG.projectId ? '***' + MONITOR_CONFIG.projectId.slice(-8) : 'MISSING',
-    apiKey: MONITOR_CONFIG.apiKey ? '***' + MONITOR_CONFIG.apiKey.slice(-8) : 'MISSING',
-    endpoint: MONITOR_CONFIG.endpoint || 'MISSING',
-  });
-}
 
 // 事件队列
 let eventQueue: any[] = [];
@@ -41,11 +19,6 @@ let flushTimer: NodeJS.Timeout | null = null;
  * 初始化 Monitor（在客户端调用）
  */
 export function initMonitor() {
-  if (!MONITOR_CONFIG.projectId || !MONITOR_CONFIG.apiKey) {
-    console.log('[Monitor] Not initialized - missing config');
-    return;
-  }
-
   // 启动定时刷新
   flushTimer = setInterval(flushEvents, 60000); // 1 分钟刷新
 
@@ -55,10 +28,7 @@ export function initMonitor() {
     window.addEventListener('pagehide', flushEvents);
   }
 
-  console.log('[Monitor] Initialized', {
-    projectId: MONITOR_CONFIG.projectId,
-    endpoint: MONITOR_CONFIG.endpoint,
-  });
+  console.log('[Monitor] Initialized');
 }
 
 /**
@@ -68,11 +38,6 @@ export function initMonitor() {
  * @param ipAddress - 可选的客户端 IP 地址
  */
 export function trackLogin(userId: string, username: string, ipAddress?: string) {
-  if (!MONITOR_CONFIG.projectId || !MONITOR_CONFIG.apiKey) {
-    console.warn('[Monitor] Not initialized - missing config');
-    return;
-  }
-
   console.log('[Monitor] trackLogin called:', { userId, username, ipAddress });
 
   const payload: any = {
@@ -98,6 +63,51 @@ export function trackLogin(userId: string, username: string, ipAddress?: string)
 
   queueEvent(payload);
   flushEvents(); // 立即发送登录事件
+}
+
+/**
+ * 追踪页面浏览事件
+ * @param customData - 可选的自定义数据
+ */
+export function trackPageview(customData?: any) {
+  const payload: any = {
+    eventType: 'pageview',
+    pageUrl: typeof window !== 'undefined' ? window.location.href : '',
+    pageTitle: typeof document !== 'undefined' ? document.title : '',
+    referrer: typeof document !== 'undefined' ? document.referrer : '',
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+    screenWidth: typeof window !== 'undefined' ? window.screen.width : 0,
+    screenHeight: typeof window !== 'undefined' ? window.screen.height : 0,
+    userId: getOrCreateUserId(),
+    createdAt: new Date().toISOString(),
+  };
+
+  if (customData) {
+    payload.metadata = customData;
+  }
+
+  queueEvent(payload);
+}
+
+/**
+ * 追踪自定义事件
+ * @param eventName - 事件名称
+ * @param eventData - 事件数据
+ */
+export function trackEvent(eventName: string, eventData?: any) {
+  const payload: any = {
+    eventType: 'custom',
+    eventName: eventName,
+    pageUrl: typeof window !== 'undefined' ? window.location.href : '',
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+    screenWidth: typeof window !== 'undefined' ? window.screen.width : 0,
+    screenHeight: typeof window !== 'undefined' ? window.screen.height : 0,
+    userId: getOrCreateUserId(),
+    createdAt: new Date().toISOString(),
+    metadata: eventData || {},
+  };
+
+  queueEvent(payload);
 }
 
 /**
@@ -136,24 +146,17 @@ async function flushEvents() {
 }
 
 /**
- * 发送事件（带重试机制）
+ * 发送事件到服务器端转发 API（带重试机制）
  */
 async function sendEvents(events: any[], retryCount = 0) {
   const maxRetries = 3;
 
-  // 检查配置是否有效
-  if (!MONITOR_CONFIG.apiKey || !MONITOR_CONFIG.projectId) {
-    console.error('[Monitor] Cannot send events - missing configuration');
-    return;
-  }
-
   try {
-    const response = await fetch(MONITOR_CONFIG.endpoint, {
+    // 发送到本地 API route，由服务器端转发到 Monitor
+    const response = await fetch('/api/monitor', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': MONITOR_CONFIG.apiKey,
-        'X-Project-ID': MONITOR_CONFIG.projectId,
       },
       body: JSON.stringify(events),
     });
@@ -178,6 +181,22 @@ async function sendEvents(events: any[], retryCount = 0) {
       throw error;
     }
   }
+}
+
+/**
+ * 获取或创建用户 ID
+ */
+function getOrCreateUserId(): string {
+  if (typeof window !== 'undefined') {
+    const storage = window.localStorage;
+    let userId = storage.getItem('monitor_user_id');
+    if (!userId) {
+      userId = 'user_' + Math.random().toString(36).substring(2, 15);
+      storage.setItem('monitor_user_id', userId);
+    }
+    return userId;
+  }
+  return 'anonymous';
 }
 
 /**
