@@ -10,35 +10,6 @@
  * - 服务器端转发到 Monitor，API Key 保存在服务器端不暴露
  */
 
-// 调试事件分发（仅客户端）
-function emitDebugEvent(type: string, status: 'pending' | 'success' | 'error', message?: string, event?: any) {
-  if (typeof window !== 'undefined') {
-    const debugEvent = {
-      timestamp: new Date().toISOString(),
-      type,
-      status,
-      message,
-      event,
-    };
-    try {
-      window.dispatchEvent(new CustomEvent('monitor_debug_event', { detail: debugEvent }));
-    } catch (e) {
-      // 忽略事件发送失败
-    }
-  }
-}
-
-// 发送配置信息（仅客户端）
-function emitDebugConfig(config: any) {
-  if (typeof window !== 'undefined') {
-    try {
-      window.dispatchEvent(new CustomEvent('monitor_debug_config', { detail: config }));
-    } catch (e) {
-      // 忽略事件发送失败
-    }
-  }
-}
-
 // 事件队列
 let eventQueue: any[] = [];
 let isFlushing = false;
@@ -54,29 +25,15 @@ let isInitialized = false; // 防止重复初始化
 export function initMonitor() {
   // 防止重复初始化
   if (isInitialized) {
-    console.log('[Monitor] Already initialized, skipping');
     return;
   }
   isInitialized = true;
-
-  // 获取配置信息用于调试
-  const debugConfig = {
-    VERCEL_ENV: process.env.VERCEL_ENV || 'undefined',
-    hasEndpoint: !!process.env.NEXT_PUBLIC_MONITOR_ENDPOINT,
-    hasScriptUrl: !!process.env.NEXT_PUBLIC_MONITOR_SCRIPT_URL,
-    endpoint: process.env.NEXT_PUBLIC_MONITOR_ENDPOINT || 'MISSING',
-  };
-  
-  emitDebugConfig(debugConfig);
-  emitDebugEvent('init', 'success', 'Monitor initialized (real-time mode)', debugConfig);
 
   // 页面卸载时刷新（作为保险）
   if (typeof window !== 'undefined') {
     window.addEventListener('beforeunload', flushEvents);
     window.addEventListener('pagehide', flushEvents);
   }
-
-  console.log('[Monitor] Initialized (real-time mode)', debugConfig);
 }
 
 /**
@@ -107,7 +64,6 @@ export function trackLogin(userId: string, username: string, ipAddress?: string)
     payload.ipAddress = ipAddress;
   }
 
-  emitDebugEvent('trackLogin', 'pending', 'Sending login event', payload);
   queueEvent(payload); // queueEvent 已经自动调用 flushEvents()
 }
 
@@ -181,7 +137,6 @@ async function flushEvents() {
     await sendEvents(eventsToSend);
   } catch (error) {
     console.error('[Monitor] Flush failed:', error);
-    emitDebugEvent('flush', 'error', 'Failed to flush events', { error: String(error), events: eventsToSend });
     // 重试失败后将事件重新加入队列
     eventQueue = [...eventsToSend, ...eventQueue];
   } finally {
@@ -207,7 +162,6 @@ async function sendEvents(events: any[], retryCount = 0) {
       : process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
     
     const url = `${baseUrl}/api/monitor`;
-    console.log('[Monitor] Sending to URL:', url);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -223,21 +177,16 @@ async function sendEvents(events: any[], retryCount = 0) {
     }
 
     const data = await response.json();
-    emitDebugEvent('send', 'success', 'Events sent successfully', { events, response: data });
-    console.log('[Monitor] Events sent successfully:', data);
     return data;
   } catch (error) {
-    emitDebugEvent('send', 'error', 'Failed to send events', { error: String(error), events, retryCount });
     console.error('[Monitor] Send error:', error);
 
     // 重试机制（指数退避）
     if (retryCount < maxRetries) {
       const delay = 1000 * Math.pow(2, retryCount); // 1s, 2s, 4s
-      console.log(`[Monitor] Retrying in ${delay}ms...`);
       await new Promise(resolve => setTimeout(resolve, delay));
       return sendEvents(events, retryCount + 1);
     } else {
-      console.error('[Monitor] Max retries reached, events lost');
       throw error;
     }
   }
@@ -276,5 +225,4 @@ export function destroy() {
   }
   eventQueue = [];
   isInitialized = false;
-  console.log('[Monitor] Destroyed');
 }

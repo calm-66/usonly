@@ -32,7 +32,6 @@ export default function Home() {
             const user = JSON.parse(userData)
             const clientIp = await getClientIp()
             trackLogin(user.id, user.username, clientIp || undefined)
-            console.log('[Monitor] Auto-login tracked:', user.id, 'IP:', clientIp)
             // 直接跳转到时间轴
             window.location.href = '/timeline'
             return
@@ -84,7 +83,6 @@ export default function Home() {
         // 获取客户端真实 IP 并上报登录事件
         const clientIp = await getClientIp()
         trackLogin(data.user.id, data.user.username, clientIp || undefined)
-        console.log('[Monitor] Manual login tracked:', data.user.id, 'IP:', clientIp)
         // 登录成功直接跳转到时间轴
         window.location.href = '/timeline'
       } else {
@@ -113,7 +111,7 @@ export default function Home() {
         return data.ip
       }
     } catch (error) {
-      console.error('Failed to get client IP:', error)
+      // 忽略错误
     }
     return null
   }

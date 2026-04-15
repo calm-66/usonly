@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import MonitorProvider from "@/components/MonitorProvider";
-import MonitorDebugPanel from "@/components/MonitorDebugPanel";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,7 +17,6 @@ export default function RootLayout({
       <body>
         <MonitorProvider>
           {children}
-          <MonitorDebugPanel />
         </MonitorProvider>
       </body>
     </html>
