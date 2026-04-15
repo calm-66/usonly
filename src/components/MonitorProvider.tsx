@@ -11,21 +11,21 @@ interface MonitorProviderProps {
  * 使用独立的 Project ID 和 API Key 区分 Preview 和 Production 环境
  * 
  * Vercel 环境变量配置：
+ * - NEXT_PUBLIC_VERCEL_ENV: 需要在 Vercel 中设置（preview 或 production）
  * - NEXT_PUBLIC_MONITOR_PREVIEW_PROJECT_ID: Preview 环境 Project ID
  * - NEXT_PUBLIC_MONITOR_PREVIEW_API_KEY: Preview 环境 API Key
  * - NEXT_PUBLIC_MONITOR_PRODUCTION_PROJECT_ID: Production 环境 Project ID
  * - NEXT_PUBLIC_MONITOR_PRODUCTION_API_KEY: Production 环境 API Key
- * - VERCEL_ENV: Vercel 环境变量（preview 或 production）
  */
 const MONITOR_CONFIG = {
   scriptUrl: process.env.NEXT_PUBLIC_MONITOR_SCRIPT_URL || 'https://monitor-git-dev-calm-66s-projects.vercel.app/monitor.js',
   
-  // 根据 Vercel 环境选择配置
-  projectId: process.env.VERCEL_ENV === 'preview'
+  // 根据 NEXT_PUBLIC_VERCEL_ENV 选择配置（客户端可用）
+  projectId: process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview'
     ? process.env.NEXT_PUBLIC_MONITOR_PREVIEW_PROJECT_ID
     : process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_PROJECT_ID,
   
-  apiKey: process.env.VERCEL_ENV === 'preview'
+  apiKey: process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview'
     ? process.env.NEXT_PUBLIC_MONITOR_PREVIEW_API_KEY
     : process.env.NEXT_PUBLIC_MONITOR_PRODUCTION_API_KEY,
   
