@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { trackLogin } from '@/lib/monitor'
+import { trackLogin, setLoggedInUserId } from '@/lib/monitor'
 
 export default function Home() {
   const [isLogin, setIsLogin] = useState(true)
@@ -30,6 +30,8 @@ export default function Home() {
             const data = await res.json()
             // Token 有效，获取客户端真实 IP 并上报登录事件（自动登录）
             const user = JSON.parse(userData)
+            // 设置登录用户 ID（用于关联后续的页面访问事件）
+            setLoggedInUserId(user.id)
             const clientIp = await getClientIp()
             trackLogin(user.id, user.username, clientIp || undefined)
             // 直接跳转到时间轴
@@ -80,6 +82,8 @@ export default function Home() {
         if (data.token) {
           localStorage.setItem('sessionToken', data.token)
         }
+        // 设置登录用户 ID（用于关联后续的页面访问事件）
+        setLoggedInUserId(data.user.id)
         // 获取客户端真实 IP 并上报登录事件
         const clientIp = await getClientIp()
         trackLogin(data.user.id, data.user.username, clientIp || undefined)
@@ -92,6 +96,8 @@ export default function Home() {
         if (data.token) {
           localStorage.setItem('sessionToken', data.token)
         }
+        // 设置登录用户 ID（用于关联后续的页面访问事件）
+        setLoggedInUserId(data.user.id)
         // 注册成功也直接跳转到时间轴
         window.location.href = '/timeline'
       }

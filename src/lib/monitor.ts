@@ -209,6 +209,28 @@ function getOrCreateUserId(): string {
 }
 
 /**
+ * 设置已登录用户的 ID（用于关联登录后的页面访问事件）
+ * @param userId - 用户 ID（数据库中的 UUID）
+ */
+export function setLoggedInUserId(userId: string): void {
+  if (typeof window !== 'undefined') {
+    const storage = window.localStorage;
+    const prefixedUserId = `user_${userId}`;
+    storage.setItem('monitor_user_id', prefixedUserId);
+  }
+}
+
+/**
+ * 清除用户 ID（用于登出）
+ */
+export function clearUserId(): void {
+  if (typeof window !== 'undefined') {
+    const storage = window.localStorage;
+    storage.removeItem('monitor_user_id');
+  }
+}
+
+/**
  * 手动刷新
  */
 export function flush() {
