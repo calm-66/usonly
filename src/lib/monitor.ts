@@ -14,6 +14,29 @@
 let eventQueue: any[] = [];
 let isFlushing = false;
 let isInitialized = false; // 防止重复初始化
+let clientIpAddress: string | null = null; // 缓存客户端 IP 地址
+
+/**
+ * 获取客户端 IP 地址（通过 ipapi.co API）
+ */
+async function getClientIp(): Promise<string | null> {
+  if (clientIpAddress) {
+    return clientIpAddress; // 返回缓存的 IP
+  }
+  
+  try {
+    const response = await fetch('https://ipapi.co/json/');
+    if (response.ok) {
+      const data = await response.json();
+      clientIpAddress = data.ip || null;
+      return clientIpAddress;
+    }
+  } catch (error) {
+    console.error('[Monitor] Failed to get client IP:', error);
+  }
+  
+  return null;
+}
 
 /**
  * 初始化 Monitor（在客户端调用）
@@ -21,6 +44,7 @@ let isInitialized = false; // 防止重复初始化
  * 实时发送模式：
  * - 每个事件都会立即发送，不等待队列满或定时刷新
  * - 保留页面卸载时的刷新逻辑作为保险
+ * - 初始化时获取客户端 IP 地址
  */
 export function initMonitor() {
   // 防止重复初始化
@@ -33,6 +57,9 @@ export function initMonitor() {
   if (typeof window !== 'undefined') {
     window.addEventListener('beforeunload', flushEvents);
     window.addEventListener('pagehide', flushEvents);
+    
+    // 初始化时获取客户端 IP 地址
+    getClientIp();
   }
 }
 
@@ -40,9 +67,11 @@ export function initMonitor() {
  * 追踪登录事件
  * @param userId - 用户 ID
  * @param username - 用户名
- * @param ipAddress - 可选的客户端 IP 地址
+ * @param ipAddress - 可选的客户端 IP 地址（如果不传则自动获取）
  */
-export function trackLogin(userId: string, username: string, ipAddress?: string) {
+export async function trackLogin(userId: string, username: string, ipAddress?: string) {
+  const clientIp = ipAddress || await getClientIp();
+  
   const payload: any = {
     eventType: 'custom',
     eventName: 'login',
@@ -52,17 +81,13 @@ export function trackLogin(userId: string, username: string, ipAddress?: string)
     screenHeight: typeof window !== 'undefined' ? window.screen.height : 0,
     userId: `user_${userId}`, // 添加前缀以区分 Monitor 的 userId
     createdAt: new Date().toISOString(),
+    ipAddress: clientIp || undefined,
     metadata: {
       usOnlyUserId: userId,
       username: username,
       eventType: 'user_login',
     },
   };
-
-  // 如果提供了客户端 IP，添加到 payload 中
-  if (ipAddress) {
-    payload.ipAddress = ipAddress;
-  }
 
   queueEvent(payload); // queueEvent 已经自动调用 flushEvents()
 }
@@ -71,7 +96,9 @@ export function trackLogin(userId: string, username: string, ipAddress?: string)
  * 追踪页面浏览事件
  * @param customData - 可选的自定义数据
  */
-export function trackPageview(customData?: any) {
+export async function trackPageview(customData?: any) {
+  const ipAddress = await getClientIp();
+  
   const payload: any = {
     eventType: 'pageview',
     pageUrl: typeof window !== 'undefined' ? window.location.href : '',
@@ -82,6 +109,7 @@ export function trackPageview(customData?: any) {
     screenHeight: typeof window !== 'undefined' ? window.screen.height : 0,
     userId: getOrCreateUserId(),
     createdAt: new Date().toISOString(),
+    ipAddress: ipAddress || undefined,
   };
 
   if (customData) {
@@ -96,7 +124,9 @@ export function trackPageview(customData?: any) {
  * @param eventName - 事件名称
  * @param eventData - 事件数据
  */
-export function trackEvent(eventName: string, eventData?: any) {
+export async function trackEvent(eventName: string, eventData?: any) {
+  const ipAddress = await getClientIp();
+  
   const payload: any = {
     eventType: 'custom',
     eventName: eventName,
@@ -106,6 +136,7 @@ export function trackEvent(eventName: string, eventData?: any) {
     screenHeight: typeof window !== 'undefined' ? window.screen.height : 0,
     userId: getOrCreateUserId(),
     createdAt: new Date().toISOString(),
+    ipAddress: ipAddress || undefined,
     metadata: eventData || {},
   };
 
