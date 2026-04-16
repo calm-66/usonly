@@ -17,7 +17,7 @@ let isInitialized = false; // 防止重复初始化
 let clientIpAddress: string | null = null; // 缓存客户端 IP 地址
 
 /**
- * 获取客户端 IP 地址（通过 ipapi.co API）
+ * 获取客户端 IP 地址（通过 /api/client-ip 接口）
  */
 async function getClientIp(): Promise<string | null> {
   if (clientIpAddress) {
@@ -25,7 +25,7 @@ async function getClientIp(): Promise<string | null> {
   }
   
   try {
-    const response = await fetch('https://ipapi.co/json/');
+    const response = await fetch('/api/client-ip');
     if (response.ok) {
       const data = await response.json();
       clientIpAddress = data.ip || null;
