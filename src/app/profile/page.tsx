@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import HTMLExportModal from '@/components/HTMLExportModal'
+import FeedbackModal from '@/components/FeedbackModal'
 import { uploadImage } from '@/lib/imageUpload'
 
 // 检测是否为移动端设备
@@ -50,6 +51,9 @@ export default function ProfilePage() {
   
   // HTML 导出相关状态
   const [showExportModal, setShowExportModal] = useState(false)
+  
+  // 反馈弹窗相关状态
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
   
   // 头像上传相关状态
   const [showAvatarDialog, setShowAvatarDialog] = useState(false)
@@ -680,6 +684,18 @@ export default function ProfilePage() {
         {/* 设置卡片 */}
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h3 className="text-lg font-bold text-gray-800 mb-4">设置</h3>
+          
+          {/* 联系开发者 */}
+          <button
+            onClick={() => setShowFeedbackModal(true)}
+            className="w-full py-3 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition flex items-center justify-center gap-2 mb-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            联系开发者
+          </button>
+          
           <button
             onClick={handleLogout}
             className="w-full py-3 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
@@ -768,6 +784,13 @@ export default function ProfilePage() {
         isOpen={showExportModal} 
         onClose={() => setShowExportModal(false)} 
         user={user} 
+      />
+
+      {/* 反馈弹窗 */}
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        userId={user?.id}
       />
 
       {/* 移动端头像选择弹窗 */}
