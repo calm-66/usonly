@@ -317,8 +317,25 @@ export default function Home() {
       
       {/* 邀请码显示弹窗 */}
       {showInviteCode && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowInviteCode(false)}
+        >
+          <div 
+            className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 关闭按钮 */}
+            <button
+              onClick={() => setShowInviteCode(false)}
+              className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition"
+              title="关闭"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
             <div className="text-center mb-4">
               <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
                 <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -350,6 +367,13 @@ export default function Home() {
                   </svg>
                 </button>
               </div>
+            </div>
+            
+            {/* 备选配对方式提示 */}
+            <div className="border-t pt-4">
+              <p className="text-xs text-gray-500 text-center">
+                如果 TA 已经注册，可以在"我的"页面通过用户名搜索进行匹配
+              </p>
             </div>
           </div>
         </div>
