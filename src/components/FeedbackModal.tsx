@@ -135,7 +135,7 @@ export default function FeedbackModal({ isOpen, onClose, userId }: FeedbackModal
                       : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  🐛 Bug 报告
+                  🐞 Bug 报告
                 </button>
                 <button
                   type="button"
