@@ -43,9 +43,8 @@ export default function FeedbackModal({ isOpen, onClose, userId }: FeedbackModal
 
       const data = await res.json()
       
-      if (data.success && data.mailtoLink) {
-        // 打开邮件客户端
-        window.location.href = data.mailtoLink
+      if (data.success) {
+        // 发送成功
         setSent(true)
         setTimeout(() => {
           onClose()
