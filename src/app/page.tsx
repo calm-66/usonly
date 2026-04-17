@@ -260,7 +260,6 @@ export default function Home() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent uppercase"
                 maxLength={8}
               />
-              <p className="text-xs text-gray-500 mt-1">没有邀请码？向你的伴侣索要</p>
             </div>
             </>
           )}
