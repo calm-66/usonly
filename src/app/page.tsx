@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { trackLogin, setLoggedInUserId } from '@/lib/monitor'
+import OnboardingGuide from '@/components/OnboardingGuide'
 
 export default function Home() {
   const [isLogin, setIsLogin] = useState(true)
@@ -10,6 +11,8 @@ export default function Home() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [isNewUser, setIsNewUser] = useState(false)
 
   useEffect(() => {
     // 检查是否有有效的 session token，如果有则自动登录
@@ -90,7 +93,6 @@ export default function Home() {
         // 登录成功直接跳转到时间轴
         window.location.href = '/timeline'
       } else {
-        alert('注册成功！')
         // 注册成功：保存用户信息和 session token
         localStorage.setItem('user', JSON.stringify(data.user))
         if (data.token) {
@@ -98,13 +100,27 @@ export default function Home() {
         }
         // 设置登录用户 ID（用于关联后续的页面访问事件）
         setLoggedInUserId(data.user.id)
-        // 注册成功也直接跳转到时间轴
-        window.location.href = '/timeline'
+        // 标记为新用户，显示引导
+        setIsNewUser(true)
+        setShowOnboarding(true)
       }
     } catch (err: any) {
       setError(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false)
+    // 检查用户是否已配对
+    const user = JSON.parse(localStorage.getItem('user') || '{}')
+    if (user.partner_id) {
+      // 已配对，跳转到时间轴
+      window.location.href = '/timeline'
+    } else {
+      // 未配对，跳转到配对页面
+      window.location.href = '/pair'
     }
   }
 
@@ -123,10 +139,39 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-pink-100 to-purple-100">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+    <>
+      <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-pink-100 to-purple-100">
+        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">UsOnly</h1>
         <p className="text-center text-gray-500 mb-6">只属于两个人的私密空间</p>
+        
+        {/* 产品介绍区域 */}
+        <div className="mb-6 p-4 bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl border border-pink-100">
+          <div className="flex items-center mb-3">
+            <svg className="w-5 h-5 text-pink-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+            </svg>
+            <span className="text-sm font-medium text-gray-700">什么是 UsOnly？</span>
+          </div>
+          <p className="text-xs text-gray-600 mb-3 leading-relaxed">
+            UsOnly 是一个专为情侣设计的私密日常分享应用。每天一个轻松主题，
+            各自随时上传照片或文字，形成属于你们的"今日记忆"。
+          </p>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="p-2 bg-white rounded-lg">
+              <div className="text-lg mb-1">🔒</div>
+              <div className="text-xs text-gray-600">私密安全</div>
+            </div>
+            <div className="p-2 bg-white rounded-lg">
+              <div className="text-lg mb-1">📸</div>
+              <div className="text-xs text-gray-600">日常分享</div>
+            </div>
+            <div className="p-2 bg-white rounded-lg">
+              <div className="text-lg mb-1">💕</div>
+              <div className="text-xs text-gray-600">情感连接</div>
+            </div>
+          </div>
+        </div>
         
         <div className="flex mb-6 border-b">
           <button
@@ -149,6 +194,22 @@ export default function Home() {
           >
             注册
           </button>
+        </div>
+
+        {/* 如何开始步骤 */}
+        <div className="mb-6 space-y-2">
+          <div className="flex items-start text-xs text-gray-600">
+            <span className="flex-shrink-0 w-5 h-5 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center text-xs font-medium mr-2">1</span>
+            <span>注册账号，获取专属邀请码</span>
+          </div>
+          <div className="flex items-start text-xs text-gray-600">
+            <span className="flex-shrink-0 w-5 h-5 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center text-xs font-medium mr-2">2</span>
+            <span>邀请伴侣加入，建立私密空间</span>
+          </div>
+          <div className="flex items-start text-xs text-gray-600">
+            <span className="flex-shrink-0 w-5 h-5 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center text-xs font-medium mr-2">3</span>
+            <span>每天轻松分享，记录美好日常</span>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -210,7 +271,13 @@ export default function Home() {
             {loading ? '加载中...' : isLogin ? '登录' : '注册'}
           </button>
         </form>
-      </div>
-    </main>
+        </div>
+      </main>
+      
+      {/* 新用户引导 */}
+      {showOnboarding && isNewUser && (
+        <OnboardingGuide onComplete={handleOnboardingComplete} />
+      )}
+    </>
   )
 }
