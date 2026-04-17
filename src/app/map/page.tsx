@@ -187,10 +187,11 @@ export default function MapPage() {
     allLocationsMap.get(key)!.push(post)
   })
 
-  // 筛选帖子
+  // 筛选帖子 - 按时间倒序排序
   const filteredPosts = selectedUserId === 'all' 
-    ? posts 
-    : posts.filter(p => p.userId === selectedUserId)
+    ? [...posts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    : [...posts].filter(p => p.userId === selectedUserId)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
   // 按地点分组（用于地图显示）
   const locationsMap = selectedUserId === 'all'
@@ -212,7 +213,7 @@ export default function MapPage() {
       {/* 顶部导航 */}
       <header className="bg-white shadow-sm sticky top-0 z-20">
         <div className="max-w-4xl mx-auto px-4 py-3 flex justify-center">
-          <h1 className="text-xl font-bold text-gray-800">我们的足迹</h1>
+          <h1 className="text-xl font-bold text-gray-800">UsOnly</h1>
         </div>
       </header>
 
@@ -369,7 +370,7 @@ export default function MapPage() {
         {/* 打卡列表 */}
         {filteredPosts.length > 0 && (
           <div className="bg-white rounded-xl shadow-sm p-4">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">回忆</h2>
+            <h2 className="text-lg font-bold text-gray-800 mb-4">我们的足迹</h2>
             <div 
               ref={listRef}
               className="space-y-3 max-h-64 overflow-y-auto"
