@@ -12,7 +12,8 @@
     "db:push": "prisma db push",
     "postinstall": "prisma generate",
     "webhook": "tsx src/lib/webhook-server.ts",
-    "webhook:ngrok": "ngrok http 3001"
+"webhook:ngrok": "ngrok http 3001",
+    "docs": "typedoc"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.3.2",
@@ -39,6 +40,7 @@
     "prisma": "^5.22.0",
     "tailwindcss": "^3.4.0",
     "tsx": "^4.21.0",
+    "typedoc": "^0.28.19",
     "typescript": "^5.0.0"
   }
 }

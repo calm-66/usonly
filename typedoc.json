@@ -1,0 +1,13 @@
+{
+  "entryPoints": [
+    "src/lib",
+    "src/app/api"
+  ],
+  "out": "docs/api",
+  "name": "UsOnly API Documentation",
+  "includeVersion": false,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": true,
+  "skipErrorChecking": true
+}
