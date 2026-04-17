@@ -10,6 +10,7 @@ interface Post {
   imageUrl: string | null
   text: string | null
   createdAt: string
+  location?: string | null
   comments?: Comment[]
 }
 
@@ -351,6 +352,16 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
       white-space: pre-wrap;
     }
     
+    /* 地点信息样式 */
+    .post-location {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
     /* 评论区域样式 */
     .comments-section {
       margin-top: 12px;
@@ -602,6 +613,15 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
               </div>
               ${post.imageUrl ? `<img src="${post.imageUrl}" alt="分享图片" class="post-image" onerror="this.style.display='none'">` : ''}
               ${post.text ? `<div class="post-text">${post.text}</div>` : ''}
+              ${post.location ? `
+              <div class="post-location">
+                <svg class="w-3 h-3 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                ${post.location}
+              </div>
+              ` : ''}
               ${includeComments && post.comments && post.comments.length > 0 ? `
               <div class="comments-section">
                 ${post.comments.map(comment => `
@@ -637,6 +657,15 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
               </div>
               ${post.imageUrl ? `<img src="${post.imageUrl}" alt="分享图片" class="post-image" onerror="this.style.display='none'">` : ''}
               ${post.text ? `<div class="post-text">${post.text}</div>` : ''}
+              ${post.location ? `
+              <div class="post-location">
+                <svg class="w-3 h-3 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                ${post.location}
+              </div>
+              ` : ''}
               ${includeComments && post.comments && post.comments.length > 0 ? `
               <div class="comments-section">
                 ${post.comments.map(comment => `

@@ -1093,21 +1093,21 @@ export default function TimelinePage() {
     <main className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100">
       {/* 顶部导航 */}
       <header className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex relative">
+        <div className="max-w-3xl mx-auto px-4 py-1.5 flex relative">
           {/* 漏斗筛选图标 - 只在已配对时显示 - 放在最左侧 */}
           {user?.partnerId && (
-            <div className="relative mr-2">
+            <div className="flex items-center relative mr-2">
               <button
                 onClick={() => setShowDateFilter(true)}
-                className="p-1 hover:bg-gray-100 rounded-full transition"
+                className="p-0.5 hover:bg-gray-100 rounded-full transition"
                 title="时间筛选"
               >
-                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-600 align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
               </button>
               {timeFilter !== 'all' && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-pink-500 rounded-full"></span>
+                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-pink-500 rounded-full"></span>
               )}
             </div>
           )}
@@ -1117,16 +1117,16 @@ export default function TimelinePage() {
             {/* 发布按钮 */}
             <a
               href="/post"
-              className="p-1 hover:bg-gray-100 rounded-full transition mr-2"
+              className="p-0.5 hover:bg-gray-100 rounded-full transition mr-2 inline-flex items-center"
               title="发布分享"
             >
-              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-gray-600 align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
             </a>
 
             {/* 通知图标 */}
-            <div className="relative">
+            <div className="relative inline-flex items-center">
               <button
                 onClick={async () => {
                   const newState = !showNotifications
@@ -1136,9 +1136,9 @@ export default function TimelinePage() {
                     await loadNotifications(user)
                   }
                 }}
-                className="relative p-1 hover:bg-gray-100 rounded-full transition"
+                className="relative p-0.5 hover:bg-gray-100 rounded-full transition"
               >
-                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-600 align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
                 {unreadCount > 0 && (
@@ -1826,24 +1826,24 @@ export default function TimelinePage() {
       {/* 底部导航 - 3 个按钮：时间轴、足迹、我的 */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t">
         <div className="max-w-3xl mx-auto flex">
-          <a href="/timeline" className="flex-1 py-3 text-center text-pink-600">
-            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <a href="/timeline" className="flex-1 py-1.5 text-center text-pink-600">
+            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-xs">时间轴</span>
+            <span className="text-[10px]">时间轴</span>
           </a>
-          <a href="/map" className="flex-1 py-3 text-center text-gray-500">
-            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <a href="/map" className="flex-1 py-1.5 text-center text-gray-500">
+            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <span className="text-xs">足迹</span>
+            <span className="text-[10px]">足迹</span>
           </a>
-          <a href="/profile" className="flex-1 py-3 text-center text-gray-500">
-            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <a href="/profile" className="flex-1 py-1.5 text-center text-gray-500">
+            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
-            <span className="text-xs">我的</span>
+            <span className="text-[10px]">我的</span>
           </a>
         </div>
       </nav>

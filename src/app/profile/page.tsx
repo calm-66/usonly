@@ -486,7 +486,7 @@ export default function ProfilePage() {
     <main className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100 pb-20">
       {/* 顶部导航 */}
       <header className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex justify-center relative">
+        <div className="max-w-3xl mx-auto px-4 py-1.5 flex justify-center relative">
           <h1 className="text-xl font-bold text-gray-800">UsOnly</h1>
         </div>
       </header>
@@ -846,24 +846,24 @@ export default function ProfilePage() {
       {/* 底部导航 - 3 个按钮 */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t">
         <div className="max-w-3xl mx-auto flex">
-          <a href="/timeline" className="flex-1 py-3 text-center text-gray-500">
-            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <a href="/timeline" className="flex-1 py-1.5 text-center text-gray-500">
+            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-xs">时间轴</span>
+            <span className="text-[10px]">时间轴</span>
           </a>
-          <a href="/map" className="flex-1 py-3 text-center text-gray-500">
-            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <a href="/map" className="flex-1 py-1.5 text-center text-gray-500">
+            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <span className="text-xs">足迹</span>
+            <span className="text-[10px]">足迹</span>
           </a>
-          <a href="/profile" className="flex-1 py-3 text-center text-pink-600">
-            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <a href="/profile" className="flex-1 py-1.5 text-center text-pink-600">
+            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
-            <span className="text-xs">我的</span>
+            <span className="text-[10px]">我的</span>
           </a>
         </div>
       </nav>
