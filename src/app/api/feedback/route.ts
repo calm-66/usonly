@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMonitorConfig, buildMonitorApiUrl, getMonitorHeaders, getVercelEnv } from '@/lib/monitorConfig'
+import { getClientIP } from '@/lib/clientIp'
 
 /**
  * 反馈 API - 接收用户反馈并发送到 Monitor 进行存储和展示
@@ -12,6 +13,9 @@ export async function POST(request: NextRequest) {
     
     const body = await request.json()
     const { type, content, userEmail, userId, timestamp, userAgent } = body
+    
+    // 获取客户端真实 IP
+    const clientIP = getClientIP(request)
     
     console.log(`${logPrefix} 请求体:`, {
       type,
@@ -61,6 +65,7 @@ export async function POST(request: NextRequest) {
       eventType: 'feedback',
       eventName: 'user_feedback',
       userId: userId || 'anonymous',
+      ipAddress: clientIP,
       metadata: {
         type,
         content,
