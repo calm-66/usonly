@@ -351,37 +351,6 @@ export default function Home() {
                 </button>
               </div>
             </div>
-            
-            <div className="space-y-2 mb-4">
-              <p className="text-xs text-gray-500 text-center">如何分享邀请码？</p>
-              <div className="flex justify-center gap-2">
-                <button
-                  onClick={() => {
-                    const text = `邀请你加入 UsOnly，我的专属邀请码是：${userInviteCode}`
-                    navigator.clipboard.writeText(text)
-                    alert('邀请信息已复制！可以发送给 TA 了～')
-                  }}
-                  className="px-3 py-2 bg-pink-100 text-pink-600 rounded-lg text-sm hover:bg-pink-200 transition"
-                >
-                  📋 复制邀请信息
-                </button>
-              </div>
-            </div>
-            
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowInviteCode(false)}
-                className="flex-1 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition"
-              >
-                稍后再说
-              </button>
-              <a
-                href="/pair"
-                className="flex-1 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:from-pink-600 hover:to-purple-600 transition text-center"
-              >
-                去配对
-              </a>
-            </div>
           </div>
         </div>
       )}
