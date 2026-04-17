@@ -13,6 +13,7 @@ type FeedbackType = 'suggestion' | 'bug' | 'other'
 export default function FeedbackModal({ isOpen, onClose, userId }: FeedbackModalProps) {
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('suggestion')
   const [content, setContent] = useState('')
+  const [userEmail, setUserEmail] = useState('')
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
 
@@ -35,6 +36,7 @@ export default function FeedbackModal({ isOpen, onClose, userId }: FeedbackModal
         body: JSON.stringify({
           type: feedbackType,
           content: content.trim(),
+          userEmail: userEmail.trim() || undefined,
           userId,
           timestamp: new Date().toISOString(),
           userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
@@ -93,6 +95,20 @@ export default function FeedbackModal({ isOpen, onClose, userId }: FeedbackModal
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* 邮箱输入（可选） */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                联系邮箱 <span className="text-gray-400 font-normal">（选填，方便我们回复您）</span>
+              </label>
+              <input
+                type="email"
+                value={userEmail}
+                onChange={(e) => setUserEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+              />
+            </div>
+
             {/* 反馈类型 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

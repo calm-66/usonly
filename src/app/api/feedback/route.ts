@@ -11,11 +11,12 @@ export async function POST(request: NextRequest) {
     console.log(`${logPrefix} === 收到反馈请求 ===`)
     
     const body = await request.json()
-    const { type, content, userId, timestamp, userAgent } = body
+    const { type, content, userEmail, userId, timestamp, userAgent } = body
     
     console.log(`${logPrefix} 请求体:`, {
       type,
       content: content?.slice(0, 50) + (content?.length > 50 ? '...' : ''),
+      userEmail: userEmail || 'not provided',
       userId,
       timestamp,
     })
@@ -63,6 +64,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         type,
         content,
+        userEmail: userEmail || undefined,
         timestamp: timestamp || new Date().toISOString(),
         userAgent,
       },
