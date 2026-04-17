@@ -486,7 +486,7 @@ export default function ProfilePage() {
     <main className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100 pb-20">
       {/* 顶部导航 */}
       <header className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="max-w-3xl mx-auto px-4 py-2 flex justify-center relative">
+        <div className="max-w-3xl mx-auto px-4 py-1.5 flex justify-center relative">
           <h1 className="text-xl font-bold text-gray-800">UsOnly</h1>
         </div>
       </header>

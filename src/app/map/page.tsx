@@ -212,7 +212,7 @@ export default function MapPage() {
     <main className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100">
       {/* 顶部导航 */}
       <header className="bg-white shadow-sm sticky top-0 z-20">
-        <div className="max-w-4xl mx-auto px-4 py-2 flex justify-center">
+        <div className="max-w-4xl mx-auto px-4 py-1.5 flex justify-center">
           <h1 className="text-xl font-bold text-gray-800">UsOnly</h1>
         </div>
       </header>
