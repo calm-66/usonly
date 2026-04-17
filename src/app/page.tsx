@@ -98,7 +98,11 @@ export default function Home() {
         // 登录成功直接跳转到时间轴
         window.location.href = '/timeline'
       } else {
-        // 注册成功：保存用户信息和 session token
+        // 注册成功：先清除旧的本地数据，防止污染
+        localStorage.removeItem('sessionToken')
+        localStorage.removeItem('user')
+        
+        // 保存新用户信息和 session token
         localStorage.setItem('user', JSON.stringify(data.user))
         if (data.token) {
           localStorage.setItem('sessionToken', data.token)
@@ -108,8 +112,12 @@ export default function Home() {
         // 保存用户的邀请码
         setUserInviteCode(data.user.inviteCode)
         
+        console.log('注册成功，用户数据:', data.user)
+        console.log('是否有伴侣:', data.hasPartner)
+        
         // 如果是通过邀请码注册的（已有伴侣），直接跳转到时间轴
         if (data.hasPartner) {
+          // 强制刷新页面，确保使用最新的 localStorage 数据
           window.location.href = '/timeline'
         } else {
           // 否则显示邀请码弹窗，让用户邀请伴侣

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { trackLogin } from '@/lib/monitor'
 import { getClientIP } from '@/lib/clientIp'
 import { v4 as uuidv4 } from 'uuid'
+import { createSessionToken } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -115,9 +116,14 @@ export async function POST(request: NextRequest) {
     const clientIP = getClientIP(request);
     trackLogin(user.id, user.username, clientIP)
 
+    // 生成 session token
+    const { token, expiresAt } = await createSessionToken(user.id)
+
     return NextResponse.json({
       message: '注册成功',
       user,
+      token,
+      expiresAt: expiresAt.toISOString(),
       // 返回是否有伴侣（通过邀请码注册时已有伴侣）
       hasPartner: !!inviter,
     })

@@ -17,8 +17,34 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // 如果是获取伴侣的分享
-    const targetUserId = partnerId || userId
+    // 获取当前用户信息，验证配对关系
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        partnerId: true,
+      },
+    })
+
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    // 如果是获取伴侣的分享，验证是否有配对关系
+    let targetUserId = partnerId || userId
+    
+    if (partnerId) {
+      // 验证：请求的用户必须是目标用户的伴侣，或者目标用户是请求用户的伴侣
+      if (currentUser.partnerId !== partnerId) {
+        return NextResponse.json(
+          { error: 'Forbidden: You can only access your partner\'s posts' },
+          { status: 403 }
+        )
+      }
+    }
 
     // 构建查询条件
     const whereClause: any = {
