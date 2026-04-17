@@ -16,6 +16,7 @@ model User {
   username    String   @unique // 用户名（支持中文）
   email       String   @unique
   password    String
+  inviteCode  String   @unique // 专属邀请码
   avatarUrl   String?  // 头像 URL（可选）
   partnerId   String?  @unique
   partner     User?    @relation("PartnerRelation", fields: [partnerId], references: [id])
