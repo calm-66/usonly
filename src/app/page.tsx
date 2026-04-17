@@ -154,8 +154,7 @@ export default function Home() {
             <span className="text-sm font-medium text-gray-700">什么是 UsOnly？</span>
           </div>
           <p className="text-xs text-gray-600 mb-3 leading-relaxed">
-            UsOnly 是一个专为情侣设计的私密日常分享应用。每天一个轻松主题，
-            各自随时上传照片或文字，形成属于你们的"今日记忆"。
+            UsOnly 是一个只属于你们两个人的私密空间。为想要记录日常却不想公开发布到社交媒体的情侣设计——没有他人的点赞和评论，只有你们彼此分享的真实瞬间。不需要精心修图、写文案，想发就发，随心记录。
           </p>
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="p-2 bg-white rounded-lg">
