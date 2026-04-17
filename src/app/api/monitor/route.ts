@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { buildMonitorApiUrl, getMonitorHeaders } from '@/lib/monitorConfig'
 
 /**
  * Monitor 数据转发 API
@@ -10,7 +11,7 @@ import { NextRequest, NextResponse } from 'next/server'
  * - MONITOR_PRODUCTION_API_KEY: Production 环境 API Key
  * - MONITOR_PREVIEW_PROJECT_ID: Preview 环境 Project ID
  * - MONITOR_PRODUCTION_PROJECT_ID: Production 环境 Project ID
- * - MONITOR_ENDPOINT: Monitor API 端点
+ * - MONITOR_ENDPOINT: Monitor 基础 URL（如 https://monitor.xyzxy.online）
  */
 
 export async function POST(request: NextRequest) {
@@ -53,15 +54,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // 构建完整的 Monitor API URL 和请求头
+    const targetUrl = buildMonitorApiUrl('/api/events')
+    const headers = getMonitorHeaders()
+
     // 转发到 Monitor
-    console.log('[Monitor API] Forwarding to Monitor endpoint:', endpoint)
-    const response = await fetch(endpoint, {
+    console.log('[Monitor API] Forwarding to Monitor endpoint:', targetUrl)
+    const response = await fetch(targetUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': apiKey,
-        'X-Project-ID': projectId,
-      },
+      headers,
       body: JSON.stringify(body),
     })
 
