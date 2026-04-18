@@ -1,13 +1,14 @@
 /**
  * Monitor 集成工具 - 用于上报登录等事件到 Monitor 平台
  * 
- * 使用方法：
- * 1. 在页面加载时调用 initMonitor() 初始化
- * 2. 在登录成功时调用 trackLogin(userId, username) 上报登录事件
+ * 使用说明：
+ * - 登录事件：在服务器端 API（/api/auth/login, /api/auth/register, /api/auth/session）中调用 trackLogin
+ * - 页面浏览事件：在客户端调用 initMonitor() 初始化，自动上报 pageview
  * 
  * 安全架构：
- * - 客户端发送数据到 /api/monitor
- * - 服务器端转发到 Monitor，API Key 保存在服务器端不暴露
+ * - 所有事件通过服务器端 API route 转发到 Monitor 平台
+ * - API Key 保存在服务器端，不暴露给客户端
+ * - 登录事件只在服务器端调用，客户端 IP 通过 getClientIP() 获取并传递
  */
 
 // 事件队列
@@ -186,13 +187,12 @@ async function sendEvents(events: any[], retryCount = 0) {
   const maxRetries = 3;
 
   try {
-    // 发送到本地 API route，由服务器端转发到 Monitor
-    // 使用绝对 URL 以支持服务器端调用
-    const baseUrl = typeof window !== 'undefined'
-      ? window.location.origin
-      : process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    
-    const url = `${baseUrl}/api/monitor`;
+    // 发送到 /api/monitor，由服务器端转发到 Monitor
+    // 服务器端使用相对 URL，Vercel 会自动内部路由
+    // 客户端使用 window.location.origin 构建完整 URL
+    const url = typeof window !== 'undefined'
+      ? `${window.location.origin}/api/monitor`
+      : '/api/monitor';
 
     const response = await fetch(url, {
       method: 'POST',

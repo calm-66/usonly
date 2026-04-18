@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { trackLogin, setLoggedInUserId } from '@/lib/monitor'
+import { setLoggedInUserId } from '@/lib/monitor'
 import OnboardingGuide from '@/components/OnboardingGuide'
 
 export default function Home() {
@@ -34,12 +34,10 @@ export default function Home() {
           
           if (res.ok) {
             const data = await res.json()
-            // Token 有效，获取客户端真实 IP 并上报登录事件（自动登录）
+            // Token 有效，设置登录用户 ID（用于关联后续的页面访问事件）
+            // 登录事件已在服务器端 /api/auth/session 中上报
             const user = JSON.parse(userData)
-            // 设置登录用户 ID（用于关联后续的页面访问事件）
             setLoggedInUserId(user.id)
-            const clientIp = await getClientIp()
-            trackLogin(user.id, user.username, clientIp || undefined)
             // 直接跳转到时间轴
             window.location.href = '/timeline'
             return
@@ -91,10 +89,8 @@ export default function Home() {
           localStorage.setItem('sessionToken', data.token)
         }
         // 设置登录用户 ID（用于关联后续的页面访问事件）
+        // 登录事件已在服务器端 /api/auth/login 中上报
         setLoggedInUserId(data.user.id)
-        // 获取客户端真实 IP 并上报登录事件
-        const clientIp = await getClientIp()
-        trackLogin(data.user.id, data.user.username, clientIp || undefined)
         // 登录成功直接跳转到时间轴
         window.location.href = '/timeline'
       } else {
@@ -142,20 +138,6 @@ export default function Home() {
       // 未配对，跳转到配对页面
       window.location.href = '/pair'
     }
-  }
-
-  // 获取客户端真实 IP 地址
-  const getClientIp = async (): Promise<string | null> => {
-    try {
-      const res = await fetch('/api/client-ip')
-      if (res.ok) {
-        const data = await res.json()
-        return data.ip
-      }
-    } catch (error) {
-      // 忽略错误
-    }
-    return null
   }
 
   return (
