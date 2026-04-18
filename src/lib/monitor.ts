@@ -188,11 +188,13 @@ async function sendEvents(events: any[], retryCount = 0) {
 
   try {
     // 发送到 /api/monitor，由服务器端转发到 Monitor
-    // 服务器端使用相对 URL，Vercel 会自动内部路由
     // 客户端使用 window.location.origin 构建完整 URL
-    const url = typeof window !== 'undefined'
-      ? `${window.location.origin}/api/monitor`
-      : '/api/monitor';
+    // 服务器端使用 NEXT_PUBLIC_USONLY_BASE_URL 环境变量
+    const baseUrl = typeof window !== 'undefined'
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_USONLY_BASE_URL || 'http://localhost:3000';
+    
+    const url = `${baseUrl}/api/monitor`;
 
     const response = await fetch(url, {
       method: 'POST',
