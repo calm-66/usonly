@@ -109,12 +109,12 @@ function ThankYouContent() {
           </>
         )}
 
-        {/* 返回首页按钮 */}
+        {/* 返回按钮 */}
         <Link
-          href="/"
+          href="/profile"
           className="inline-block w-full py-3 px-6 bg-gradient-to-r from-pink-500 to-red-500 text-white font-medium rounded-lg hover:from-pink-600 hover:to-red-600 transition-colors"
         >
-          返回首页
+          返回
         </Link>
 
         {/* 订单号（用于调试） */}
