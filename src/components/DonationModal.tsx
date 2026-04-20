@@ -75,12 +75,13 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
         {/* 头部 */}
         <div className="bg-gradient-to-r from-pink-500 to-red-500 px-6 py-4">
-          <h2 className="text-xl font-bold text-white text-center">
-            ☕ 请作者喝杯咖啡
+          <h2 className="text-xl font-bold text-white text-center flex items-center justify-center gap-2">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 1v3M10 1v3M14 1v3" />
+            </svg>
+            请作者喝咖啡
           </h2>
-          <p className="text-pink-100 text-sm text-center mt-1">
-            支持我们，让爱继续传递
-          </p>
         </div>
 
         {/* 表单 */}
