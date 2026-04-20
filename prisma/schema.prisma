@@ -36,6 +36,7 @@ model User {
   comments    Comment[]    // 用户发表的评论
   notifications    Notification[] @relation("NotificationReceiver") // 收到的通知
   sentNotifications  Notification[] @relation("NotificationSender")  // 发送的通知
+  paymentOrders    PaymentOrder[] // 支付订单
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   lastLoginAt DateTime? // 最后登录时间
