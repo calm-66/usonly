@@ -98,10 +98,10 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
                   type="button"
                   onClick={() => {
                     setAmount(val);
-                    setCustomAmount('');
+                    setCustomAmount(val.toString());
                   }}
                   className={`py-2 px-3 rounded-lg border-2 transition-colors ${
-                    amount === val && !customAmount
+                    amount === val && customAmount === val.toString()
                       ? 'border-pink-500 bg-pink-50 text-pink-600'
                       : 'border-gray-200 hover:border-pink-300'
                   }`}
