@@ -1158,7 +1158,7 @@ export default function TimelinePage() {
               
               {/* 通知下拉面板 */}
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border z-50 max-h-96 overflow-y-auto">
+                <div className="absolute right-0 top-full mt-1 w-80 bg-white rounded-lg shadow-xl border z-50 max-h-[80vh] overflow-y-auto">
                   <div className="p-3 border-b flex justify-between items-center">
                     <h3 className="font-semibold text-gray-800">通知</h3>
                     <div className="flex gap-2">
