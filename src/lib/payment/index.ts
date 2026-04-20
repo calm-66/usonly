@@ -52,7 +52,7 @@ export async function createPaymentOrder(
     const paymentOrder = await prisma.paymentOrder.create({
       data: {
         outTradeNo,
-        amount: BigInt(Math.round(amount * 100)), // 转换为分
+        amount, // 存储金额（元）
         currency: 'CNY',
         productName: 'Buy Me a Coffee',
         paymentType,
@@ -131,7 +131,7 @@ export async function handlePaymentNotify(
       data: {
         status: 'PAID',
         tradeNo: trade_no,
-        amount: BigInt(Math.round(amount * 100)),
+        amount,
         paidAt: new Date(),
       },
     });
@@ -154,7 +154,7 @@ export async function handlePaymentNotify(
     await prisma.donation.create({
       data: {
         orderId: paymentOrder.id,
-        amount: BigInt(Math.round(amount * 100)),
+        amount,
         message,
         isAnonymous,
       },
@@ -227,7 +227,7 @@ export async function getPaymentStatus(orderId: string): Promise<{
     return {
       status: paymentOrder.status,
       paidAt: paymentOrder.paidAt,
-      amount: Number(paymentOrder.amount) / 100, // 转换回元
+      amount: Number(paymentOrder.amount), // 直接使用（元）
       productName: paymentOrder.productName,
     };
   } catch (error) {
@@ -293,7 +293,7 @@ export async function getDonations(limit = 20) {
 
     return donations.map((d) => ({
       id: d.id,
-      amount: Number(d.amount) / 100,
+      amount: Number(d.amount),
       message: d.message,
       createdAt: d.createdAt,
       paymentOrder: d.paymentOrder,
