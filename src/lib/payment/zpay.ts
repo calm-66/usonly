@@ -176,4 +176,4 @@ export class ZPay {
 }
 
 // 导出工具函数
-export { generateOutTradeNo };
+export { generateOutTradeNo, verifySign };
