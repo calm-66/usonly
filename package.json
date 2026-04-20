@@ -12,7 +12,7 @@
     "db:push": "prisma db push",
     "postinstall": "prisma generate",
     "webhook": "tsx src/lib/webhook-server.ts",
-"webhook:ngrok": "ngrok http 3001",
+    "webhook:ngrok": "ngrok http 3001",
     "docs": "typedoc"
   },
   "dependencies": {
@@ -24,6 +24,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-leaflet": "^5.0.0",
+    "utility": "^2.5.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

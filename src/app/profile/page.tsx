@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import HTMLExportModal from '@/components/HTMLExportModal'
 import FeedbackModal from '@/components/FeedbackModal'
+import DonationModal from '@/components/DonationModal'
 import { uploadImage } from '@/lib/imageUpload'
 
 // 检测是否为移动端设备
@@ -59,6 +60,7 @@ export default function ProfilePage() {
   const [showAvatarDialog, setShowAvatarDialog] = useState(false)
   const [currentCapture, setCurrentCapture] = useState<'user' | 'environment' | undefined>(undefined)
   const avatarInputRef = useRef<HTMLInputElement>(null)
+  const [showDonationModal, setShowDonationModal] = useState(false)
 
   // 计算配对天数
   const calculatePairDays = (pairedAt: string | null | undefined): number => {
@@ -685,7 +687,7 @@ export default function ProfilePage() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h3 className="text-lg font-bold text-gray-800 mb-4">设置</h3>
           
-          {/* 联系我们 */}
+          {/* 联系作者 */}
           <button
             onClick={() => setShowFeedbackModal(true)}
             className="w-full py-3 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition flex items-center justify-center gap-2 mb-2"
@@ -693,7 +695,18 @@ export default function ProfilePage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
-            联系我们
+            联系作者
+          </button>
+          
+          {/* 请作者喝咖啡 */}
+          <button
+            onClick={() => setShowDonationModal(true)}
+            className="w-full py-3 text-sm text-pink-600 hover:bg-pink-50 rounded-lg transition flex items-center justify-center gap-2 mb-2"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+            </svg>
+            请作者喝咖啡
           </button>
           
           <button
@@ -791,6 +804,12 @@ export default function ProfilePage() {
         isOpen={showFeedbackModal}
         onClose={() => setShowFeedbackModal(false)}
         userId={user?.id}
+      />
+
+      {/* 打赏弹窗 */}
+      <DonationModal
+        isOpen={showDonationModal}
+        onClose={() => setShowDonationModal(false)}
       />
 
       {/* 移动端头像选择弹窗 */}
