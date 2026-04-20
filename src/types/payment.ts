@@ -68,6 +68,7 @@ export interface PaymentEventPayload {
     productName?: string;
     userId?: string;
     message?: string;
+    isAnonymous?: boolean;
   };
   timestamp: string;
 }
