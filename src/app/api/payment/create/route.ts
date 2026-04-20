@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createPaymentOrder } from '@/lib/payment';
-import type { CreatePaymentRequest } from '../../../types/payment';
+import type { CreatePaymentRequest } from '@/types/payment';
 
 export async function POST(request: NextRequest) {
   try {

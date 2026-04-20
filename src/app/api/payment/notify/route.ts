@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { handlePaymentNotify } from '@/lib/payment';
-import type { ZPayNotifyParams } from '../../../types/payment';
+import type { ZPayNotifyParams } from '@/types/payment';
 
 export async function POST(request: NextRequest) {
   try {
