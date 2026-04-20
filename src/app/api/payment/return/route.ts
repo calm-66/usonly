@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getPaymentStatus } from '../../../lib/payment';
+import { getPaymentStatus } from '@/lib/payment';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
