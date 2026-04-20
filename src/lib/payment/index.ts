@@ -11,42 +11,83 @@ import type {
   PaymentEventPayload,
   ZPayNotifyParams,
 } from '../../types/payment';
+import type { NextRequest } from 'next/server';
 
 const prisma = new PrismaClient();
 
 // 从环境变量获取 ZPay 配置
 const ZPAY_PID = process.env.ZPAY_PID || '';
 const ZPAY_KEY = process.env.ZPAY_KEY || '';
-const ZPAY_NOTIFY_URL = process.env.ZPAY_NOTIFY_URL || '';
-const ZPAY_RETURN_URL = process.env.ZPAY_RETURN_URL || '';
 const SITENAME = process.env.SITENAME || 'UsOnly';
 
 // 从环境变量获取 Monitor 配置
 const MONITOR_API_URL = process.env.MONITOR_API_URL || '';
 const MONITOR_API_KEY = process.env.MONITOR_API_KEY || '';
 
-// 初始化 ZPay 实例
+// 初始化 ZPay 实例（notifyUrl 和 returnUrl 使用占位符，实际使用时动态生成）
 const zpay = new ZPay({
   pid: ZPAY_PID,
   key: ZPAY_KEY,
-  notifyUrl: ZPAY_NOTIFY_URL,
-  returnUrl: ZPAY_RETURN_URL,
+  notifyUrl: 'https://placeholder.com/api/payment/notify',
+  returnUrl: 'https://placeholder.com/api/payment/return',
   sitename: SITENAME,
 });
 
 /**
+ * 动态获取当前请求的基础 URL
+ * @param request - Next.js 请求对象（可选）
+ * @returns 基础 URL（如：https://usonly.vercel.app）
+ */
+export function getBaseUrl(request?: NextRequest): string {
+  // 优先从请求头获取 host
+  if (request) {
+    const host = request.headers.get('host');
+    if (host) {
+      const protocol = host.includes('localhost') ? 'http' : 'https';
+      return `${protocol}://${host}`;
+    }
+  }
+  
+  // 回退到环境变量或默认值
+  return process.env.NEXT_PUBLIC_USONLY_BASE_URL || 'https://usonly.vercel.app';
+}
+
+/**
+ * 获取动态回调 URL
+ * @param request - Next.js 请求对象（可选）
+ * @returns 包含 notifyUrl 和 returnUrl 的对象
+ */
+export function getCallbackUrls(request?: NextRequest): {
+  notifyUrl: string;
+  returnUrl: string;
+  baseUrl: string;
+} {
+  const baseUrl = getBaseUrl(request);
+  return {
+    notifyUrl: `${baseUrl}/api/payment/notify`,
+    returnUrl: `${baseUrl}/api/payment/return`,
+    baseUrl,
+  };
+}
+
+/**
  * 创建支付订单
  * @param data - 创建支付订单请求数据
+ * @param request - Next.js 请求对象（用于动态获取回调 URL）
  * @returns 支付订单响应
  */
 export async function createPaymentOrder(
-  data: CreatePaymentRequest
+  data: CreatePaymentRequest,
+  request?: NextRequest
 ): Promise<CreatePaymentResponse> {
   try {
     const { amount, paymentType, message, isAnonymous = false } = data;
 
     // 生成订单号
     const outTradeNo = generateOutTradeNo();
+
+    // 获取动态回调 URLs
+    const { notifyUrl, returnUrl } = getCallbackUrls(request);
 
     // 创建支付订单记录
     const paymentOrder = await prisma.paymentOrder.create({
@@ -64,12 +105,14 @@ export async function createPaymentOrder(
       },
     });
 
-    // 生成支付 URL
+    // 生成支付 URL（使用动态回调 URLs）
     const payUrl = zpay.createPaymentUrl(
       amount.toFixed(2),
       'Buy Me a Coffee',
       paymentType,
-      paymentOrder.id // 将订单 ID 作为 param 传递
+      paymentOrder.id, // 将订单 ID 作为 param 传递
+      notifyUrl,
+      returnUrl
     );
 
     return {

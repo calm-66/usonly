@@ -167,6 +167,14 @@ usonly/
 |------|------|------|
 | `/api/archive` | GET/DELETE | 获取/删除归档 |
 
+### 支付（ZPay 聚合支付）
+| 接口 | 方法 | 说明 |
+|------|------|------|
+| `/api/payment/create` | POST | 创建支付订单 |
+| `/api/payment/notify` | POST | ZPay 异步回调（服务器端处理） |
+| `/api/payment/return` | GET | ZPay 同步跳转（跳转到感谢页面） |
+| `/api/payment/status/[orderId]` | GET | 查询订单状态 |
+
 ### 其他
 | 接口 | 方法 | 说明 |
 |------|------|------|
@@ -190,6 +198,21 @@ npm run db:migrate       # 运行数据库迁移
 npm run db:push          # 推送 Prisma Schema 到数据库
 npm run docs             # 生成 TypeDoc API 文档
 ```
+
+## Vercel 环境变量配置
+
+### ZPay 支付配置
+在 Vercel 的 "Settings" → "Environment Variables" 中添加：
+
+| 变量名 | 说明 | 示例 |
+|--------|------|------|
+| `ZPAY_PID` | ZPay 商户 ID | `12345` |
+| `ZPAY_KEY` | ZPay 商户密钥 | `your-secret-key` |
+
+**注意**：
+- `ZPAY_NOTIFY_URL` 和 `ZPAY_RETURN_URL` 已改为动态获取，无需手动配置
+- 系统会自动根据当前环境（Preview/Production）生成对应的回调 URL
+- 需要在 ZPay 商户后台配置回调地址为生产域名：`https://your-domain.com/api/payment/notify`
 
 ## 数据库模型
 

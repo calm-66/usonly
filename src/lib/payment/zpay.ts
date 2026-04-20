@@ -133,13 +133,17 @@ export class ZPay {
    * @param name - 商品名称
    * @param type - 支付类型
    * @param param - 附加参数（可选）
+   * @param notifyUrl - 异步通知 URL（可选，动态覆盖）
+   * @param returnUrl - 跳转通知 URL（可选，动态覆盖）
    * @returns 支付跳转 URL
    */
   createPaymentUrl(
     money: string,
     name: string,
     type: 'alipay' | 'wxpay',
-    param?: string
+    param?: string,
+    notifyUrl?: string,
+    returnUrl?: string
   ): string {
     const outTradeNo = generateOutTradeNo();
     
@@ -147,9 +151,9 @@ export class ZPay {
       pid: this.config.pid,
       money,
       name,
-      notify_url: this.config.notifyUrl,
+      notify_url: notifyUrl || this.config.notifyUrl,
       out_trade_no: outTradeNo,
-      return_url: this.config.returnUrl,
+      return_url: returnUrl || this.config.returnUrl,
       sitename: this.config.sitename,
       type,
       param,

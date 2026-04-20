@@ -27,13 +27,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 创建支付订单
-    const result = await createPaymentOrder({
-      amount,
-      paymentType,
-      message,
-      isAnonymous,
-    });
+    // 创建支付订单（传入 request 以动态获取回调 URL）
+    const result = await createPaymentOrder(
+      {
+        amount,
+        paymentType,
+        message,
+        isAnonymous,
+      },
+      request
+    );
 
     if (result.success) {
       return NextResponse.json(result);
