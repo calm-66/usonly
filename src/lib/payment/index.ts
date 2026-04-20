@@ -167,19 +167,31 @@ export async function handlePaymentNotify(
       return true;
     }
 
-    // 4. 更新订单状态
-    const amount = parseFloat(money);
+    // 4. 校验金额一致性（防止假通知）
+    // 使用误差范围比较，允许 0.01 元（1 分）的误差，避免浮点数精度问题
+    const expectedAmount = Number(paymentOrder.amount);
+    const notifyAmount = parseFloat(money);
+    if (Math.abs(expectedAmount - notifyAmount) > 0.01) {
+      console.error('金额不一致，拒绝处理:', {
+        expected: expectedAmount,
+        received: notifyAmount,
+        diff: Math.abs(expectedAmount - notifyAmount),
+      });
+      return false;
+    }
+
+    // 5. 更新订单状态
     await prisma.paymentOrder.update({
       where: { id: paymentOrder.id },
       data: {
         status: 'PAID',
         tradeNo: trade_no,
-        amount,
+        amount: notifyAmount,
         paidAt: new Date(),
       },
     });
 
-    // 5. 解析附加参数
+    // 6. 解析附加参数
     let message: string | undefined;
     let isAnonymous = false;
 
@@ -193,22 +205,22 @@ export async function handlePaymentNotify(
       }
     }
 
-    // 6. 创建打赏记录
+    // 7. 创建打赏记录
     await prisma.donation.create({
       data: {
         orderId: paymentOrder.id,
-        amount,
+        amount: notifyAmount,
         message,
         isAnonymous,
       },
     });
 
-    // 7. 推送事件到 Monitor
+    // 8. 推送事件到 Monitor
     await pushPaymentEventToMonitor({
       source: 'usonly',
       eventType: 'payment.completed',
       orderId: paymentOrder.id,
-      amount,
+      amount: notifyAmount,
       currency: 'CNY',
       metadata: {
         paymentType: type,
@@ -219,12 +231,12 @@ export async function handlePaymentNotify(
       timestamp: new Date().toISOString(),
     });
 
-    // 8. 推送打赏事件
+    // 9. 推送打赏事件
     await pushPaymentEventToMonitor({
       source: 'usonly',
       eventType: 'donation.created',
       orderId: paymentOrder.id,
-      amount,
+      amount: notifyAmount,
       currency: 'CNY',
       metadata: {
         message,
