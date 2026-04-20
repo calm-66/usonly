@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createPaymentOrder } from '../../../lib/payment';
+import { createPaymentOrder } from '../../../lib/payment/index';
 import type { CreatePaymentRequest } from '../../../types/payment';
 
 export async function POST(request: NextRequest) {

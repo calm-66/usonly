@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getPaymentStatus } from '../../../../lib/payment';
+import { getPaymentStatus } from '../../../../lib/payment/index';
 
 interface RouteParams {
   params: Promise<{
