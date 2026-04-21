@@ -242,10 +242,10 @@ export async function handlePaymentNotify(
 
 /**
  * 查询支付订单状态
- * @param orderId - 订单 ID
+ * @param outTradeNo - 商户订单号（outTradeNo）
  * @returns 支付状态
  */
-export async function getPaymentStatus(orderId: string): Promise<{
+export async function getPaymentStatus(outTradeNo: string): Promise<{
   status: string;
   paidAt: Date | null;
   amount: number;
@@ -253,7 +253,7 @@ export async function getPaymentStatus(orderId: string): Promise<{
 } | null> {
   try {
     const paymentOrder = await prisma.paymentOrder.findUnique({
-      where: { id: orderId },
+      where: { outTradeNo: outTradeNo },
       select: {
         status: true,
         paidAt: true,
