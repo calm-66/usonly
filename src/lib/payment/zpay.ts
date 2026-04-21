@@ -54,6 +54,17 @@ export function generateSign(params: Record<string, any>, key: string): string {
   
   // 4. 末尾添加 key 后进行 MD5
   const signStrWithKey = signString + key;
+  
+  // 记录调试日志
+  console.log('[ZPay Sign] 签名生成过程:', {
+    originalParams: params,
+    filteredParams: filteredParams,
+    sortedKeys: sortedKeys,
+    signString: signString,
+    signStrWithKey: signStrWithKey,
+    keyPreview: key ? key.substring(0, 8) + '...' : 'empty',
+  });
+  
   return md5(signStrWithKey).toLowerCase();
 }
 
@@ -65,7 +76,17 @@ export function generateSign(params: Record<string, any>, key: string): string {
  */
 export function verifySign(params: ZPayNotifyParams, key: string): boolean {
   const { sign, ...restParams } = params;
+  
+  // 生成签名并记录调试日志
   const expectedSign = generateSign(restParams, key);
+  
+  console.log('[ZPay Verify] 签名验证详情:', {
+    receivedSign: sign,
+    expectedSign: expectedSign,
+    signMatch: sign.toLowerCase() === expectedSign,
+    keyPreview: key ? key.substring(0, 8) + '...' : 'empty',
+  });
+  
   return sign.toLowerCase() === expectedSign;
 }
 

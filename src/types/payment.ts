@@ -27,9 +27,11 @@ export interface ZPayNotifyParams {
   type: string;          // 支付方式
   money: string;         // 订单金额
   pid: string;           // 商户 ID
+  name: string;          // 商品名称
   param?: string;        // 附加内容
   sign: string;          // 签名
   trade_status?: string; // 支付状态（TRADE_SUCCESS 表示成功）
+  sign_type?: string;    // 签名类型（MD5）
 }
 
 /**

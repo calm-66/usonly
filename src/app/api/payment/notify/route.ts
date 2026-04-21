@@ -31,9 +31,11 @@ export async function GET(request: NextRequest) {
       type: searchParams.get('type') as string,
       money: searchParams.get('money') as string,
       pid: searchParams.get('pid') as string,
+      name: searchParams.get('name') as string,
       param: searchParams.get('param') || undefined,
       sign: searchParams.get('sign') as string,
       trade_status: searchParams.get('trade_status') || undefined,
+      sign_type: searchParams.get('sign_type') || undefined,
     };
 
     console.log('[ZPay Notify] 接收到的参数:', {
@@ -42,8 +44,10 @@ export async function GET(request: NextRequest) {
       type: params.type,
       money: params.money,
       pid: params.pid,
+      name: params.name,
       param: params.param,
       trade_status: params.trade_status,
+      sign_type: params.sign_type,
       hasSign: !!params.sign,
       sign: params.sign ? params.sign.substring(0, 10) + '...' : 'empty',
     });
