@@ -388,8 +388,11 @@ export async function createH5PaymentOrder(
     // 生成订单号
     const outTradeNo = generateOutTradeNo();
 
-    // 获取动态回调 URL
-    const { notifyUrl } = getCallbackUrls(request);
+    // 获取动态回调 URLs
+    const { notifyUrl, returnUrl, baseUrl } = getCallbackUrls(request);
+
+    // 构建感谢页面 URL（用于 returnUrl）
+    const thankYouUrl = `${baseUrl}/api/payment/return`;
 
     // 获取用户 IP
     const clientIp = getClientIp(request);
@@ -412,8 +415,8 @@ export async function createH5PaymentOrder(
       },
     });
 
-    // 调用 mapi.php API
-    const mapiResult = await zpay.callMapiApi(
+    // 调用 mapi.php API（传入 returnUrl 用于支付成功后跳转）
+    const mapiResult = await zpay.callMapiApiWithReturnUrl(
       amount.toFixed(2),
       'Buy Me a Coffee',
       paymentType,
@@ -421,6 +424,7 @@ export async function createH5PaymentOrder(
       device,
       paymentOrder.id.toString(), // 将订单 ID 作为 param 传递
       notifyUrl,
+      thankYouUrl, // returnUrl - 支付成功后跳转到感谢页面
       outTradeNo
     );
 

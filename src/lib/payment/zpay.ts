@@ -171,6 +171,62 @@ export async function callMapiApi(
 }
 
 /**
+ * 调用 API 接口支付（mapi.php），支持 returnUrl 参数
+ * 支持 H5 支付和二维码支付
+ * @param params - Mapi 请求参数
+ * @param returnUrl - 支付成功后的跳转地址
+ * @param key - ZPay 密钥
+ * @returns API 响应（包含 payurl、payurl2、qrcode、img 等）
+ */
+export async function callMapiApiWithReturnUrl(
+  params: ZPayMapiRequestParams & { return_url?: string },
+  returnUrl: string,
+  key: string
+): Promise<ZPayMapiResponse> {
+  // 生成签名
+  const sign = generateSign(params, key);
+  
+  // 构建 FormData 请求参数
+  const formData = new FormData();
+  formData.append('pid', params.pid);
+  formData.append('type', params.type);
+  formData.append('out_trade_no', params.out_trade_no);
+  formData.append('notify_url', params.notify_url);
+  formData.append('return_url', returnUrl); // 添加 returnUrl 参数
+  formData.append('name', params.name);
+  formData.append('money', params.money);
+  formData.append('clientip', params.clientip);
+  formData.append('sign', sign);
+  formData.append('sign_type', 'MD5');
+  
+  // 添加可选参数
+  if (params.cid) {
+    formData.append('cid', params.cid);
+  }
+  if (params.device) {
+    formData.append('device', params.device);
+  }
+  if (params.param) {
+    formData.append('param', params.param);
+  }
+  
+  // 发送 POST 请求
+  const response = await fetch('https://zpayz.cn/mapi.php', {
+    method: 'POST',
+    body: formData,
+  });
+  
+  const result = await response.json();
+  
+  // 检查是否成功
+  if (result.code !== 1) {
+    throw new Error(result.msg || 'API 请求失败');
+  }
+  
+  return result as ZPayMapiResponse;
+}
+
+/**
  * ZPay 配置接口
  */
 export interface ZPayConfig {
@@ -274,6 +330,48 @@ export class ZPay {
    */
   verifyNotify(params: ZPayNotifyParams): boolean {
     return verifySign(params, this.config.key);
+  }
+
+  /**
+   * 调用 API 接口支付（mapi.php），支持 returnUrl 参数
+   * @param money - 金额
+   * @param name - 商品名称
+   * @param type - 支付类型
+   * @param clientIp - 用户 IP 地址
+   * @param device - 设备类型（pc 或 mobile）
+   * @param param - 附加参数（可选）
+   * @param notifyUrl - 异步通知 URL（可选，动态覆盖）
+   * @param returnUrl - 支付成功后的跳转地址（可选，动态覆盖）
+   * @param outTradeNo - 外部传入的订单号（可选，不传则自动生成）
+   * @returns API 响应
+   */
+  async callMapiApiWithReturnUrl(
+    money: string,
+    name: string,
+    type: 'alipay' | 'wxpay',
+    clientIp: string,
+    device: 'pc' | 'mobile' = 'pc',
+    param?: string,
+    notifyUrl?: string,
+    returnUrl?: string,
+    outTradeNo?: string
+  ): Promise<ZPayMapiResponse> {
+    const finalOutTradeNo = outTradeNo || generateOutTradeNo();
+    
+    const payParams: ZPayMapiRequestParams & { return_url?: string } = {
+      pid: this.config.pid,
+      type,
+      out_trade_no: finalOutTradeNo,
+      notify_url: notifyUrl || this.config.notifyUrl,
+      return_url: returnUrl, // 使用传入的 returnUrl
+      name,
+      money,
+      clientip: clientIp,
+      device,
+      param,
+    };
+    
+    return callMapiApiWithReturnUrl(payParams, returnUrl || '', this.config.key);
   }
 
   /**
