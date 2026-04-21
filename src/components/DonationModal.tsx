@@ -80,6 +80,11 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
       } = await response.json();
 
       if (result.success && result.data) {
+        // 保存订单号到 sessionStorage，用于支付完成后检查状态
+        if (result.data.outTradeNo) {
+          savePendingOrder(result.data.outTradeNo);
+        }
+        
         if (isMobileDevice) {
           // 移动端处理
           if (result.h5Data) {
@@ -125,6 +130,18 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
       setError('网络错误，请重试');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  /**
+   * 保存待支付订单到 sessionStorage，用于支付完成后检查状态
+   */
+  const savePendingOrder = (outTradeNo: string) => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('pendingPaymentOrder', JSON.stringify({
+        outTradeNo,
+        timestamp: Date.now(),
+      }));
     }
   };
 
