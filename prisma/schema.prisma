@@ -165,6 +165,7 @@ model PaymentOrder {
   status         PaymentStatus @default(PENDING)
   message        String?       // 打赏留言（可选）
   isAnonymous    Boolean       @default(false)  // 是否匿名
+  param          String?       // ZPay 附加内容（回调时原样返回，用于存储商品补充信息）
   tradeNo        String?       // ZPay 交易号
   paidAt         DateTime?
   createdAt      DateTime      @default(now())
