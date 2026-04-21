@@ -1,6 +1,6 @@
 /**
  * 打赏弹窗组件
- * 支持支付宝/微信支付，金额输入，留言和匿名选项
+ * 支持支付宝支付，金额输入，留言和匿名选项
  * 移动端使用 H5 支付，PC 端显示二维码
  */
 
@@ -26,7 +26,6 @@ function isMobile(): boolean {
 export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
   const [amount, setAmount] = useState<number>(DEFAULT_AMOUNT);
   const [customAmount, setCustomAmount] = useState<string>('');
-  const [paymentType, setPaymentType] = useState<'alipay' | 'wxpay'>('alipay');
   const [message, setMessage] = useState<string>('');
   const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -69,7 +68,7 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
         },
         body: JSON.stringify({
           amount,
-          paymentType,
+          paymentType: 'alipay' as const,
           message: message.trim() || undefined,
           isAnonymous,
         }),
@@ -86,10 +85,8 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
           if (result.h5Data) {
             setH5Data(result.h5Data);
             
-            // 如果有 H5 支付链接，直接跳转
-            const h5Url = paymentType === 'wxpay' 
-              ? result.h5Data.payurl2 || result.h5Data.payurl 
-              : result.h5Data.payurl;
+            // 支付宝 H5 支付链接
+            const h5Url = result.h5Data.payurl;
             
             if (h5Url) {
               // 延迟跳转，让用户看到按钮点击效果
@@ -199,34 +196,13 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
               )}
             </div>
 
-            {/* 支付方式选择 */}
+            {/* 支付方式 - 仅支持支付宝 */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 支付方式
               </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setPaymentType('alipay')}
-                  className={`py-3 px-4 rounded-lg border-2 flex items-center justify-center gap-2 transition-colors ${
-                    paymentType === 'alipay'
-                      ? 'border-blue-500 bg-blue-50 text-blue-600'
-                      : 'border-gray-200 hover:border-blue-300'
-                  }`}
-                >
-                  <span className="font-medium">支付宝</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPaymentType('wxpay')}
-                  className={`py-3 px-4 rounded-lg border-2 flex items-center justify-center gap-2 transition-colors ${
-                    paymentType === 'wxpay'
-                      ? 'border-green-500 bg-green-50 text-green-600'
-                      : 'border-gray-200 hover:border-green-300'
-                  }`}
-                >
-                  <span className="font-medium">微信支付</span>
-                </button>
+              <div className="py-3 px-4 rounded-lg border-2 border-blue-500 bg-blue-50 text-blue-600 flex items-center gap-2">
+                <span className="font-medium">支付宝</span>
               </div>
             </div>
 
@@ -272,7 +248,7 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
             {isMobileDevice && (
               <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-700">
-                  💡 点击支付后将自动跳转到{paymentType === 'alipay' ? '支付宝' : '微信'}App 完成支付
+                  💡 点击支付后将自动跳转到支付宝 App 完成支付
                 </p>
               </div>
             )}
@@ -327,7 +303,7 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
                 />
               </div>
               <p className="text-center text-gray-600 text-sm mb-4">
-                打开{paymentType === 'alipay' ? '支付宝' : '微信'}扫一扫
+                打开支付宝扫一扫
               </p>
               {h5Data?.payurl && (
                 <button

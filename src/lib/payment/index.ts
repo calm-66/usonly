@@ -94,7 +94,7 @@ export async function createPaymentOrder(
     const paymentOrder = await prisma.paymentOrder.create({
       data: {
         outTradeNo,
-        userId, // 关联用户 ID（如果已登录）
+        userId: isAnonymous ? null : userId, // 匿名时不关联用户 ID
         amount, // 存储金额（元）
         currency: 'CNY',
         productName: 'Buy Me a Coffee',
@@ -401,7 +401,7 @@ export async function createH5PaymentOrder(
     const paymentOrder = await prisma.paymentOrder.create({
       data: {
         outTradeNo,
-        userId,
+        userId: isAnonymous ? null : userId, // 匿名时不关联用户 ID
         amount,
         currency: 'CNY',
         productName: 'Buy Me a Coffee',
