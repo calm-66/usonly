@@ -138,8 +138,8 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
           {/* 头部 */}
           <div className="bg-gradient-to-r from-pink-500 to-red-500 px-6 py-4">
             <h2 className="text-xl font-bold text-white text-center flex items-center justify-center gap-2">
