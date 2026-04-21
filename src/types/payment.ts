@@ -75,3 +75,33 @@ export interface PaymentEventPayload {
   };
   timestamp: string;
 }
+
+/**
+ * ZPay Mapi API 请求参数（mapi.php）
+ */
+export interface ZPayMapiRequestParams {
+  pid: string;        // 商户 ID
+  type: 'alipay' | 'wxpay';  // 支付方式
+  out_trade_no: string; // 商户订单号
+  notify_url: string; // 异步通知 URL
+  name: string;       // 商品名称
+  money: string;      // 金额（字符串，最多 2 位小数）
+  clientip: string;   // 用户 IP 地址
+  device?: 'pc' | 'mobile'; // 设备类型，默认 pc
+  cid?: string;       // 支付渠道 ID（可选）
+  param?: string;     // 附加内容（可选）
+}
+
+/**
+ * ZPay Mapi API 响应类型
+ */
+export interface ZPayMapiResponse {
+  code: number;       // 返回状态码，1 为成功
+  msg?: string;       // 返回信息（失败时）
+  O_id?: string;      // ZPAY 订单号
+  trade_no?: string;  // 支付订单号
+  payurl?: string;    // 支付跳转 URL（支付宝 H5）
+  payurl2?: string;   // 支付跳转 URL（微信 H5）
+  qrcode?: string;    // 二维码链接
+  img?: string;       // 二维码图片 URL
+}

@@ -4,12 +4,13 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { ZPay, generateOutTradeNo, verifySign } from './zpay';
+import { ZPay, generateOutTradeNo, verifySign, callMapiApi } from './zpay';
 import type {
   CreatePaymentRequest,
   CreatePaymentResponse,
   PaymentEventPayload,
   ZPayNotifyParams,
+  ZPayMapiResponse,
 } from '../../types/payment';
 import type { NextRequest } from 'next/server';
 
@@ -343,6 +344,119 @@ export async function getDonations(limit = 20) {
   } catch (error) {
     console.error('获取打赏列表失败:', error);
     return [];
+  }
+}
+
+/**
+ * 获取用户真实 IP 地址
+ * @param request - Next.js 请求对象
+ * @returns 用户 IP 地址
+ */
+export function getClientIp(request: NextRequest): string {
+  // 尝试从多个请求头获取真实 IP
+  const forwarded = request.headers.get('x-forwarded-for');
+  const realIp = request.headers.get('x-real-ip');
+  
+  if (forwarded) {
+    // x-forwarded-for 可能包含多个 IP，取第一个
+    return forwarded.split(',')[0].trim();
+  }
+  
+  if (realIp) {
+    return realIp;
+  }
+  
+  // 回退到默认值
+  return '127.0.0.1';
+}
+
+/**
+ * 创建 H5 支付订单（使用 mapi.php API）
+ * @param data - 创建支付订单请求数据
+ * @param request - Next.js 请求对象
+ * @param isMobile - 是否为移动端
+ * @returns H5 支付订单响应
+ */
+export async function createH5PaymentOrder(
+  data: CreatePaymentRequest & { userId?: string },
+  request: NextRequest,
+  isMobile: boolean
+): Promise<CreatePaymentResponse & { h5Data?: ZPayMapiResponse }> {
+  try {
+    const { amount, paymentType, message, isAnonymous = false, userId } = data;
+
+    // 生成订单号
+    const outTradeNo = generateOutTradeNo();
+
+    // 获取动态回调 URL
+    const { notifyUrl } = getCallbackUrls(request);
+
+    // 获取用户 IP
+    const clientIp = getClientIp(request);
+
+    // 创建设备类型
+    const device = isMobile ? 'mobile' : 'pc';
+
+    // 创建支付订单记录
+    const paymentOrder = await prisma.paymentOrder.create({
+      data: {
+        outTradeNo,
+        userId,
+        amount,
+        currency: 'CNY',
+        productName: 'Buy Me a Coffee',
+        paymentType,
+        status: 'PENDING',
+        message,
+        isAnonymous,
+      },
+    });
+
+    // 调用 mapi.php API
+    const mapiResult = await zpay.callMapiApi(
+      amount.toFixed(2),
+      'Buy Me a Coffee',
+      paymentType,
+      clientIp,
+      device,
+      paymentOrder.id.toString(), // 将订单 ID 作为 param 传递
+      notifyUrl,
+      outTradeNo
+    );
+
+    // 根据设备类型和返回结果决定返回什么
+    let payUrl = '';
+    
+    if (isMobile) {
+      // 移动端：优先使用 payurl（支付宝 H5）或 payurl2（微信 H5）
+      payUrl = paymentType === 'wxpay' 
+        ? (mapiResult.payurl2 || mapiResult.payurl || '') 
+        : (mapiResult.payurl || '');
+    } else {
+      // PC 端：使用二维码图片 URL 或跳转到 payurl
+      if (mapiResult.img) {
+        // 如果有二维码图片，返回图片 URL
+        payUrl = mapiResult.img;
+      } else if (mapiResult.payurl) {
+        payUrl = mapiResult.payurl;
+      }
+    }
+
+    return {
+      success: true,
+      data: {
+        orderId: paymentOrder.id,
+        outTradeNo: paymentOrder.outTradeNo,
+        payUrl,
+      },
+      h5Data: mapiResult,
+    };
+  } catch (error) {
+    console.error('创建 H5 支付订单失败:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : '创建 H5 订单失败',
+    };
   }
 }
 

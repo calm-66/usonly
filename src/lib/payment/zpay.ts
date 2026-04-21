@@ -4,7 +4,7 @@
  */
 
 import { md5 } from 'utility';
-import type { ZPayRequestParams, ZPayNotifyParams } from '../../types/payment';
+import type { ZPayRequestParams, ZPayNotifyParams, ZPayMapiRequestParams, ZPayMapiResponse } from '../../types/payment';
 
 /**
  * 生成唯一订单号
@@ -55,16 +55,6 @@ export function generateSign(params: Record<string, any>, key: string): string {
   // 4. 末尾添加 key 后进行 MD5
   const signStrWithKey = signString + key;
   
-  // 记录调试日志
-  console.log('[ZPay Sign] 签名生成过程:', {
-    originalParams: params,
-    filteredParams: filteredParams,
-    sortedKeys: sortedKeys,
-    signString: signString,
-    signStrWithKey: signStrWithKey,
-    keyPreview: key ? key.substring(0, 8) + '...' : 'empty',
-  });
-  
   return md5(signStrWithKey).toLowerCase();
 }
 
@@ -91,14 +81,13 @@ export function verifySign(params: ZPayNotifyParams, key: string): boolean {
 }
 
 /**
- * 生成支付跳转 URL
+ * 生成支付跳转 URL（页面跳转支付 - submit.php）
  * @param params - ZPay 请求参数
  * @param key - ZPay 密钥
  * @returns 完整的支付跳转 URL
  */
 export function createPayUrl(params: ZPayRequestParams, key: string): string {
-  // 使用传入的 out_trade_no，不再生成新的订单号
-  const baseUrl = 'https://z-pay.cn/submit.php';
+  const baseUrl = 'https://zpayz.cn/submit.php';
   
   // 生成签名
   const sign = generateSign(params, key);
@@ -129,6 +118,59 @@ export function createPayUrl(params: ZPayRequestParams, key: string): string {
 }
 
 /**
+ * 调用 API 接口支付（mapi.php）
+ * 支持 H5 支付和二维码支付
+ * @param params - Mapi 请求参数
+ * @param key - ZPay 密钥
+ * @returns API 响应（包含 payurl、payurl2、qrcode、img 等）
+ */
+export async function callMapiApi(
+  params: ZPayMapiRequestParams,
+  key: string
+): Promise<ZPayMapiResponse> {
+  // 生成签名
+  const sign = generateSign(params, key);
+  
+  // 构建 FormData 请求参数
+  const formData = new FormData();
+  formData.append('pid', params.pid);
+  formData.append('type', params.type);
+  formData.append('out_trade_no', params.out_trade_no);
+  formData.append('notify_url', params.notify_url);
+  formData.append('name', params.name);
+  formData.append('money', params.money);
+  formData.append('clientip', params.clientip);
+  formData.append('sign', sign);
+  formData.append('sign_type', 'MD5');
+  
+  // 添加可选参数
+  if (params.cid) {
+    formData.append('cid', params.cid);
+  }
+  if (params.device) {
+    formData.append('device', params.device);
+  }
+  if (params.param) {
+    formData.append('param', params.param);
+  }
+  
+  // 发送 POST 请求
+  const response = await fetch('https://zpayz.cn/mapi.php', {
+    method: 'POST',
+    body: formData,
+  });
+  
+  const result = await response.json();
+  
+  // 检查是否成功
+  if (result.code !== 1) {
+    throw new Error(result.msg || 'API 请求失败');
+  }
+  
+  return result as ZPayMapiResponse;
+}
+
+/**
  * ZPay 配置接口
  */
 export interface ZPayConfig {
@@ -150,7 +192,7 @@ export class ZPay {
   }
 
   /**
-   * 生成支付 URL
+   * 生成支付 URL（页面跳转 - submit.php）
    * @param money - 金额
    * @param name - 商品名称
    * @param type - 支付类型
@@ -187,6 +229,45 @@ export class ZPay {
   }
 
   /**
+   * 调用 API 接口支付（mapi.php）
+   * @param money - 金额
+   * @param name - 商品名称
+   * @param type - 支付类型
+   * @param clientIp - 用户 IP 地址
+   * @param device - 设备类型（pc 或 mobile）
+   * @param param - 附加参数（可选）
+   * @param notifyUrl - 异步通知 URL（可选，动态覆盖）
+   * @param outTradeNo - 外部传入的订单号（可选，不传则自动生成）
+   * @returns API 响应
+   */
+  async callMapiApi(
+    money: string,
+    name: string,
+    type: 'alipay' | 'wxpay',
+    clientIp: string,
+    device: 'pc' | 'mobile' = 'pc',
+    param?: string,
+    notifyUrl?: string,
+    outTradeNo?: string
+  ): Promise<ZPayMapiResponse> {
+    const finalOutTradeNo = outTradeNo || generateOutTradeNo();
+    
+    const payParams: ZPayMapiRequestParams = {
+      pid: this.config.pid,
+      type,
+      out_trade_no: finalOutTradeNo,
+      notify_url: notifyUrl || this.config.notifyUrl,
+      name,
+      money,
+      clientip: clientIp,
+      device,
+      param,
+    };
+    
+    return callMapiApi(payParams, this.config.key);
+  }
+
+  /**
    * 验证回调签名
    * @param params - 回调参数
    * @returns 签名是否有效
@@ -202,4 +283,3 @@ export class ZPay {
     return this.config;
   }
 }
-

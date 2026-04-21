@@ -66,19 +66,11 @@ function ThankYouContent() {
           </svg>
         </div>
 
-        {/* 标题 */}
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">
-          非常感谢！🎉
-        </h1>
-        
-        {/* 状态信息 */}
+        {/* 金额 */}
         {isLoading ? (
           <p className="text-gray-500 mb-6">正在确认支付状态...</p>
         ) : orderStatus === 'PAID' ? (
           <>
-            <p className="text-gray-600 mb-2">
-              您的打赏我们已经收到！
-            </p>
             {money && (
               <p className="text-2xl font-bold text-pink-600 mb-6">
                 ¥{parseFloat(money).toFixed(2)}
@@ -86,7 +78,7 @@ function ThankYouContent() {
             )}
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
               <p className="text-green-700 text-sm">
-                感谢您的支持，我们会继续努力做得更好！☕
+                感谢您的支持，我们会继续努力做得更好！🎉
               </p>
             </div>
           </>
