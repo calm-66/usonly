@@ -106,13 +106,15 @@ export async function createPaymentOrder(
     });
 
     // 生成支付 URL（使用动态回调 URLs）
+    // 关键修复：将生成的订单号传给 createPaymentUrl，确保 ZPay 使用和数据库相同的订单号
     const payUrl = zpay.createPaymentUrl(
       amount.toFixed(2),
       'Buy Me a Coffee',
       paymentType,
       paymentOrder.id, // 将订单 ID 作为 param 传递
       notifyUrl,
-      returnUrl
+      returnUrl,
+      outTradeNo // 传入已生成的订单号，确保一致性
     );
 
     return {

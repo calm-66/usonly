@@ -97,6 +97,7 @@ export function verifySign(params: ZPayNotifyParams, key: string): boolean {
  * @returns 完整的支付跳转 URL
  */
 export function createPayUrl(params: ZPayRequestParams, key: string): string {
+  // 使用传入的 out_trade_no，不再生成新的订单号
   const baseUrl = 'https://z-pay.cn/submit.php';
   
   // 生成签名
@@ -156,6 +157,7 @@ export class ZPay {
    * @param param - 附加参数（可选）
    * @param notifyUrl - 异步通知 URL（可选，动态覆盖）
    * @param returnUrl - 跳转通知 URL（可选，动态覆盖）
+   * @param outTradeNo - 外部传入的订单号（可选，不传则自动生成）
    * @returns 支付跳转 URL
    */
   createPaymentUrl(
@@ -164,16 +166,17 @@ export class ZPay {
     type: 'alipay' | 'wxpay',
     param?: string,
     notifyUrl?: string,
-    returnUrl?: string
+    returnUrl?: string,
+    outTradeNo?: string
   ): string {
-    const outTradeNo = generateOutTradeNo();
+    const finalOutTradeNo = outTradeNo || generateOutTradeNo();
     
     const payParams: ZPayRequestParams = {
       pid: this.config.pid,
       money,
       name,
       notify_url: notifyUrl || this.config.notifyUrl,
-      out_trade_no: outTradeNo,
+      out_trade_no: finalOutTradeNo,
       return_url: returnUrl || this.config.returnUrl,
       sitename: this.config.sitename,
       type,
