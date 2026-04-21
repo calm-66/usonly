@@ -77,11 +77,11 @@ export function getCallbackUrls(request?: NextRequest): {
  * @returns 支付订单响应
  */
 export async function createPaymentOrder(
-  data: CreatePaymentRequest,
+  data: CreatePaymentRequest & { userId?: string },
   request?: NextRequest
 ): Promise<CreatePaymentResponse> {
   try {
-    const { amount, paymentType, message, isAnonymous = false } = data;
+    const { amount, paymentType, message, isAnonymous = false, userId } = data;
 
     // 生成订单号
     const outTradeNo = generateOutTradeNo();
@@ -93,6 +93,7 @@ export async function createPaymentOrder(
     const paymentOrder = await prisma.paymentOrder.create({
       data: {
         outTradeNo,
+        userId, // 关联用户 ID（如果已登录）
         amount, // 存储金额（元）
         currency: 'CNY',
         productName: 'Buy Me a Coffee',

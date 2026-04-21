@@ -1,6 +1,9 @@
 /**
  * 创建支付订单 API
  * POST /api/payment/create
+ * 
+ * 请求头:
+ * - x-user-id: 当前登录用户的 ID（可选，未登录时为空）
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -11,6 +14,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { amount, paymentType, message, isAnonymous } = body as CreatePaymentRequest;
+    
+    // 从请求头获取用户 ID（如果用户已登录）
+    const userId = request.headers.get('x-user-id') || undefined;
 
     // 参数验证
     if (!amount || amount <= 0) {
@@ -34,6 +40,7 @@ export async function POST(request: NextRequest) {
         paymentType,
         message,
         isAnonymous,
+        userId, // 关联用户 ID（如果已登录）
       },
       request
     );

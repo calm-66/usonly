@@ -39,10 +39,16 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
     setIsLoading(true);
 
     try {
+      // 获取当前登录用户的 ID（如果已登录）
+      const userStr = localStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+      const userId = user?.id || undefined;
+
       const response = await fetch('/api/payment/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': userId || '', // 传递用户 ID（如果已登录）
         },
         body: JSON.stringify({
           amount,
