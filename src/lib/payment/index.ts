@@ -169,9 +169,6 @@ export async function handlePaymentNotify(
     const expectedAmount = Number(paymentOrder.amount);
     const notifyAmount = parseFloat(money);
     if (Math.abs(expectedAmount - notifyAmount) > 0.01) {
-        received: notifyAmount,
-        diff: Math.abs(expectedAmount - notifyAmount),
-      });
       return false;
     }
 

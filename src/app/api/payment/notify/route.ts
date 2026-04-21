@@ -14,11 +14,6 @@ import type { ZPayNotifyParams } from '@/types/payment';
  * 处理 ZPay GET 回调通知
  */
 export async function GET(request: NextRequest) {
-  const startTime = new Date().toISOString();
-    method: request.method,
-    url: request.url,
-  });
-
   try {
     // GET：从查询参数获取
     const searchParams = request.nextUrl.searchParams;
@@ -36,18 +31,6 @@ export async function GET(request: NextRequest) {
       sign_type: searchParams.get('sign_type') || undefined,
     };
 
-      trade_no: params.trade_no,
-      type: params.type,
-      money: params.money,
-      pid: params.pid,
-      name: params.name,
-      param: params.param,
-      trade_status: params.trade_status,
-      sign_type: params.sign_type,
-      hasSign: !!params.sign,
-      sign: params.sign ? params.sign.substring(0, 10) + '...' : 'empty',
-    });
-
     // 验证必填字段
     if (!params.out_trade_no || !params.trade_no || !params.money || !params.sign) {
       return new NextResponse('fail', { status: 400 });
@@ -60,10 +43,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
-
     // 处理支付回调
     const success = await handlePaymentNotify(params);
-
 
     if (success) {
       // 返回纯文本 "success" 给 ZPay
@@ -76,8 +57,6 @@ export async function GET(request: NextRequest) {
       });
     }
   } catch (error) {
-      stack: error instanceof Error ? error.stack : undefined,
-    });
     return new NextResponse('fail', {
       headers: { 'Content-Type': 'text/plain' },
       status: 500,

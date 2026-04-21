@@ -67,13 +67,8 @@ export function generateSign(params: Record<string, any>, key: string): string {
 export function verifySign(params: ZPayNotifyParams, key: string): boolean {
   const { sign, ...restParams } = params;
   
-  // 生成签名并记录调试日志
+  // 生成签名并验证
   const expectedSign = generateSign(restParams, key);
-  
-    expectedSign: expectedSign,
-    signMatch: sign.toLowerCase() === expectedSign,
-    keyPreview: key ? key.substring(0, 8) + '...' : 'empty',
-  });
   
   return sign.toLowerCase() === expectedSign;
 }
