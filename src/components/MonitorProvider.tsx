@@ -31,7 +31,6 @@ export default function MonitorProvider({ children }: MonitorProviderProps) {
     // 追踪页面浏览
     trackPageview();
     
-    console.log('[Monitor] Initialized with real-time tracking');
   }, []);
 
   return <>{children}</>;

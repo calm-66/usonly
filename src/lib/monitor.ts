@@ -33,7 +33,6 @@ async function getClientIp(): Promise<string | null> {
       return clientIpAddress;
     }
   } catch (error) {
-    console.error('[Monitor] Failed to get client IP:', error);
   }
   
   return null;
@@ -168,7 +167,6 @@ async function flushEvents() {
   try {
     await sendEvents(eventsToSend);
   } catch (error) {
-    console.error('[Monitor] Flush failed:', error);
     // 重试失败后将事件重新加入队列
     eventQueue = [...eventsToSend, ...eventQueue];
   } finally {
@@ -212,7 +210,6 @@ async function sendEvents(events: any[], retryCount = 0) {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('[Monitor] Send error:', error);
 
     // 重试机制（指数退避）
     if (retryCount < maxRetries) {

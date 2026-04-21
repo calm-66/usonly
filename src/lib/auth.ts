@@ -103,7 +103,6 @@ export async function validateSessionToken(
       user: session.user,
     }
   } catch (error) {
-    console.error('验证 session token 失败:', error)
     return { valid: false }
   }
 }
@@ -118,7 +117,6 @@ export async function deleteSessionToken(token: string): Promise<void> {
       where: { token },
     })
   } catch (error) {
-    console.error('删除 session token 失败:', error)
     // 忽略错误，因为 token 可能已经不存在了
   }
 }
@@ -136,9 +134,7 @@ export async function cleanupExpiredSessions(): Promise<void> {
         },
       },
     })
-    console.log('已清理过期的 session tokens')
   } catch (error) {
-    console.error('清理过期 session tokens 失败:', error)
   }
 }
 
@@ -158,7 +154,6 @@ export async function getUserActiveSessionsCount(userId: string): Promise<number
     })
     return count
   } catch (error) {
-    console.error('获取用户 session 数量失败:', error)
     return 0
   }
 }

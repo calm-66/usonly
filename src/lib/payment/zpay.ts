@@ -70,8 +70,6 @@ export function verifySign(params: ZPayNotifyParams, key: string): boolean {
   // 生成签名并记录调试日志
   const expectedSign = generateSign(restParams, key);
   
-  console.log('[ZPay Verify] 签名验证详情:', {
-    receivedSign: sign,
     expectedSign: expectedSign,
     signMatch: sign.toLowerCase() === expectedSign,
     keyPreview: key ? key.substring(0, 8) + '...' : 'empty',

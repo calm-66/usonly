@@ -40,7 +40,6 @@ export async function GET(
       );
     }
   } catch (error) {
-    console.error('查询订单状态 API 错误:', error);
     return NextResponse.json(
       { success: false, error: '服务器错误' },
       { status: 500 }

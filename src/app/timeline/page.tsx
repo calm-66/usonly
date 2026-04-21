@@ -256,16 +256,10 @@ export default function TimelinePage() {
       const sessionToken = localStorage.getItem('sessionToken')
       const userData = localStorage.getItem('user')
       
-      console.log('[Timeline] 开始验证:', { 
-        hasToken: !!sessionToken, 
-        hasUserData: !!userData,
-        userData: userData ? JSON.parse(userData) : null
-      })
       
       // 如果没有 session token，但有用户数据，尝试从旧数据加载（兼容旧版本）
       if (!sessionToken && userData) {
         const parsedUser = JSON.parse(userData)
-        console.log('[Timeline] 使用旧数据加载:', parsedUser)
         setUser(parsedUser)
         loadPosts(parsedUser)
         loadNotifications(parsedUser)
@@ -285,14 +279,12 @@ export default function TimelinePage() {
           
           if (res.ok) {
             const data = await res.json()
-            console.log('[Timeline] Session 验证成功:', data.user)
             
             // 额外验证：确保当前用户是有效的
             const serverUser = data.user
             
             // 验证：如果用户有 partnerId，确保 partner 存在
             if (serverUser.partnerId && !serverUser.partner) {
-              console.error('[Timeline] 验证失败：用户有 partnerId 但没有 partner 信息')
               // 不阻止访问，可能是数据不一致，让用户继续访问
             }
             
@@ -304,21 +296,18 @@ export default function TimelinePage() {
             checkAppealStatus(serverUser)
             fetchLatestUserInfo(serverUser)
           } else {
-            console.error('[Timeline] Session 验证失败:', res.status)
             // Token 无效或过期，清除本地数据并跳转到登录页
             localStorage.removeItem('sessionToken')
             localStorage.removeItem('user')
             window.location.href = '/'
           }
         } catch (error) {
-          console.error('[Timeline] 验证 session 失败:', error)
           // 验证失败，清除本地数据并跳转到登录页
           localStorage.removeItem('sessionToken')
           localStorage.removeItem('user')
           window.location.href = '/'
         }
       } else {
-        console.log('[Timeline] 没有认证信息，跳转到登录页')
         // 没有任何认证信息，跳转到登录页
         window.location.href = '/'
       }

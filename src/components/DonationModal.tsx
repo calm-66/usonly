@@ -126,7 +126,6 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
         setError(result.error || '创建订单失败，请重试');
       }
     } catch (err) {
-      console.error('创建支付订单失败:', err);
       setError('网络错误，请重试');
     } finally {
       setIsLoading(false);

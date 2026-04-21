@@ -126,7 +126,6 @@ export async function createPaymentOrder(
       },
     };
   } catch (error) {
-    console.error('创建支付订单失败:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : '创建订单失败',
@@ -148,7 +147,6 @@ export async function handlePaymentNotify(
     // 1. 验证签名
     const isValid = zpay.verifyNotify(params);
     if (!isValid) {
-      console.error('签名验证失败');
       return false;
     }
 
@@ -158,13 +156,11 @@ export async function handlePaymentNotify(
     });
 
     if (!paymentOrder) {
-      console.error('订单不存在:', out_trade_no);
       return false;
     }
 
     // 3. 幂等性处理 - 已支付的订单不重复处理
     if (paymentOrder.status === 'PAID') {
-      console.log('订单已支付，跳过处理:', out_trade_no);
       return true;
     }
 
@@ -173,8 +169,6 @@ export async function handlePaymentNotify(
     const expectedAmount = Number(paymentOrder.amount);
     const notifyAmount = parseFloat(money);
     if (Math.abs(expectedAmount - notifyAmount) > 0.01) {
-      console.error('金额不一致，拒绝处理:', {
-        expected: expectedAmount,
         received: notifyAmount,
         diff: Math.abs(expectedAmount - notifyAmount),
       });
@@ -202,7 +196,6 @@ export async function handlePaymentNotify(
         message = extraData.message;
         isAnonymous = extraData.isAnonymous || false;
       } catch (e) {
-        console.error('解析附加参数失败:', e);
       }
     }
 
@@ -233,10 +226,8 @@ export async function handlePaymentNotify(
       timestamp: new Date().toISOString(),
     });
 
-    console.log('支付回调处理成功:', out_trade_no);
     return true;
   } catch (error) {
-    console.error('处理支付回调失败:', error);
     return false;
   }
 }
@@ -342,7 +333,6 @@ export async function getDonations(limit = 20) {
       userId: order.userId,
     }));
   } catch (error) {
-    console.error('获取打赏列表失败:', error);
     return [];
   }
 }
@@ -456,7 +446,6 @@ export async function createH5PaymentOrder(
       h5Data: mapiResult,
     };
   } catch (error) {
-    console.error('创建 H5 支付订单失败:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : '创建 H5 订单失败',

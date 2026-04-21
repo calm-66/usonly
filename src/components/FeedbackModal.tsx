@@ -58,7 +58,6 @@ export default function FeedbackModal({ isOpen, onClose, userId }: FeedbackModal
         alert('发送失败：' + (data.error || '请稍后重试'))
       }
     } catch (error) {
-      console.error('发送反馈失败:', error)
       alert('发送失败，请稍后重试')
     } finally {
       setSending(false)

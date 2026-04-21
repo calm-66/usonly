@@ -108,8 +108,6 @@ export default function Home() {
         // 保存用户的邀请码
         setUserInviteCode(data.user.inviteCode)
         
-        console.log('注册成功，用户数据:', data.user)
-        console.log('是否有伴侣:', data.hasPartner)
         
         // 如果是通过邀请码注册的（已有伴侣），直接跳转到时间轴
         if (data.hasPartner) {

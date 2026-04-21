@@ -700,8 +700,6 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
     
     setExporting(true)
     try {
-      console.log('[HTML Export] 开始导出 HTML，用户:', user.username)
-      console.log('[HTML Export] 帖子数据:', postsData.length, '天')
       
       // 获取带评论的完整数据
       const postsWithComments = await Promise.all(
@@ -712,16 +710,13 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
               try {
                 const origin = window.location.origin
                 const res = await fetch(`${origin}/api/comment?postId=${post.id}`)
-                console.log('[HTML Export] 评论 API 响应状态:', res.status)
                 
                 if (!res.ok) {
                   const errorText = await res.text()
-                  console.error('[HTML Export] 评论 API 错误响应:', errorText)
                   return { ...post, comments: [] }
                 }
                 
                 const data = await res.json()
-                console.log('[HTML Export] 帖子评论数据:', post.id, data)
                 
                 // 扁平化评论和回复
                 const allComments: Comment[] = []
@@ -735,7 +730,6 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
                 }
                 return { ...post, comments: allComments }
               } catch (err) {
-                console.error('[HTML Export] 获取评论失败:', post.id, err)
                 return { ...post, comments: [] }
               }
             })),
@@ -775,7 +769,6 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
         })
       )
       
-      console.log('[HTML Export] 帖子数据处理完成，开始生成 HTML...')
 
       // 生成 HTML
       const html = generateHTML(postsWithComments)
@@ -790,10 +783,9 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
         return
       }
       
-      console.log('[HTML Export] HTML 预览窗口已打开')
       onClose()
     } catch (error) {
-      console.error('[HTML Export] 导出失败，详细错误:', {
+      console.error('[HTML Export] 导出失败', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
       })

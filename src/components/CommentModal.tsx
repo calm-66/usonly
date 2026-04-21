@@ -147,7 +147,6 @@ export default function CommentModal({
         setComments(data.comments)
       }
     } catch (error) {
-      console.error('加载评论失败:', error)
     }
   }
 
@@ -186,7 +185,6 @@ export default function CommentModal({
         alert('评论失败：' + (data.error || '未知错误'))
       }
     } catch (error) {
-      console.error('发表评论失败:', error)
       alert('评论失败，请重试')
     }
   }
@@ -209,7 +207,6 @@ export default function CommentModal({
         await loadComments(post.id)
       }
     } catch (error) {
-      console.error('删除评论失败:', error)
     }
   }
 

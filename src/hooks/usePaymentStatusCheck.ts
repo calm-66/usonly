@@ -43,7 +43,6 @@ export function usePaymentStatusCheck(
 
         // 检查是否超时
         if (Date.now() - timestamp > timeout) {
-          console.log('支付检查超时，清除待支付订单');
           sessionStorage.removeItem('pendingPaymentOrder');
           setIsChecking(false);
           return;
@@ -60,7 +59,6 @@ export function usePaymentStatusCheck(
 
           // 如果订单已支付，跳转到感谢页面
           if (status === 'PAID') {
-            console.log('支付成功，跳转到感谢页面');
             sessionStorage.removeItem('pendingPaymentOrder');
             setIsChecking(false);
             setLastCheckedOrder(outTradeNo);
@@ -72,11 +70,11 @@ export function usePaymentStatusCheck(
 
           // 如果订单仍为待支付状态，继续轮询
           if (status === 'PENDING') {
-            console.log('订单待支付，继续检查...');
+            // 继续轮询
           }
         }
       } catch (error) {
-        console.error('检查支付状态失败:', error);
+        // 静默处理错误，避免频繁弹窗
       }
     };
 

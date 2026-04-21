@@ -63,7 +63,6 @@ export async function PUT(request: NextRequest) {
     const body = await request.json()
     const { avatarUrl, username } = body
 
-    console.log('[PUT /api/auth/me] 收到请求:', { userId, avatarUrl, username })
 
     if (!userId) {
       console.error('[PUT /api/auth/me] 缺少用户 ID')
@@ -124,7 +123,6 @@ export async function PUT(request: NextRequest) {
       },
     })
 
-    console.log('[PUT /api/auth/me] 更新成功:', user.id)
     return NextResponse.json({
       message: '更新成功',
       user,

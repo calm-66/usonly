@@ -30,7 +30,6 @@ function ThankYouContent() {
           setOrderStatus(result.data.status);
         }
       } catch (error) {
-        console.error('查询订单状态失败:', error);
       } finally {
         setIsLoading(false);
       }
