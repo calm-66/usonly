@@ -99,10 +99,8 @@ export async function createPaymentOrder(
         productName: 'Buy Me a Coffee',
         paymentType,
         status: 'PENDING',
-        param: JSON.stringify({
-          message,
-          isAnonymous,
-        }),
+        message, // 打赏留言
+        isAnonymous, // 是否匿名
       },
     });
 
@@ -156,7 +154,6 @@ export async function handlePaymentNotify(
     // 2. 查找订单
     const paymentOrder = await prisma.paymentOrder.findUnique({
       where: { outTradeNo: out_trade_no },
-      include: { donation: true },
     });
 
     if (!paymentOrder) {
@@ -194,7 +191,7 @@ export async function handlePaymentNotify(
       },
     });
 
-    // 6. 解析附加参数
+    // 6. 更新订单的消息和匿名状态（如果 param 中有）
     let message: string | undefined;
     let isAnonymous = false;
 
@@ -208,17 +205,18 @@ export async function handlePaymentNotify(
       }
     }
 
-    // 7. 创建打赏记录
-    await prisma.donation.create({
-      data: {
-        orderId: paymentOrder.id,
-        amount: notifyAmount,
-        message,
-        isAnonymous,
-      },
-    });
+    // 使用 param 中的值更新订单（如果解析成功）
+    if (message !== undefined || isAnonymous) {
+      await prisma.paymentOrder.update({
+        where: { id: paymentOrder.id },
+        data: {
+          message: message || paymentOrder.message,
+          isAnonymous: isAnonymous || paymentOrder.isAnonymous,
+        },
+      });
+    }
 
-    // 8. 推送事件到 Monitor
+    // 7. 推送事件到 Monitor
     await pushPaymentEventToMonitor({
       source: 'usonly',
       eventType: 'payment.completed',
@@ -230,20 +228,6 @@ export async function handlePaymentNotify(
         productName: paymentOrder.productName,
         userId: paymentOrder.userId || undefined,
         message,
-      },
-      timestamp: new Date().toISOString(),
-    });
-
-    // 9. 推送打赏事件
-    await pushPaymentEventToMonitor({
-      source: 'usonly',
-      eventType: 'donation.created',
-      orderId: paymentOrder.id,
-      amount: notifyAmount,
-      currency: 'CNY',
-      metadata: {
-        message,
-        isAnonymous,
       },
       timestamp: new Date().toISOString(),
     });
@@ -331,17 +315,17 @@ export async function pushPaymentEventToMonitor(
  */
 export async function getDonations(limit = 20) {
   try {
-    const donations = await prisma.donation.findMany({
+    const paymentOrders = await prisma.paymentOrder.findMany({
       where: {
+        status: 'PAID',
         isAnonymous: false, // 只显示非匿名打赏
       },
-      include: {
-        paymentOrder: {
-          select: {
-            userId: true,
-            createdAt: true,
-          },
-        },
+      select: {
+        id: true,
+        amount: true,
+        message: true,
+        createdAt: true,
+        userId: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -349,12 +333,12 @@ export async function getDonations(limit = 20) {
       take: limit,
     });
 
-    return donations.map((d) => ({
-      id: d.id,
-      amount: Number(d.amount),
-      message: d.message,
-      createdAt: d.createdAt,
-      paymentOrder: d.paymentOrder,
+    return paymentOrders.map((order) => ({
+      id: order.id,
+      amount: Number(order.amount),
+      message: order.message,
+      createdAt: order.createdAt,
+      userId: order.userId,
     }));
   } catch (error) {
     console.error('获取打赏列表失败:', error);
