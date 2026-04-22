@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import ImageUploader from '@/components/ImageUploader'
+import { MAX_POST_IMAGES } from '@/lib/constants'
 
 interface Post {
   id: string
@@ -315,7 +316,7 @@ export default function PostPage() {
                 previewSize="w-full h-48"
                 placeholder="选择图片"
                 accept="image/*"
-                maxCount={6}
+                maxCount={MAX_POST_IMAGES}
               />
             </div>
 

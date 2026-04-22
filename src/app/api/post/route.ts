@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { MAX_POST_IMAGES } from '@/lib/constants'
 
 // 获取用户的分享
 export async function GET(request: NextRequest) {
@@ -105,10 +106,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 验证图片数量（最多 3 张）
-    if (imageUrls && imageUrls.length > 3) {
+    // 验证图片数量（最多 MAX_POST_IMAGES 张）
+    if (imageUrls && imageUrls.length > MAX_POST_IMAGES) {
       return NextResponse.json(
-        { error: '最多只能上传 3 张图片' },
+        { error: `最多只能上传 ${MAX_POST_IMAGES} 张图片` },
         { status: 400 }
       )
     }
