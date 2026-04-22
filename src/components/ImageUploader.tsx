@@ -303,6 +303,7 @@ export default function ImageUploader({
               images={images}
               className={previewSize}
               onImageClick={handleImageClick}
+              onRemoveCurrent={handleRemoveImage}
             />
             
             {/* 上传进度遮罩 */}

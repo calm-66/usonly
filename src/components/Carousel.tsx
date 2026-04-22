@@ -28,6 +28,11 @@ export default function Carousel({
   const [isDragging, setIsDragging] = useState(false)
   const [dragStartX, setDragStartX] = useState<number | null>(null)
 
+  // 移除当前图片（必须在提前返回之前定义）
+  const handleRemoveCurrent = () => {
+    onRemoveCurrent?.(currentIndex)
+  }
+
   // 如果只有 0 或 1 张图片，直接返回
   if (!images || images.length === 0) {
     return null
@@ -42,10 +47,15 @@ export default function Carousel({
           className="w-full h-48 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
           onClick={() => onImageClick?.(0)}
         />
-        {/* 右上角 - 只显示总照片数量（纯数字） */}
-        <div className="absolute top-2 right-2 bg-black/60 text-white text-sm px-2 py-1 rounded-md z-10">
-          {images.length}
-        </div>
+        {/* 右上角 - 删除当前图片按钮（叉号） */}
+        <button
+          onClick={handleRemoveCurrent}
+          className="absolute top-2 right-2 bg-black/60 text-white w-6 h-6 flex items-center justify-center rounded-md z-10 hover:bg-black/80 transition"
+          title="删除当前图片"
+          type="button"
+        >
+          ×
+        </button>
       </div>
     )
   }
@@ -135,11 +145,6 @@ export default function Carousel({
     setCurrentIndex((prev) => Math.min(prev + 1, images.length - 1))
   }
 
-  // 移除当前图片
-  const handleRemoveCurrent = () => {
-    onRemoveCurrent?.(currentIndex)
-  }
-
   return (
     <div
       className={`relative overflow-hidden rounded-lg ${className}`}
@@ -169,10 +174,15 @@ export default function Carousel({
         ))}
       </div>
 
-      {/* 右上角 - 只显示总照片数量（纯数字） */}
-      <div className="absolute top-2 right-2 bg-black/60 text-white text-sm px-2 py-1 rounded-md z-10">
-        {images.length}
-      </div>
+      {/* 右上角 - 删除当前图片按钮（叉号） */}
+      <button
+        onClick={handleRemoveCurrent}
+        className="absolute top-2 right-2 bg-black/60 text-white w-6 h-6 flex items-center justify-center rounded-md z-10 hover:bg-black/80 transition"
+        title="删除当前图片"
+        type="button"
+      >
+        ×
+      </button>
     </div>
   )
 }
