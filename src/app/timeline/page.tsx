@@ -970,7 +970,7 @@ export default function TimelinePage() {
       )
     }
 
-    // 3+ 张图：随机排布的 2 列网格
+    // 3+ 张图：固定排布的 2 列网格
     const gridLayouts = [
       // 布局 1: 左图跨 2 行
       { main: 0, side: [1, 2], extra: [] },
@@ -984,16 +984,24 @@ export default function TimelinePage() {
       { main: 0, side: [1, 2], extra: [3, 4] },
     ]
 
-    // 根据图片数量选择布局
-    let layoutIndex
-    if (imageUrls.length === 3) {
-      layoutIndex = Math.floor(Math.random() * 2)
-    } else if (imageUrls.length === 4) {
-      layoutIndex = 2 + Math.floor(Math.random() * 2)
-    } else {
-      layoutIndex = 4 + Math.floor(Math.random() * 3)
+    // 根据帖子 ID 生成确定性哈希，确保布局固定
+    const getLayoutIndex = (postId: string, imageCount: number): number => {
+      let hash = 0
+      for (let i = 0; i < postId.length; i++) {
+        hash = ((hash << 5) - hash) + postId.charCodeAt(i)
+        hash = hash & hash
+      }
+      
+      if (imageCount === 3) {
+        return Math.abs(hash) % 2
+      } else if (imageCount === 4) {
+        return 2 + (Math.abs(hash) % 2)
+      } else {
+        return 4 + (Math.abs(hash) % 3)
+      }
     }
 
+    const layoutIndex = getLayoutIndex(postId, imageUrls.length)
     const layout = gridLayouts[Math.min(layoutIndex, gridLayouts.length - 1)]
     const displayedImages = imageUrls.slice(0, 9)
 
@@ -1007,7 +1015,7 @@ export default function TimelinePage() {
           <img
             src={displayedImages[layout.main]}
             alt={`分享图片 ${layout.main + 1}`}
-            className="w-full h-full object-cover rounded-l-xl rounded-tr-none rounded-br-none"
+            className="w-full h-full object-cover rounded-xl"
           />
         </div>
         

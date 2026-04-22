@@ -97,19 +97,19 @@ export default function ProfilePage() {
   }
 
   // 渲染头像组件
-  const renderAvatar = (avatarUrl: string | null, name: string, size: string = 'w-20 h-20') => {
+  const renderAvatar = (avatarUrl: string | null, name: string, size: string = 'w-16 h-16') => {
     if (avatarUrl) {
       return (
         <img
           src={avatarUrl}
           alt={name}
-          className={`${size} rounded-full object-cover border-2 border-white shadow-md`}
+          className={`${size} rounded-full object-cover border border-gray-100`}
         />
       )
     }
     const color = getDefaultAvatarColor(name)
     return (
-      <div className={`${size} rounded-full bg-gradient-to-br ${color} flex items-center justify-center text-white text-xl font-bold shadow-md`}>
+      <div className={`${size} rounded-full bg-gradient-to-br ${color} flex items-center justify-center text-white text-lg font-bold`}>
         {getInitial(name)}
       </div>
     )
@@ -464,17 +464,17 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-purple-100">
-        <p className="text-gray-600">加载中...</p>
+      <main className="min-h-screen flex items-center justify-center bg-white">
+        <p className="text-gray-500">加载中...</p>
       </main>
     )
   }
 
   if (!user) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-purple-100">
+      <main className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">未登录</p>
+          <p className="text-gray-500 mb-4">未登录</p>
           <a href="/" className="text-pink-600 hover:underline">去登录</a>
         </div>
       </main>
@@ -482,20 +482,20 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100 pb-20">
+    <main className="min-h-screen bg-white pb-20">
       {/* 顶部导航 */}
-      <header className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="max-w-3xl mx-auto px-4 py-1.5 flex justify-center relative">
-          <h1 className="text-xl font-bold text-gray-800">UsOnly</h1>
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+        <div className="max-w-[500px] mx-auto px-4 py-3 flex items-center justify-center">
+          <h1 className="text-lg font-bold text-gray-900">UsOnly</h1>
         </div>
       </header>
 
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
+      <div className="max-w-[500px] mx-auto px-4 py-4 space-y-4">
         {/* 个人信息卡片 */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-white rounded-xl border border-gray-100 p-4">
           <div className="flex items-center gap-4">
             <div className="relative">
-              {renderAvatar(user.avatarUrl, user.username, 'w-20 h-20')}
+              {renderAvatar(user.avatarUrl, user.username)}
               <button
                 type="button"
                 onClick={() => isMobile() ? setShowAvatarDialog(true) : avatarInputRef.current?.click()}
@@ -520,7 +520,7 @@ export default function ProfilePage() {
                         handleCancelEditUsername()
                       }
                     }}
-                    className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-gray-800"
+                    className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-gray-800 text-sm"
                     placeholder="输入新用户名"
                     autoFocus
                   />
@@ -540,7 +540,7 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-bold text-gray-800">{user.username}</h2>
+                  <h2 className="text-lg font-bold text-gray-900">{user.username}</h2>
                   <button
                     onClick={handleStartEditUsername}
                     className="p-1.5 text-gray-400 hover:text-pink-600 transition"
@@ -581,16 +581,16 @@ export default function ProfilePage() {
         </div>
 
         {/* 配对状态卡片 */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">配对状态</h3>
+        <div className="bg-white rounded-xl border border-gray-100 p-4">
+          <h3 className="text-base font-bold text-gray-900 mb-4">配对状态</h3>
 
           {user.partnerId && user.partner ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {/* 配对天数显示 */}
               {(user.partner.pairedAt || user.pairedAt) && (
-                <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg p-4 text-center">
-                  <p className="text-sm text-gray-600 mb-1">💕 已配对</p>
-                  <p className="text-3xl font-bold text-pink-600">
+                <div className="bg-pink-50 rounded-lg p-3 text-center">
+                  <p className="text-xs text-gray-600 mb-1">💕 已配对</p>
+                  <p className="text-2xl font-bold text-pink-600">
                     {calculatePairDays(user.partner.pairedAt || user.pairedAt)}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">天</p>
@@ -598,33 +598,33 @@ export default function ProfilePage() {
               )}
 
               {/* 伴侣信息 */}
-              <div className="flex items-center gap-3 p-3 bg-pink-50 rounded-lg">
-                {renderAvatar(user.partner.avatarUrl, user.partner.username, 'w-12 h-12')}
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                {renderAvatar(user.partner.avatarUrl, user.partner.username, 'w-10 h-10')}
                 <div className="flex-1">
-                  <p className="font-medium text-gray-800">{user.partner.username}</p>
-                  <p className="text-sm text-gray-500">你们的配对</p>
+                  <p className="font-medium text-gray-800 text-sm">{user.partner.username}</p>
+                  <p className="text-xs text-gray-500">你们的配对</p>
                 </div>
               </div>
 
               {/* 冷静期状态 */}
               {timeLeft !== null ? (
-                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-yellow-800 font-medium mb-2">⚠️ 冷静期中</p>
-                  <p className="text-sm text-yellow-700 mb-3">
+                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-yellow-800 font-medium text-sm mb-2">⚠️ 冷静期中</p>
+                  <p className="text-xs text-yellow-700 mb-3">
                     还剩 {timeLeft.days}天{timeLeft.hours}小时 将解除配对关系
                   </p>
                   <div className="flex gap-2">
                     <button
                       onClick={handleCancelBreakup}
                       disabled={breakupLoading}
-                      className="flex-1 px-4 py-2 bg-pink-500 text-white text-sm rounded-full hover:bg-pink-600 disabled:opacity-50"
+                      className="flex-1 px-3 py-2 bg-pink-500 text-white text-xs rounded-full hover:bg-pink-600 disabled:opacity-50"
                     >
                       继续配对
                     </button>
                     <button
                       onClick={() => setShowBreakupConfirm(true)}
                       disabled={breakupLoading}
-                      className="flex-1 px-4 py-2 bg-red-500 text-white text-sm rounded-full hover:bg-red-600 disabled:opacity-50"
+                      className="flex-1 px-3 py-2 bg-red-500 text-white text-xs rounded-full hover:bg-red-600 disabled:opacity-50"
                     >
                       确认解除
                     </button>
@@ -633,18 +633,18 @@ export default function ProfilePage() {
               ) : (
                 <button
                   onClick={() => setShowBreakupModal(true)}
-                  className="w-full py-3 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
+                  className="w-full py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
                 >
                   取消配对
                 </button>
               )}
             </div>
           ) : (
-            <div className="text-center py-6">
-              <p className="text-gray-500 mb-4">当前没有配对</p>
+            <div className="text-center py-4">
+              <p className="text-gray-500 text-sm mb-3">当前没有配对</p>
               <a
                 href="/pair"
-                className="inline-block px-6 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition"
+                className="inline-block px-5 py-2 bg-pink-500 text-white text-sm rounded-full hover:bg-pink-600 transition"
               >
                 去寻找伴侣
               </a>
@@ -652,12 +652,12 @@ export default function ProfilePage() {
           )}
 
           {/* 导出回忆 HTML */}
-          <div className="mt-4 pt-4 border-t">
+          <div className="mt-3 pt-3 border-t border-gray-100">
             <button
               onClick={() => setShowExportModal(true)}
-              className="w-full py-3 text-sm text-pink-600 hover:bg-pink-50 rounded-lg transition flex items-center justify-center gap-2"
+              className="w-full py-2.5 text-sm text-pink-600 hover:bg-pink-50 rounded-lg transition flex items-center justify-center gap-2"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               导出回忆
@@ -666,12 +666,12 @@ export default function ProfilePage() {
 
           {/* 归档回忆入口 */}
           {user.archivedPartnerId && (
-            <div className="mt-4 pt-4 border-t">
+            <div className="mt-2 pt-2 border-t border-gray-100">
               <button
                 onClick={handleViewArchived}
-                className="w-full py-3 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition flex items-center justify-center gap-2"
+                className="w-full py-2.5 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition flex items-center justify-center gap-2"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                 </svg>
                 查看归档回忆
@@ -681,15 +681,15 @@ export default function ProfilePage() {
         </div>
 
         {/* 设置卡片 */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">设置</h3>
+        <div className="bg-white rounded-xl border border-gray-100 p-4">
+          <h3 className="text-base font-bold text-gray-900 mb-3">设置</h3>
           
           {/* 联系作者 */}
           <button
             onClick={() => setShowFeedbackModal(true)}
-            className="w-full py-3 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition flex items-center justify-center gap-2 mb-2"
+            className="w-full py-2.5 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition flex items-center justify-center gap-2 mb-2"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
             联系作者
@@ -698,9 +698,9 @@ export default function ProfilePage() {
           {/* 请作者喝咖啡 */}
           <button
             onClick={() => setShowDonationModal(true)}
-            className="w-full py-3 text-sm text-pink-600 hover:bg-pink-50 rounded-lg transition flex items-center justify-center gap-2 mb-2"
+            className="w-full py-2.5 text-sm text-pink-600 hover:bg-pink-50 rounded-lg transition flex items-center justify-center gap-2 mb-2"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 1v3M10 1v3M14 1v3" />
             </svg>
@@ -709,7 +709,7 @@ export default function ProfilePage() {
           
           <button
             onClick={handleLogout}
-            className="w-full py-3 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
+            className="w-full py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
           >
             退出登录
           </button>
@@ -726,7 +726,7 @@ export default function ProfilePage() {
             className="bg-white w-full max-w-sm rounded-xl p-6 animate-slideUp"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-bold text-gray-800 mb-3">取消配对</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-3">取消配对</h3>
             <p className="text-gray-600 text-sm mb-4">
               确定要取消配对吗？
             </p>
@@ -764,7 +764,7 @@ export default function ProfilePage() {
             className="bg-white w-full max-w-sm rounded-xl p-6 animate-slideUp"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-bold text-gray-800 mb-3">确认解除配对</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-3">确认解除配对</h3>
             <p className="text-gray-600 text-sm mb-4">
               确认后将立即解除配对关系，双方的互动记录将被归档。
             </p>
@@ -820,7 +820,7 @@ export default function ProfilePage() {
             className="bg-white w-full max-w-xs rounded-xl p-6 animate-slideUp"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">更换头像</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">更换头像</h3>
             <div className="space-y-3">
               <button
                 onClick={() => {
@@ -861,23 +861,23 @@ export default function ProfilePage() {
       )}
 
       {/* 底部导航 - 3 个按钮 */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t">
-        <div className="max-w-3xl mx-auto flex">
-          <a href="/timeline" className="flex-1 py-1.5 text-center text-gray-500">
-            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100">
+        <div className="max-w-[500px] mx-auto flex">
+          <a href="/timeline" className="flex-1 py-3 text-center text-gray-500">
+            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span className="text-[10px]">时间轴</span>
           </a>
-          <a href="/map" className="flex-1 py-1.5 text-center text-gray-500">
-            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <a href="/map" className="flex-1 py-3 text-center text-gray-500">
+            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <span className="text-[10px]">足迹</span>
           </a>
-          <a href="/profile" className="flex-1 py-1.5 text-center text-pink-600">
-            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <a href="/profile" className="flex-1 py-3 text-center text-pink-600">
+            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
             <span className="text-[10px]">我的</span>

@@ -167,8 +167,11 @@ export default function MapPage() {
 
   if (!user) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-purple-100">
-        <div className="text-center text-gray-600">加载中...</div>
+      <main className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <p className="text-gray-500 mb-4">加载中...</p>
+          <a href="/" className="text-pink-600 hover:underline">返回首页</a>
+        </div>
       </main>
     )
   }
@@ -209,90 +212,90 @@ export default function MapPage() {
       })()
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100">
+    <main className="min-h-screen bg-white pb-20">
       {/* 顶部导航 */}
-      <header className="bg-white shadow-sm sticky top-0 z-20">
-        <div className="max-w-4xl mx-auto px-4 py-1.5 flex justify-center">
-          <h1 className="text-xl font-bold text-gray-800">UsOnly</h1>
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+        <div className="max-w-[500px] mx-auto px-4 py-3 flex items-center justify-center">
+          <h1 className="text-lg font-bold text-gray-900">UsOnly</h1>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 py-6 pb-24">
+      <div className="max-w-[500px] mx-auto px-4 py-4">
       {/* 统计卡片 - 同时作为筛选按钮 */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
+      <div className="grid grid-cols-3 gap-2 mb-4">
         {/* 我的打卡 */}
         <button
           onClick={() => setSelectedUserId(user.id)}
-          className={`bg-white rounded-xl shadow-sm p-3 text-center transition ${
-            selectedUserId === user.id ? 'ring-2 ring-pink-500' : ''
+          className={`bg-gray-50 rounded-lg p-3 text-center transition ${
+            selectedUserId === user.id ? 'bg-pink-50 ring-2 ring-pink-500' : 'hover:bg-gray-100'
           }`}
         >
-          <div className="flex items-center justify-center gap-2 mb-1">
+          <div className="flex items-center justify-center gap-1 mb-1">
             <Avatar username={user.username} avatarUrl={user.avatarUrl} size="sm" />
-            <span className="text-sm text-gray-600 truncate">{user.username}</span>
+            <span className="text-xs text-gray-600 truncate">{user.username}</span>
           </div>
-          <div className="text-lg font-bold text-pink-500">{myPostsCount}</div>
+          <div className="text-base font-bold text-pink-500">{myPostsCount}</div>
         </button>
         
         {/* TA 的打卡 */}
         <button
           onClick={() => setSelectedUserId(user.partnerId || 'none')}
           disabled={!user.partnerId}
-          className={`bg-white rounded-xl shadow-sm p-3 text-center transition disabled:opacity-50 ${
-            selectedUserId === user.partnerId ? 'ring-2 ring-purple-500' : ''
+          className={`bg-gray-50 rounded-lg p-3 text-center transition disabled:opacity-50 ${
+            selectedUserId === user.partnerId ? 'bg-purple-50 ring-2 ring-purple-500' : 'hover:bg-gray-100'
           }`}
         >
-          <div className="flex items-center justify-center gap-2 mb-1">
+          <div className="flex items-center justify-center gap-1 mb-1">
             {user.partner ? (
               <>
                 <Avatar username={user.partner.username} avatarUrl={user.partner.avatarUrl} size="sm" />
-                <span className="text-sm text-gray-600 truncate">{user.partner.username}</span>
+                <span className="text-xs text-gray-600 truncate">{user.partner.username}</span>
               </>
             ) : (
               <div className="w-6 h-6 rounded-full bg-gray-300" />
             )}
           </div>
-          <div className="text-lg font-bold text-purple-500">{partnerPostsCount}</div>
+          <div className="text-base font-bold text-purple-500">{partnerPostsCount}</div>
         </button>
         
         {/* 地点数 - 显示两人的头像 */}
         <button
           onClick={() => setSelectedUserId('all')}
-          className={`bg-white rounded-xl shadow-sm p-3 text-center transition ${
-            selectedUserId === 'all' ? 'ring-2 ring-blue-500' : ''
+          className={`bg-gray-50 rounded-lg p-3 text-center transition ${
+            selectedUserId === 'all' ? 'bg-blue-50 ring-2 ring-blue-500' : 'hover:bg-gray-100'
           }`}
         >
-          <div className="flex justify-center gap-1 mb-1">
+          <div className="flex justify-center gap-0.5 mb-1">
             <Avatar username={user.username} avatarUrl={user.avatarUrl} size="sm" />
             {user.partner && <Avatar username={user.partner.username} avatarUrl={user.partner.avatarUrl} size="sm" />}
           </div>
-          <div className="text-lg font-bold text-blue-500">{allLocationsMap.size}</div>
+          <div className="text-base font-bold text-blue-500">{allLocationsMap.size}</div>
         </button>
       </div>
 
         {/* 地图容器 */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-4">
+        <div className="bg-gray-50 rounded-xl overflow-hidden mb-4 border border-gray-100">
           {loading ? (
-            <div className="h-96 flex items-center justify-center text-gray-500">
+            <div className="h-48 flex items-center justify-center text-gray-500">
               加载中...
             </div>
           ) : filteredPosts.length === 0 ? (
-            <div className="h-96 flex items-center justify-center text-gray-500">
+            <div className="h-48 flex items-center justify-center text-gray-500">
               <div className="text-center">
                 <svg className="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <p>还没有位置打卡</p>
-                <p className="text-sm">去发布页添加位置吧～</p>
+                <p className="text-sm">还没有位置打卡</p>
+                <p className="text-xs text-gray-400 mt-1">去发布页添加位置吧～</p>
               </div>
             </div>
           ) : !mounted ? (
-            <div className="h-96 flex items-center justify-center text-gray-500">
+            <div className="h-48 flex items-center justify-center text-gray-500">
               加载地图中...
             </div>
           ) : (
-            <div className="h-64">
+            <div className="h-48">
               <MapContainer
                 center={mapCenter}
                 zoom={5}
@@ -369,11 +372,11 @@ export default function MapPage() {
 
         {/* 打卡列表 */}
         {filteredPosts.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm p-4">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">我们的足迹</h2>
+          <div className="space-y-3">
+            <h2 className="text-sm font-semibold text-gray-700">我们的足迹</h2>
             <div 
               ref={listRef}
-              className="space-y-3 max-h-64 overflow-y-auto"
+              className="space-y-3"
             >
               {filteredPosts.map((post) => {
                 const postLocationKey = post.latitude && post.longitude 
@@ -384,10 +387,10 @@ export default function MapPage() {
                   <div 
                     key={post.id} 
                     id={`post-${post.id}`}
-                    className={`p-3 rounded-lg transition-all ${
+                    className={`bg-white rounded-lg p-3 border border-gray-100 transition-all ${
                       isSelected 
-                        ? 'bg-pink-50 ring-2 ring-pink-300' 
-                        : 'bg-gray-50'
+                        ? 'ring-2 ring-pink-300' 
+                        : ''
                     }`}
                     onClick={() => {
                       if (postLocationKey && mapInstance) {
@@ -414,7 +417,7 @@ export default function MapPage() {
                         {/* 位置 */}
                         {post.location && (
                           <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
-                            <svg className="w-3 h-3 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3.5 h-3.5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
@@ -427,14 +430,14 @@ export default function MapPage() {
                         )}
                         {/* 文字内容 */}
                         {post.text && (
-                          <div className="text-sm text-gray-600 mb-2">{post.text}</div>
+                          <div className="text-sm text-gray-600 mb-2 line-clamp-2">{post.text}</div>
                         )}
                         {/* 图片 */}
                         {post.imageUrls && post.imageUrls.length > 0 && (
                           <img
                             src={post.imageUrls[0]}
                             alt="打卡图片"
-                            className="w-24 h-24 object-cover rounded-lg"
+                            className="w-20 h-20 object-cover rounded-lg"
                           />
                         )}
                       </div>
@@ -448,23 +451,23 @@ export default function MapPage() {
       </div>
 
       {/* 底部导航 */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t">
-        <div className="max-w-4xl mx-auto flex">
-          <a href="/timeline" className="flex-1 py-1.5 text-center text-gray-500">
-            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100">
+        <div className="max-w-[500px] mx-auto flex">
+          <a href="/timeline" className="flex-1 py-3 text-center text-gray-500">
+            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span className="text-[10px]">时间轴</span>
           </a>
-          <a href="/map" className="flex-1 py-1.5 text-center text-pink-500 bg-pink-50">
-            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <a href="/map" className="flex-1 py-3 text-center text-pink-600">
+            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <span className="text-[10px]">足迹</span>
           </a>
-          <a href="/profile" className="flex-1 py-1.5 text-center text-gray-500">
-            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <a href="/profile" className="flex-1 py-3 text-center text-gray-500">
+            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
             <span className="text-[10px]">我的</span>
