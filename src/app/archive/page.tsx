@@ -8,7 +8,7 @@ interface Post {
   userId: string
   date: string
   title: string | null
-  imageUrl: string | null
+  imageUrls: string[] | null
   text: string | null
   createdAt: string
   owner: '我' | 'TA'
@@ -445,14 +445,31 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                               )}
                               <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
                             </div>
-                            {post.imageUrl && (
+                            {post.imageUrls && post.imageUrls.length > 0 && (
                               <div className="mb-2">
-                                <img
-                                  src={post.imageUrl}
-                                  alt="分享图片"
-                                  className="w-full h-32 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
-                                  onClick={() => setSelectedImage(post.imageUrl!)}
-                                />
+                                {post.imageUrls.length === 1 ? (
+                                  <img
+                                    src={post.imageUrls[0]}
+                                    alt="分享图片"
+                                    className="w-full h-32 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
+                                    onClick={() => {
+                                      if (post.imageUrls && post.imageUrls.length > 0) {
+                                        setSelectedImage(post.imageUrls[0])
+                                      }
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="relative w-full h-32 rounded-lg overflow-hidden bg-gray-200">
+                                    <img
+                                      src={post.imageUrls[0]}
+                                      alt="分享图片"
+                                      className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute top-1 right-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
+                                      {post.imageUrls.length} 张
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             )}
                             {post.text && (
@@ -506,14 +523,31 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                               )}
                               <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
                             </div>
-                            {post.imageUrl && (
+                            {post.imageUrls && post.imageUrls.length > 0 && (
                               <div className="mb-2">
-                                <img
-                                  src={post.imageUrl}
-                                  alt="分享图片"
-                                  className="w-full h-32 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
-                                  onClick={() => setSelectedImage(post.imageUrl!)}
-                                />
+                                {post.imageUrls.length === 1 ? (
+                                  <img
+                                    src={post.imageUrls[0]}
+                                    alt="分享图片"
+                                    className="w-full h-32 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
+                                    onClick={() => {
+                                      if (post.imageUrls && post.imageUrls.length > 0) {
+                                        setSelectedImage(post.imageUrls[0])
+                                      }
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="relative w-full h-32 rounded-lg overflow-hidden bg-gray-200">
+                                    <img
+                                      src={post.imageUrls[0]}
+                                      alt="分享图片"
+                                      className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute top-1 right-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
+                                      {post.imageUrls.length} 张
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             )}
                             {post.text && (

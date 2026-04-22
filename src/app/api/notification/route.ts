@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
         post: {
           select: {
             id: true,
-            imageUrl: true,
+            imageUrls: true,
           },
         },
       },

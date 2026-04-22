@@ -16,8 +16,8 @@ interface Post {
   id: string
   date: string
   title: string | null
+  imageUrls: string[] | null
   text: string | null
-  imageUrl: string | null
   latitude?: number | null
   longitude?: number | null
   location?: string | null
@@ -430,9 +430,9 @@ export default function MapPage() {
                           <div className="text-sm text-gray-600 mb-2">{post.text}</div>
                         )}
                         {/* 图片 */}
-                        {post.imageUrl && (
+                        {post.imageUrls && post.imageUrls.length > 0 && (
                           <img
-                            src={post.imageUrl}
+                            src={post.imageUrls[0]}
                             alt="打卡图片"
                             className="w-24 h-24 object-cover rounded-lg"
                           />

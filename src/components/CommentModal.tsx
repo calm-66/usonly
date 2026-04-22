@@ -20,7 +20,7 @@ interface Post {
   userId: string
   date: string
   title: string | null
-  imageUrl: string | null
+  imageUrls: string[] | null
   text: string | null
   createdAt: string
   owner: '我' | 'TA'

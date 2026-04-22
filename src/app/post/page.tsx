@@ -300,7 +300,7 @@ export default function PostPage() {
               </label>
               <ImageUploader
                 value={imageUrls}
-                onChange={setImageUrlUrls}
+                onChange={setImageUrls}
                 previewSize="w-full h-48"
                 placeholder="选择图片"
                 accept="image/*"

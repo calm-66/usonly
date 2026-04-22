@@ -7,7 +7,7 @@ interface Post {
   userId: string
   date: string
   title: string | null
-  imageUrl: string | null
+  imageUrls: string[] | null
   text: string | null
   createdAt: string
   location?: string | null
@@ -611,7 +611,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
                 ${post.title ? `<span class="post-title">${post.title}</span>` : ''}
                 <span class="post-time">${new Date(post.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
-              ${post.imageUrl ? `<img src="${post.imageUrl}" alt="分享图片" class="post-image" onerror="this.style.display='none'">` : ''}
+              ${post.imageUrls && post.imageUrls.length > 0 ? `<img src="${post.imageUrls[0]}" alt="分享图片" class="post-image" onerror="this.style.display='none'">` : ''}
               ${post.text ? `<div class="post-text">${post.text}</div>` : ''}
               ${post.location ? `
               <div class="post-location">
@@ -655,7 +655,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
                 ${post.title ? `<span class="post-title">${post.title}</span>` : ''}
                 <span class="post-time">${new Date(post.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
-              ${post.imageUrl ? `<img src="${post.imageUrl}" alt="分享图片" class="post-image" onerror="this.style.display='none'">` : ''}
+              ${post.imageUrls && post.imageUrls.length > 0 ? `<img src="${post.imageUrls[0]}" alt="分享图片" class="post-image" onerror="this.style.display='none'">` : ''}
               ${post.text ? `<div class="post-text">${post.text}</div>` : ''}
               ${post.location ? `
               <div class="post-location">

@@ -126,10 +126,10 @@ export default function ImageUploader({
         setImages(prev => {
           const newImages = [...prev, imageUrl]
           onChange(newImages)
+          setMessage(`已上传 ${newImages.length}/${maxCount} 张图片`)
           return newImages
         })
         
-        setMessage(`已上传 ${newImages.length}/${maxCount} 张图片`)
         onUploadComplete?.(imageUrl)
       } catch (err: any) {
         const errorMsg = err.message || '图片上传失败'
