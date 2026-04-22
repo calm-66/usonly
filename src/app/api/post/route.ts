@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
   try {
     const userId = request.headers.get('x-user-id')
     const body = await request.json()
-    const { date, title, imageUrl, text, latitude, longitude, location } = body
+    const { date, title, imageUrls, text, latitude, longitude, location } = body
 
     if (!userId) {
       return NextResponse.json(
@@ -105,6 +105,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // 验证图片数量（最多 3 张）
+    if (imageUrls && imageUrls.length > 3) {
+      return NextResponse.json(
+        { error: '最多只能上传 3 张图片' },
+        { status: 400 }
+      )
+    }
+
     // 获取用户信息
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -116,7 +124,7 @@ export async function POST(request: NextRequest) {
         userId,
         date,
         title: title || null,
-        imageUrl,
+        imageUrls: imageUrls || [],
         text,
         latitude: latitude || null,
         longitude: longitude || null,

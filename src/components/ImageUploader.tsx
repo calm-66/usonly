@@ -2,10 +2,11 @@
 
 import { useState, useRef, ChangeEvent, useEffect } from 'react'
 import { uploadImage, validateImageFile, validateImageFileWithSize } from '@/lib/imageUpload'
+import Carousel from './Carousel'
 
 interface ImageUploaderProps {
-  value: string | null           // 当前图片 URL
-  onChange: (url: string | null) => void  // 回调函数
+  value: string[] | null         // 当前图片 URL 数组
+  onChange: (urls: string[] | null) => void  // 回调函数
   maxSize?: number               // 最大大小（字节），默认 5MB
   previewSize?: string           // 预览区域大小，默认 'w-full h-48'
   showRemove?: boolean           // 是否显示移除按钮，默认 true
@@ -17,6 +18,7 @@ interface ImageUploaderProps {
   onUploadStart?: () => void     // 上传开始回调
   onUploadComplete?: (url: string) => void  // 上传完成回调
   onUploadError?: (error: string) => void   // 上传错误回调
+  maxCount?: number              // 最大上传数量，默认 3
 }
 
 // 检测是否为移动端设备
@@ -39,8 +41,9 @@ export default function ImageUploader({
   onUploadStart,
   onUploadComplete,
   onUploadError,
+  maxCount = 3,
 }: ImageUploaderProps) {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(value)
+  const [images, setImages] = useState<string[]>(value || [])
   const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -49,66 +52,113 @@ export default function ImageUploader({
   const [isMobileDevice, setIsMobileDevice] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [currentCapture, setCurrentCapture] = useState<'user' | 'environment' | undefined>(undefined)
+  const [pendingFiles, setPendingFiles] = useState<File[]>([])  // 待上传的文件队列
 
   useEffect(() => {
     setIsMobileDevice(isMobile())
   }, [])
 
+  useEffect(() => {
+    setImages(value || [])
+  }, [value])
+
+  // 处理文件选择（支持多选）
   const handleFileSelect = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
 
-    // 验证文件
-    const validation = validateImageFileWithSize(file)
-    if (!validation.valid) {
-      setError(validation.error!)
-      onUploadError?.(validation.error!)
-      return
-    }
-
-    // 如果有警告信息，显示但不阻止上传
-    if (validation.warning) {
-      setWarning(validation.warning)
-      setError('')
-    } else {
-      setWarning('')
-      setError('')
-    }
-
-    setUploading(true)
-    onUploadStart?.()
-
-    try {
-      // 创建预览 URL
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        setPreviewUrl(event.target?.result as string)
-      }
-      reader.readAsDataURL(file)
-
-      // 上传图片（自动压缩）
-      const imageUrl = await uploadImage(file)
-      onChange(imageUrl)
-      setMessage('图片上传成功！')
-      onUploadComplete?.(imageUrl)
-    } catch (err: any) {
-      const errorMsg = err.message || '图片上传失败'
-      setError(errorMsg)
-      setWarning('')
-      onUploadError?.(errorMsg)
-      // 上传失败时清除预览和值
-      setPreviewUrl(null)
-      onChange(null)
+    // 检查是否会超出数量限制
+    const currentCount = images.length
+    const maxAllowed = maxCount - currentCount
+    
+    if (maxAllowed <= 0) {
+      setError(`最多只能上传 ${maxCount} 张图片`)
+      onUploadError?.(`最多只能上传 ${maxCount} 张图片`)
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
-    } finally {
-      setUploading(false)
+      return
+    }
+
+    // 如果选择的文件数量超出限制，只取前 maxAllowed 个
+    const filesToProcess = files.slice(0, maxAllowed)
+    
+    if (files.length > maxAllowed) {
+      setWarning(`最多只能上传 ${maxCount} 张图片，已自动选择前 ${maxAllowed} 张`)
+    } else {
+      setWarning('')
+    }
+
+    // 验证每个文件
+    for (const file of filesToProcess) {
+      const validation = validateImageFileWithSize(file)
+      if (!validation.valid) {
+        setError(validation.error!)
+        onUploadError?.(validation.error!)
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ''
+        }
+        return
+      }
+    }
+
+    setError('')
+    setUploading(true)
+    onUploadStart?.()
+
+    // 将文件添加到待处理队列
+    setPendingFiles(prev => [...prev, ...filesToProcess])
+
+    // 逐个上传
+    for (const file of filesToProcess) {
+      try {
+        // 创建预览 URL
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          // 上传成功后添加到数组
+        }
+        reader.readAsDataURL(file)
+
+        // 上传图片（自动压缩）
+        const imageUrl = await uploadImage(file)
+        
+        // 添加到图片数组
+        setImages(prev => {
+          const newImages = [...prev, imageUrl]
+          onChange(newImages)
+          return newImages
+        })
+        
+        setMessage(`已上传 ${newImages.length}/${maxCount} 张图片`)
+        onUploadComplete?.(imageUrl)
+      } catch (err: any) {
+        const errorMsg = err.message || '图片上传失败'
+        setError(errorMsg)
+        onUploadError?.(errorMsg)
+      }
+    }
+
+    setUploading(false)
+    
+    // 清空 input，允许重复选择同一文件
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
     }
   }
 
-  const handleRemoveImage = () => {
-    setPreviewUrl(null)
+  const handleRemoveImage = (index: number) => {
+    setImages(prev => {
+      const newImages = prev.filter((_, i) => i !== index)
+      onChange(newImages.length > 0 ? newImages : null)
+      return newImages
+    })
+    setMessage('')
+    setError('')
+    setWarning('')
+  }
+
+  const handleRemoveAll = () => {
+    setImages([])
     onChange(null)
     setMessage('')
     setError('')
@@ -123,7 +173,7 @@ export default function ImageUploader({
       // 移动端显示选择弹窗
       setShowMobileDialog(true)
     } else {
-      // PC 端直接打开文件选择器
+      // PC 端直接打开文件选择器（支持多选）
       setCurrentCapture(undefined)
       fileInputRef.current?.click()
     }
@@ -146,18 +196,22 @@ export default function ImageUploader({
     className: string
     disabled: boolean
     capture?: 'user' | 'environment'
+    multiple?: boolean
   } = {
     type: 'file',
     accept,
     onChange: handleFileSelect,
     className: 'hidden',
     disabled: disabled || uploading,
+    multiple: true,  // 支持多选
   }
 
   // 添加 capture 属性
   if (currentCapture) {
     inputProps.capture = currentCapture
   }
+
+  const canAddMore = images.length < maxCount
 
   return (
     <div className={`space-y-2 ${className}`}>
@@ -180,7 +234,7 @@ export default function ImageUploader({
 
       {/* 上传按钮和预览区域 */}
       <div className="space-y-2">
-        {!previewUrl ? (
+        {images.length === 0 ? (
           /* 未选择图片时显示上传按钮 */
           <div className="flex items-center gap-3">
             <input
@@ -210,27 +264,43 @@ export default function ImageUploader({
                 </>
               )}
             </button>
+            <span className="text-sm text-gray-500">最多 {maxCount} 张</span>
           </div>
         ) : (
-          /* 已选择图片时显示预览 */
+          /* 已选择图片时显示轮播预览 */
           <div className="relative">
-            <img
-              src={previewUrl}
-              alt="预览"
-              className={`${previewSize} object-cover rounded-lg border border-gray-200`}
+            <Carousel
+              images={images}
+              className={previewSize}
+              onImageClick={() => {}}
             />
+            
+            {/* 移除全部按钮 */}
             {showRemove && !uploading && (
               <button
                 type="button"
-                onClick={handleRemoveImage}
-                className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition shadow-md"
-                title="移除图片"
+                onClick={handleRemoveAll}
+                className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition shadow-md z-10"
+                title="移除所有图片"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             )}
+
+            {/* 移除单张图片按钮（在轮播指示器旁边显示） */}
+            {showRemove && !uploading && images.length > 1 && (
+              <button
+                type="button"
+                onClick={() => handleRemoveImage(0)}
+                className="absolute bottom-8 right-2 bg-red-500/80 text-white text-xs px-2 py-1 rounded hover:bg-red-600 transition shadow-md z-10"
+                title="移除当前图片"
+              >
+                移除当前
+              </button>
+            )}
+            
             {uploading && showProgress && (
               <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
                 <div className="text-white text-center">
@@ -242,6 +312,35 @@ export default function ImageUploader({
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* 添加更多图片按钮 */}
+        {canAddMore && images.length > 0 && (
+          <div className="flex items-center gap-3">
+            <input
+              ref={fileInputRef}
+              {...inputProps}
+            />
+            <button
+              type="button"
+              onClick={handleButtonClick}
+              disabled={disabled || uploading}
+              className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition disabled:opacity-50 flex items-center gap-2 text-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              添加图片 ({maxCount - images.length} 张)
+            </button>
+          </div>
+        )}
+
+        {/* 已上传数量提示 */}
+        {images.length > 0 && (
+          <div className="flex items-center justify-between text-sm text-gray-500">
+            <span>已上传 {images.length} 张</span>
+            <span>最多 {maxCount} 张</span>
           </div>
         )}
 
@@ -274,7 +373,7 @@ export default function ImageUploader({
                 onClick={() => handleSelectCamera(undefined as any)}
                 className="w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2"
               >
-                🖼️ 从相册选择
+                🖼️ 从相册选择（可多选）
               </button>
             </div>
             <button

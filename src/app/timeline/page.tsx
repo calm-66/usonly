@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import CommentModal from '@/components/CommentModal'
+import Carousel from '@/components/Carousel'
 
 interface Post {
   id: string
   userId: string
   date: string
   title: string | null
-  imageUrl: string | null
+  imageUrls: string[] | null
   text: string | null
   createdAt: string
   owner: '我' | 'TA'
@@ -70,7 +71,7 @@ interface Notification {
   } | null
   post: {
     id: string
-    imageUrl: string | null
+    imageUrls: string[] | null
   } | null
 }
 
@@ -1558,13 +1559,12 @@ export default function TimelinePage() {
                               {post.title && (
                                 <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
                               )}
-                              {post.imageUrl && (
+                              {post.imageUrls && post.imageUrls.length > 0 && (
                                 <div className="mb-3">
-                                  <img
-                                    src={post.imageUrl}
-                                    alt="分享图片"
-                                    className="w-full h-48 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
-                                    onClick={() => setSelectedImage(post.imageUrl!)}
+                                  <Carousel
+                                    images={post.imageUrls}
+                                    className="w-full h-48"
+                                    onImageClick={(index) => setSelectedImage(post.imageUrls![index])}
                                   />
                                 </div>
                               )}
@@ -1583,13 +1583,12 @@ export default function TimelinePage() {
                               {post.title && (
                                 <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
                               )}
-                              {post.imageUrl && (
+                              {post.imageUrls && post.imageUrls.length > 0 && (
                                 <div className="mb-3">
-                                  <img
-                                    src={post.imageUrl}
-                                    alt="分享图片"
-                                    className="w-full h-48 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
-                                    onClick={() => setSelectedImage(post.imageUrl!)}
+                                  <Carousel
+                                    images={post.imageUrls}
+                                    className="w-full h-48"
+                                    onImageClick={(index) => setSelectedImage(post.imageUrls![index])}
                                   />
                                 </div>
                               )}
@@ -1655,13 +1654,12 @@ export default function TimelinePage() {
                               {post.title && (
                                 <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
                               )}
-                              {post.imageUrl && (
+                              {post.imageUrls && post.imageUrls.length > 0 && (
                                 <div className="mb-2">
-                                  <img
-                                    src={post.imageUrl}
-                                    alt="分享图片"
-                                    className="w-full h-32 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
-                                    onClick={() => setSelectedImage(post.imageUrl!)}
+                                  <Carousel
+                                    images={post.imageUrls}
+                                    className="w-full h-32"
+                                    onImageClick={(index) => setSelectedImage(post.imageUrls![index])}
                                   />
                                 </div>
                               )}
@@ -1720,13 +1718,12 @@ export default function TimelinePage() {
                               {post.title && (
                                 <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
                               )}
-                              {post.imageUrl && (
+                              {post.imageUrls && post.imageUrls.length > 0 && (
                                 <div className="mb-2">
-                                  <img
-                                    src={post.imageUrl}
-                                    alt="分享图片"
-                                    className="w-full h-32 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
-                                    onClick={() => setSelectedImage(post.imageUrl!)}
+                                  <Carousel
+                                    images={post.imageUrls}
+                                    className="w-full h-32"
+                                    onImageClick={(index) => setSelectedImage(post.imageUrls![index])}
                                   />
                                 </div>
                               )}

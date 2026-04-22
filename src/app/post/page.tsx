@@ -7,7 +7,7 @@ interface Post {
   id: string
   date: string
   title: string | null
-  imageUrl: string | null
+  imageUrls: string[] | null
   text: string | null
   latitude?: number | null
   longitude?: number | null
@@ -30,7 +30,7 @@ export default function PostPage() {
   const [user, setUser] = useState<User | null>(null)
   const [date, setDate] = useState('')
   const [title, setTitle] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
+  const [imageUrls, setImageUrls] = useState<string[] | null>(null)
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -87,7 +87,7 @@ export default function PostPage() {
         body: JSON.stringify({
           date,
           title: title || null,
-          imageUrl: imageUrl || null,
+          imageUrls: imageUrls || [],
           text: text || null,
           latitude: latitude || null,
           longitude: longitude || null,
@@ -102,7 +102,7 @@ export default function PostPage() {
       // 跳转到时间轴页面
       window.location.href = '/timeline'
       // 重置表单
-      setImageUrl('')
+      setImageUrls(null)
       setText('')
       setLatitude(null)
       setLongitude(null)
@@ -299,16 +299,12 @@ export default function PostPage() {
                 图片
               </label>
               <ImageUploader
-                value={imageUrl ? imageUrl : null}
-                onChange={(url) => {
-                  setImageUrl(url || '')
-                  if (url) {
-                    setMessage('图片上传成功！')
-                  }
-                }}
+                value={imageUrls}
+                onChange={setImageUrlUrls}
                 previewSize="w-full h-48"
                 placeholder="选择图片"
                 accept="image/*"
+                maxCount={3}
               />
             </div>
 
@@ -417,12 +413,27 @@ export default function PostPage() {
                       删除
                     </button>
                   </div>
-                  {post.imageUrl && (
-                    <img
-                      src={post.imageUrl}
-                      alt="分享图片"
-                      className="w-full h-32 object-cover rounded-lg mb-2"
-                    />
+                  {post.imageUrls && post.imageUrls.length > 0 && (
+                    <div className="mb-2">
+                      {post.imageUrls.length === 1 ? (
+                        <img
+                          src={post.imageUrls[0]}
+                          alt="分享图片"
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="relative w-full h-32 rounded-lg overflow-hidden bg-gray-200">
+                          <img
+                            src={post.imageUrls[0]}
+                            alt="分享图片"
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute top-1 right-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
+                            {post.imageUrls.length} 张
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                   {post.text && (
                     <p className="text-sm text-gray-600 whitespace-pre-wrap">{post.text}</p>
