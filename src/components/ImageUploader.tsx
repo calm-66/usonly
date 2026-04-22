@@ -41,7 +41,7 @@ export default function ImageUploader({
   onUploadStart,
   onUploadComplete,
   onUploadError,
-  maxCount = 3,
+  maxCount = 6,
 }: ImageUploaderProps) {
   console.log('[ImageUploader] 组件渲染开始，props:', { value, maxCount })
   

@@ -119,16 +119,11 @@ export default function ImageGallery({
             className="max-w-full max-h-[85vh] object-contain rounded-lg"
           />
 
-          {/* 右上角 - 总照片数量 */}
-          <div className="absolute top-4 right-12 bg-black/60 text-white text-sm px-3 py-1.5 rounded-md z-10">
-            {images.length}
-          </div>
-
-          {/* 左箭头按钮 */}
+          {/* 左箭头按钮 - 只在 PC 端显示 (md 及以上) */}
           {images.length > 1 && (
             <button
               onClick={goPrev}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full transition transform hover:scale-110 z-40"
+              className="hidden md:block absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full transition transform hover:scale-110 z-40"
               title="上一张"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,11 +132,11 @@ export default function ImageGallery({
             </button>
           )}
 
-          {/* 右箭头按钮 */}
+          {/* 右箭头按钮 - 只在 PC 端显示 (md 及以上) */}
           {images.length > 1 && (
             <button
               onClick={goNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full transition transform hover:scale-110 z-40"
+              className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full transition transform hover:scale-110 z-40"
               title="下一张"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

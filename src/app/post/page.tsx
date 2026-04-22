@@ -315,7 +315,7 @@ export default function PostPage() {
                 previewSize="w-full h-48"
                 placeholder="选择图片"
                 accept="image/*"
-                maxCount={3}
+                maxCount={6}
               />
             </div>
 
