@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import CommentModal from '@/components/CommentModal'
-import Carousel from '@/components/Carousel'
 import ImageGallery from '@/components/ImageGallery'
 
 interface Post {
@@ -1548,11 +1547,36 @@ export default function TimelinePage() {
                               )}
                               {post.imageUrls && post.imageUrls.length > 0 && (
                                 <div className="mb-3">
-                                  <Carousel
-                                    images={post.imageUrls}
-                                    className="w-full h-48"
-                                    onImageClick={(index) => setSelectedPostImages({ images: post.imageUrls!, index })}
-                                  />
+                                  {/* 静态图片预览 - 点击打开大图查看器 */}
+                                  <div
+                                    className="relative w-full h-48 rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
+                                    onClick={() => setSelectedPostImages({ images: post.imageUrls!, index: 0 })}
+                                  >
+                                    {post.imageUrls.length === 1 ? (
+                                      <img
+                                        src={post.imageUrls[0]}
+                                        alt="分享图片"
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="grid grid-cols-3 gap-1 h-full p-1">
+                                        {post.imageUrls.slice(0, 9).map((imageUrl, idx) => (
+                                          <div key={idx} className="relative">
+                                            <img
+                                              src={imageUrl}
+                                              alt={`分享图片 ${idx + 1}`}
+                                              className="w-full h-full object-cover rounded"
+                                            />
+                                          </div>
+                                        ))}
+                                        {post.imageUrls.length > 9 && (
+                                          <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center">
+                                            <span className="text-white text-xl font-bold">+{post.imageUrls.length - 9}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               )}
                               {post.text && (
@@ -1571,12 +1595,37 @@ export default function TimelinePage() {
                                 <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
                               )}
                               {post.imageUrls && post.imageUrls.length > 0 && (
-                                <div className="mb-3">
-                                  <Carousel
-                                    images={post.imageUrls}
-                                    className="w-full h-48"
-                                    onImageClick={(index) => setSelectedPostImages({ images: post.imageUrls!, index })}
-                                  />
+                                <div className="mb-2">
+                                  {/* 静态图片预览 - 点击打开大图查看器 */}
+                                  <div
+                                    className="relative w-full h-32 rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
+                                    onClick={() => setSelectedPostImages({ images: post.imageUrls!, index: 0 })}
+                                  >
+                                    {post.imageUrls.length === 1 ? (
+                                      <img
+                                        src={post.imageUrls[0]}
+                                        alt="分享图片"
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="grid grid-cols-3 gap-1 h-full p-1">
+                                        {post.imageUrls.slice(0, 9).map((imageUrl, idx) => (
+                                          <div key={idx} className="relative">
+                                            <img
+                                              src={imageUrl}
+                                              alt={`分享图片 ${idx + 1}`}
+                                              className="w-full h-full object-cover rounded"
+                                            />
+                                          </div>
+                                        ))}
+                                        {post.imageUrls.length > 9 && (
+                                          <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center">
+                                            <span className="text-white text-xl font-bold">+{post.imageUrls.length - 9}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               )}
                               {post.text && (
@@ -1643,11 +1692,36 @@ export default function TimelinePage() {
                               )}
                               {post.imageUrls && post.imageUrls.length > 0 && (
                                 <div className="mb-2">
-                                  <Carousel
-                                    images={post.imageUrls}
-                                    className="w-full h-32"
-                                    onImageClick={(index) => setSelectedPostImages({ images: post.imageUrls!, index })}
-                                  />
+                                  {/* 静态图片预览 - 点击打开大图查看器 */}
+                                  <div
+                                    className="relative w-full h-32 rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
+                                    onClick={() => setSelectedPostImages({ images: post.imageUrls!, index: 0 })}
+                                  >
+                                    {post.imageUrls.length === 1 ? (
+                                      <img
+                                        src={post.imageUrls[0]}
+                                        alt="分享图片"
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="grid grid-cols-3 gap-1 h-full p-1">
+                                        {post.imageUrls.slice(0, 9).map((imageUrl, idx) => (
+                                          <div key={idx} className="relative">
+                                            <img
+                                              src={imageUrl}
+                                              alt={`分享图片 ${idx + 1}`}
+                                              className="w-full h-full object-cover rounded"
+                                            />
+                                          </div>
+                                        ))}
+                                        {post.imageUrls.length > 9 && (
+                                          <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center">
+                                            <span className="text-white text-xl font-bold">+{post.imageUrls.length - 9}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               )}
                               {post.text && (
@@ -1707,11 +1781,36 @@ export default function TimelinePage() {
                               )}
                               {post.imageUrls && post.imageUrls.length > 0 && (
                                 <div className="mb-2">
-                                  <Carousel
-                                    images={post.imageUrls}
-                                    className="w-full h-32"
-                                    onImageClick={(index) => setSelectedPostImages({ images: post.imageUrls!, index })}
-                                  />
+                                  {/* 静态图片预览 - 点击打开大图查看器 */}
+                                  <div
+                                    className="relative w-full h-32 rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
+                                    onClick={() => setSelectedPostImages({ images: post.imageUrls!, index: 0 })}
+                                  >
+                                    {post.imageUrls.length === 1 ? (
+                                      <img
+                                        src={post.imageUrls[0]}
+                                        alt="分享图片"
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="grid grid-cols-3 gap-1 h-full p-1">
+                                        {post.imageUrls.slice(0, 9).map((imageUrl, idx) => (
+                                          <div key={idx} className="relative">
+                                            <img
+                                              src={imageUrl}
+                                              alt={`分享图片 ${idx + 1}`}
+                                              className="w-full h-full object-cover rounded"
+                                            />
+                                          </div>
+                                        ))}
+                                        {post.imageUrls.length > 9 && (
+                                          <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center">
+                                            <span className="text-white text-xl font-bold">+{post.imageUrls.length - 9}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               )}
                               {post.text && (

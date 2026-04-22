@@ -2,7 +2,6 @@
 
 import { useState, useRef, ChangeEvent, useEffect } from 'react'
 import { uploadImage, validateImageFile, validateImageFileWithSize } from '@/lib/imageUpload'
-import Carousel from './Carousel'
 import ImageGallery from './ImageGallery'
 
 interface ImageUploaderProps {
@@ -296,15 +295,54 @@ export default function ImageUploader({
             <span className="text-sm text-gray-500">最多 {maxCount} 张</span>
           </div>
         ) : (
-          // 已选择图片时显示轮播预览
+          // 已选择图片时显示静态预览
           <div className="relative">
-            {/* 预览区域 */}
-            <Carousel
-              images={images}
-              className={previewSize}
-              onImageClick={handleImageClick}
-              onRemoveCurrent={handleRemoveImage}
-            />
+            {/* 预览区域 - 静态图片网格 */}
+            <div
+              className={`relative ${previewSize} rounded-lg overflow-hidden bg-gray-100 cursor-pointer`}
+              onClick={() => handleImageClick(0)}
+            >
+              {images.length === 1 ? (
+                // 单张图片：全屏显示
+                <img
+                  src={images[0]}
+                  alt="预览图片"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                // 多张图片：网格布局
+                <div className="grid grid-cols-3 gap-1 h-full p-1">
+                  {images.slice(0, 9).map((imageUrl, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={imageUrl}
+                        alt={`预览图片 ${index + 1}`}
+                        className="w-full h-full object-cover rounded"
+                      />
+                    </div>
+                  ))}
+                  {/* 遮罩层显示总数 */}
+                  {images.length > 9 && (
+                    <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center">
+                      <span className="text-white text-xl font-bold">+{images.length - 9}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* 右上角删除按钮 - 只删除第一张图片 */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleRemoveImage(0)
+                }}
+                className="absolute top-2 right-2 bg-black/60 text-white w-6 h-6 flex items-center justify-center rounded-md z-10 hover:bg-black/80 transition"
+                title="删除当前图片"
+                type="button"
+              >
+                ×
+              </button>
+            </div>
             
             {/* 上传进度遮罩 */}
             {uploading && showProgress && (
