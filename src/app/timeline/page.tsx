@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import CommentModal from '@/components/CommentModal'
 import Carousel from '@/components/Carousel'
+import ImageGallery from '@/components/ImageGallery'
 
 interface Post {
   id: string
@@ -86,7 +87,7 @@ export default function TimelinePage() {
   const [partnerPosts, setPartnerPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'mine' | 'partner' | 'both'>('both')
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [selectedPostImages, setSelectedPostImages] = useState<{ images: string[]; index: number } | null>(null)
   
   // 控制"我们的"标签页是否显示配对天数
   const [showPairDaysInTab, setShowPairDaysInTab] = useState(false)
@@ -842,18 +843,18 @@ export default function TimelinePage() {
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setSelectedImage(null)
+        setSelectedPostImages(null)
         setShowNotifications(false)
         closeCommentModal()
       }
     }
-    if (selectedImage || showNotifications || showCommentModal) {
+    if (selectedPostImages || showNotifications || showCommentModal) {
       window.addEventListener('keydown', handleEsc)
     }
     return () => {
       window.removeEventListener('keydown', handleEsc)
     }
-  }, [selectedImage, showNotifications, showCommentModal])
+  }, [selectedPostImages, showNotifications, showCommentModal])
 
   if (!user) {
     return (
@@ -1472,27 +1473,13 @@ export default function TimelinePage() {
         </div>
       </div>
 
-      {/* 图片放大查看模态框 */}
-      {selectedImage && (
-        <div
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 cursor-zoom-out"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div className="relative max-w-5xl w-full">
-            <button
-              className="absolute -top-10 right-0 text-white hover:text-gray-300 text-3xl font-bold"
-              onClick={() => setSelectedImage(null)}
-            >
-              ×
-            </button>
-            <img
-              src={selectedImage}
-              alt="放大图片"
-              className="max-w-full max-h-[90vh] object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
-        </div>
+  {/* 图片放大查看器 */}
+      {selectedPostImages && (
+        <ImageGallery
+          images={selectedPostImages.images}
+          initialIndex={selectedPostImages.index}
+          onClose={() => setSelectedPostImages(null)}
+        />
       )}
 
   {/* 评论弹窗 - 使用复用组件 */}
@@ -1564,7 +1551,7 @@ export default function TimelinePage() {
                                   <Carousel
                                     images={post.imageUrls}
                                     className="w-full h-48"
-                                    onImageClick={(index) => setSelectedImage(post.imageUrls![index])}
+                                    onImageClick={(index) => setSelectedPostImages({ images: post.imageUrls!, index })}
                                   />
                                 </div>
                               )}
@@ -1588,7 +1575,7 @@ export default function TimelinePage() {
                                   <Carousel
                                     images={post.imageUrls}
                                     className="w-full h-48"
-                                    onImageClick={(index) => setSelectedImage(post.imageUrls![index])}
+                                    onImageClick={(index) => setSelectedPostImages({ images: post.imageUrls!, index })}
                                   />
                                 </div>
                               )}
@@ -1659,7 +1646,7 @@ export default function TimelinePage() {
                                   <Carousel
                                     images={post.imageUrls}
                                     className="w-full h-32"
-                                    onImageClick={(index) => setSelectedImage(post.imageUrls![index])}
+                                    onImageClick={(index) => setSelectedPostImages({ images: post.imageUrls!, index })}
                                   />
                                 </div>
                               )}
@@ -1723,7 +1710,7 @@ export default function TimelinePage() {
                                   <Carousel
                                     images={post.imageUrls}
                                     className="w-full h-32"
-                                    onImageClick={(index) => setSelectedImage(post.imageUrls![index])}
+                                    onImageClick={(index) => setSelectedPostImages({ images: post.imageUrls!, index })}
                                   />
                                 </div>
                               )}
