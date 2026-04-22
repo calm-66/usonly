@@ -99,6 +99,8 @@ export default function PostPage() {
         throw new Error(data.error || '发布失败')
       }
       setMessage('分享成功！')
+      // 跳转到时间轴页面
+      window.location.href = '/timeline'
       // 重置表单
       setImageUrl('')
       setText('')
