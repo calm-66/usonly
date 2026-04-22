@@ -17,10 +17,14 @@ export default function Carousel({
 }: CarouselProps) {
   console.log('[Carousel] 组件渲染开始，props:', { images, alt, className })
   
+  // 所有 hooks 必须在组件顶层调用，在任何提前返回之前
   const [currentIndex, setCurrentIndex] = useState(0)
   const [touchStartX, setTouchStartX] = useState<number | null>(null)
   const [touchEndX, setTouchEndX] = useState<number | null>(null)
   const trackRef = useRef<HTMLDivElement>(null)
+  // PC 端鼠标拖动支持 - 移到顶层，在提前返回之前
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStartX, setDragStartX] = useState<number | null>(null)
 
   // 如果只有 0 或 1 张图片，直接返回
   if (!images || images.length === 0) {
@@ -73,10 +77,6 @@ export default function Carousel({
     setTouchStartX(null)
     setTouchEndX(null)
   }
-
-  // PC 端鼠标拖动支持
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragStartX, setDragStartX] = useState<number | null>(null)
 
   const handleMouseDown = (e: MouseEvent) => {
     setIsDragging(true)
