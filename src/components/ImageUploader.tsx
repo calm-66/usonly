@@ -344,11 +344,6 @@ export default function ImageUploader({
           </div>
         )}
 
-        {/* 隐藏的文件输入 */}
-        <input
-          ref={fileInputRef}
-          {...inputProps}
-        />
       </div>
 
       {/* 移动端选择弹窗 */}
