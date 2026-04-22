@@ -7,6 +7,8 @@ interface CarouselProps {
   alt?: string          // 替代文本
   className?: string    // 自定义类名
   onImageClick?: (index: number) => void  // 点击图片回调
+  onRemoveCurrent?: (index: number) => void  // 移除当前图片回调（传递当前索引）
+  onRemoveAll?: () => void  // 移除所有图片回调
 }
 
 export default function Carousel({
@@ -14,9 +16,9 @@ export default function Carousel({
   alt = '分享图片',
   className = '',
   onImageClick,
+  onRemoveCurrent,
+  onRemoveAll,
 }: CarouselProps) {
-  console.log('[Carousel] 组件渲染开始，props:', { images, alt, className })
-  
   // 所有 hooks 必须在组件顶层调用，在任何提前返回之前
   const [currentIndex, setCurrentIndex] = useState(0)
   const [touchStartX, setTouchStartX] = useState<number | null>(null)
@@ -28,7 +30,6 @@ export default function Carousel({
 
   // 如果只有 0 或 1 张图片，直接返回
   if (!images || images.length === 0) {
-    console.log('[Carousel] 图片数组为空，返回 null')
     return null
   }
 
@@ -41,6 +42,18 @@ export default function Carousel({
           className="w-full h-48 object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition"
           onClick={() => onImageClick?.(0)}
         />
+        {/* 单张图片时也显示移除按钮 */}
+        {onRemoveAll && (
+          <button
+            onClick={onRemoveAll}
+            className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white p-1.5 rounded-full transition transform hover:scale-110 z-20"
+            title="移除所有图片"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
     )
   }
@@ -130,6 +143,11 @@ export default function Carousel({
     setCurrentIndex((prev) => Math.min(prev + 1, images.length - 1))
   }
 
+  // 移除当前图片
+  const handleRemoveCurrent = () => {
+    onRemoveCurrent?.(currentIndex)
+  }
+
   return (
     <div
       className={`relative overflow-hidden rounded-lg ${className}`}
@@ -159,37 +177,67 @@ export default function Carousel({
         ))}
       </div>
 
-      {/* 左右箭头按钮（仅在 PC 端 hover 时显示） */}
+      {/* 左上角 - 图片计数 */}
+      <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md z-10">
+        {currentIndex + 1} / {images.length}
+      </div>
+
+      {/* 右上角 - 控制按钮组 */}
+      <div className="absolute top-2 right-2 flex gap-1.5 z-20">
+        {/* 移除当前图片按钮 */}
+        {onRemoveCurrent && (
+          <button
+            onClick={handleRemoveCurrent}
+            className="bg-black/60 hover:bg-black/80 text-white px-2 py-1 rounded-md transition transform hover:scale-105 flex items-center gap-1 text-xs"
+            title="移除当前图片"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            移除
+          </button>
+        )}
+        {/* 移除所有图片按钮 */}
+        {onRemoveAll && (
+          <button
+            onClick={onRemoveAll}
+            className="bg-black/60 hover:bg-black/80 text-white p-1.5 rounded-full transition transform hover:scale-110"
+            title="移除所有图片"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {/* 左右箭头按钮 - 始终可见 */}
       {images.length > 1 && (
         <>
-          {currentIndex > 0 && (
-            <button
-              onClick={goPrev}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition opacity-0 hover:opacity-100"
-              title="上一张"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-          )}
-          {currentIndex < images.length - 1 && (
-            <button
-              onClick={goNext}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition opacity-0 hover:opacity-100"
-              title="下一张"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          )}
+          <button
+            onClick={goPrev}
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full transition transform hover:scale-110 z-10"
+            title="上一张"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            onClick={goNext}
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full transition transform hover:scale-110 z-10"
+            title="下一张"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </>
       )}
 
-      {/* 页码指示器 */}
+      {/* 底部中央 - 页码指示器 */}
       {images.length > 1 && (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/30 px-2 py-1 rounded-full">
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/50 px-2 py-1 rounded-full z-10">
           {images.map((_, index) => (
             <button
               key={index}
@@ -200,13 +248,6 @@ export default function Carousel({
               title={`第 ${index + 1} 张`}
             />
           ))}
-        </div>
-      )}
-
-      {/* 图片计数 */}
-      {images.length > 1 && (
-        <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
-          {currentIndex + 1} / {images.length}
         </div>
       )}
     </div>

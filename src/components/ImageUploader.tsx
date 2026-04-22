@@ -271,42 +271,18 @@ export default function ImageUploader({
             <span className="text-sm text-gray-500">最多 {maxCount} 张</span>
           </div>
         ) : (
-          /* 已选择图片时显示轮播预览 */
+          /* 已选择图片时显示轮播预览 - 移除按钮已集成到 Carousel 组件中 */
           <div className="relative">
             <Carousel
               images={images}
               className={previewSize}
               onImageClick={() => {}}
+              onRemoveCurrent={showRemove && !uploading ? handleRemoveImage : undefined}
+              onRemoveAll={showRemove && !uploading ? handleRemoveAll : undefined}
             />
             
-            {/* 移除全部按钮 */}
-            {showRemove && !uploading && (
-              <button
-                type="button"
-                onClick={handleRemoveAll}
-                className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition shadow-md z-10"
-                title="移除所有图片"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
-
-            {/* 移除单张图片按钮（在轮播指示器旁边显示） */}
-            {showRemove && !uploading && images.length > 1 && (
-              <button
-                type="button"
-                onClick={() => handleRemoveImage(0)}
-                className="absolute bottom-8 right-2 bg-red-500/80 text-white text-xs px-2 py-1 rounded hover:bg-red-600 transition shadow-md z-10"
-                title="移除当前图片"
-              >
-                移除当前
-              </button>
-            )}
-            
             {uploading && showProgress && (
-              <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center z-10">
                 <div className="text-white text-center">
                   <svg className="animate-spin h-8 w-8 mx-auto mb-2" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
