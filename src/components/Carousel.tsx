@@ -45,6 +45,7 @@ export default function Carousel({
         {/* 单张图片时也显示移除按钮 */}
         {onRemoveAll && (
           <button
+            type="button"
             onClick={onRemoveAll}
             className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white p-1.5 rounded-full transition transform hover:scale-110 z-20"
             title="移除所有图片"
@@ -187,6 +188,7 @@ export default function Carousel({
         {/* 移除当前图片按钮 */}
         {onRemoveCurrent && (
           <button
+            type="button"
             onClick={handleRemoveCurrent}
             className="bg-black/60 hover:bg-black/80 text-white px-2 py-1 rounded-md transition transform hover:scale-105 flex items-center gap-1 text-xs"
             title="移除当前图片"
@@ -200,6 +202,7 @@ export default function Carousel({
         {/* 移除所有图片按钮 */}
         {onRemoveAll && (
           <button
+            type="button"
             onClick={onRemoveAll}
             className="bg-black/60 hover:bg-black/80 text-white p-1.5 rounded-full transition transform hover:scale-110"
             title="移除所有图片"
@@ -215,6 +218,7 @@ export default function Carousel({
       {images.length > 1 && (
         <>
           <button
+            type="button"
             onClick={goPrev}
             className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full transition transform hover:scale-110 z-10"
             title="上一张"
@@ -224,6 +228,7 @@ export default function Carousel({
             </svg>
           </button>
           <button
+            type="button"
             onClick={goNext}
             className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full transition transform hover:scale-110 z-10"
             title="下一张"
@@ -241,6 +246,7 @@ export default function Carousel({
           {images.map((_, index) => (
             <button
               key={index}
+              type="button"
               onClick={() => goToIndex(index)}
               className={`w-1.5 h-1.5 rounded-full transition ${
                 index === currentIndex ? 'bg-white w-3' : 'bg-white/50'
