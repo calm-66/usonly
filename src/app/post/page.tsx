@@ -43,17 +43,28 @@ export default function PostPage() {
   const [showLocationInput, setShowLocationInput] = useState(false)
   const [gettingLocation, setGettingLocation] = useState(false)
 
+  console.log('[PostPage] 组件渲染开始')
+
   useEffect(() => {
-    const userData = localStorage.getItem('user')
-    if (userData) {
-      const parsedUser = JSON.parse(userData)
-      setUser(parsedUser)
-      // 固定日期为今天
-      const today = new Date().toISOString().split('T')[0]
-      setDate(today)
-      loadPosts(parsedUser)
-    } else {
-      window.location.href = '/'
+    console.log('[PostPage] useEffect 开始执行')
+    try {
+      const userData = localStorage.getItem('user')
+      console.log('[PostPage] localStorage user:', userData)
+      if (userData) {
+        const parsedUser = JSON.parse(userData)
+        console.log('[PostPage] 解析用户成功:', parsedUser)
+        setUser(parsedUser)
+        // 固定日期为今天
+        const today = new Date().toISOString().split('T')[0]
+        console.log('[PostPage] 设置日期:', today)
+        setDate(today)
+        loadPosts(parsedUser)
+      } else {
+        console.log('[PostPage] 未找到用户，跳转到首页')
+        window.location.href = '/'
+      }
+    } catch (err) {
+      console.error('[PostPage] useEffect 错误:', err)
     }
   }, [])
 

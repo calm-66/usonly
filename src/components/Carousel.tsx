@@ -15,6 +15,8 @@ export default function Carousel({
   className = '',
   onImageClick,
 }: CarouselProps) {
+  console.log('[Carousel] 组件渲染开始，props:', { images, alt, className })
+  
   const [currentIndex, setCurrentIndex] = useState(0)
   const [touchStartX, setTouchStartX] = useState<number | null>(null)
   const [touchEndX, setTouchEndX] = useState<number | null>(null)
@@ -22,6 +24,7 @@ export default function Carousel({
 
   // 如果只有 0 或 1 张图片，直接返回
   if (!images || images.length === 0) {
+    console.log('[Carousel] 图片数组为空，返回 null')
     return null
   }
 

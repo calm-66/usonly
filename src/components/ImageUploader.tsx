@@ -43,6 +43,8 @@ export default function ImageUploader({
   onUploadError,
   maxCount = 3,
 }: ImageUploaderProps) {
+  console.log('[ImageUploader] 组件渲染开始，props:', { value, maxCount })
+  
   const [images, setImages] = useState<string[]>(value || [])
   const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState('')
@@ -55,10 +57,12 @@ export default function ImageUploader({
   const [pendingFiles, setPendingFiles] = useState<File[]>([])  // 待上传的文件队列
 
   useEffect(() => {
+    console.log('[ImageUploader] 检测移动设备')
     setIsMobileDevice(isMobile())
   }, [])
 
   useEffect(() => {
+    console.log('[ImageUploader] value 变化:', value)
     setImages(value || [])
   }, [value])
 
