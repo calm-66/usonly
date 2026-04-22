@@ -3,6 +3,7 @@
 import { useState, useRef, ChangeEvent, useEffect } from 'react'
 import { uploadImage, validateImageFile, validateImageFileWithSize } from '@/lib/imageUpload'
 import Carousel from './Carousel'
+import ImageGallery from './ImageGallery'
 
 interface ImageUploaderProps {
   value: string[] | null         // 当前图片 URL 数组
@@ -18,7 +19,7 @@ interface ImageUploaderProps {
   onUploadStart?: () => void     // 上传开始回调
   onUploadComplete?: (url: string) => void  // 上传完成回调
   onUploadError?: (error: string) => void   // 上传错误回调
-  maxCount?: number              // 最大上传数量，默认 3
+  maxCount?: number              // 最大上传数量，默认 6
 }
 
 // 检测是否为移动端设备
@@ -55,6 +56,10 @@ export default function ImageUploader({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [currentCapture, setCurrentCapture] = useState<'user' | 'environment' | undefined>(undefined)
   const [pendingFiles, setPendingFiles] = useState<File[]>([])  // 待上传的文件队列
+  
+  // 大图预览状态
+  const [showGallery, setShowGallery] = useState(false)
+  const [galleryInitialIndex, setGalleryInitialIndex] = useState(0)
 
   useEffect(() => {
     console.log('[ImageUploader] 检测移动设备')
@@ -195,6 +200,23 @@ export default function ImageUploader({
     }, 100)
   }
 
+  // 打开大图预览
+  const handleImageClick = (index: number) => {
+    setGalleryInitialIndex(index)
+    setShowGallery(true)
+  }
+
+  // 移除单张图片（从大图预览模式）
+  const handleRemoveCurrentFromGallery = (index: number) => {
+    handleRemoveImage(index)
+    // 如果移除后还有图片，调整索引
+    if (images.length > 1) {
+      setGalleryInitialIndex(Math.min(index, images.length - 2))
+    } else {
+      setShowGallery(false)
+    }
+  }
+
   // 构建 input 属性
   const inputProps: {
     type: string
@@ -242,7 +264,7 @@ export default function ImageUploader({
       {/* 上传按钮和预览区域 */}
       <div className="space-y-2">
         {images.length === 0 ? (
-          /* 未选择图片时显示上传按钮 */
+          // 未选择图片时显示上传按钮
           <div className="flex items-center gap-3">
             <input
               ref={fileInputRef}
@@ -274,28 +296,14 @@ export default function ImageUploader({
             <span className="text-sm text-gray-500">最多 {maxCount} 张</span>
           </div>
         ) : (
-          /* 已选择图片时显示轮播预览 */
+          // 已选择图片时显示轮播预览
           <div className="relative">
             {/* 预览区域 */}
             <Carousel
               images={images}
               className={previewSize}
-              onImageClick={() => {}}
+              onImageClick={handleImageClick}
             />
-            
-            {/* 移除所有图片按钮 - 放在预览区域外部右上角 */}
-            {showRemove && !uploading && (
-              <button
-                type="button"
-                onClick={handleRemoveAll}
-                className="absolute top-2 right-2 z-20 bg-red-500/80 hover:bg-red-600 text-white p-1.5 rounded-full transition transform hover:scale-110"
-                title="移除所有图片"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
             
             {/* 上传进度遮罩 */}
             {uploading && showProgress && (
@@ -312,40 +320,62 @@ export default function ImageUploader({
           </div>
         )}
 
-        {/* 添加更多图片按钮 */}
+        {/* 操作按钮区域 */}
         {images.length > 0 && (
-          <div className="flex items-center gap-3">
-            {isMaxReached ? (
-              /* 达到最大张数时的提示 */
-              <div className="px-4 py-2 bg-red-100 text-red-600 rounded-lg flex items-center gap-2 text-sm font-medium">
+          <div className="flex items-center justify-between gap-3">
+            {/* 左侧：清空所有图片按钮 */}
+            {showRemove && !uploading && (
+              <button
+                type="button"
+                onClick={handleRemoveAll}
+                className="px-3 py-1.5 text-sm text-red-500 hover:text-red-700 transition flex items-center gap-1"
+                title="清空所有图片"
+              >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
-                已达最大张数限制 ({maxCount} 张)
-              </div>
-            ) : (
-              <>
-                <input
-                  ref={fileInputRef}
-                  {...inputProps}
-                />
-                <button
-                  type="button"
-                  onClick={handleButtonClick}
-                  disabled={disabled || uploading}
-                  className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition disabled:opacity-50 flex items-center gap-2 text-sm"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  添加图片 ({maxCount - images.length} 张)
-                </button>
-              </>
+                清空所有
+              </button>
             )}
+            
+            {/* 右侧：添加图片按钮或提示 */}
+            <div className="flex items-center gap-2 ml-auto">
+              {isMaxReached ? (
+                /* 达到最大张数时不显示任何提示 */
+                <span className="text-sm text-gray-400">已达上限</span>
+              ) : (
+                <>
+                  <input
+                    ref={fileInputRef}
+                    {...inputProps}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleButtonClick}
+                    disabled={disabled || uploading}
+                    className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition disabled:opacity-50 flex items-center gap-2 text-sm"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    添加图片 ({maxCount - images.length} 张)
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         )}
 
       </div>
+
+      {/* 大图预览模式 */}
+      {showGallery && images.length > 0 && (
+        <ImageGallery
+          images={images}
+          initialIndex={galleryInitialIndex}
+          onClose={() => setShowGallery(false)}
+        />
+      )}
 
       {/* 移动端选择弹窗 */}
       {showMobileDialog && (
