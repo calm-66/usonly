@@ -21,8 +21,7 @@ interface Post {
 interface DayPosts {
   date: string
   title: string | null
-  myPosts: Post[]
-  partnerPosts: Post[]
+  posts: Post[]
 }
 
 interface User {
@@ -83,13 +82,7 @@ interface ReplyToState {
 export default function TimelinePage() {
   const [user, setUser] = useState<User | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
-  const [partnerPosts, setPartnerPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'mine' | 'partner' | 'both'>('both')
-  const [selectedPostImages, setSelectedPostImages] = useState<{ images: string[]; index: number } | null>(null)
-  
-  // 控制"我们的"标签页是否显示配对天数
-  const [showPairDaysInTab, setShowPairDaysInTab] = useState(false)
   
   // 评论相关状态
   const [comments, setComments] = useState<Record<string, Comment[]>>({})
@@ -114,7 +107,6 @@ export default function TimelinePage() {
   // 时间筛选相关状态
   const [timeFilter, setTimeFilter] = useState<'all' | '7days' | '30days' | 'custom'>('all')
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([])
-  const [filteredPartnerPosts, setFilteredPartnerPosts] = useState<Post[]>([])
   
   // 日期筛选弹窗状态
   const [showDateFilter, setShowDateFilter] = useState(false)
@@ -123,6 +115,9 @@ export default function TimelinePage() {
   const [showCustomDateRange, setShowCustomDateRange] = useState(false)
   const [customStartDate, setCustomStartDate] = useState<string>('')
   const [customEndDate, setCustomEndDate] = useState<string>('')
+
+  // 图片放大查看器状态
+  const [selectedPostImages, setSelectedPostImages] = useState<{ images: string[]; index: number } | null>(null)
 
   // 生成默认头像颜色（根据用户 ID 哈希）
   const getDefaultAvatarColor = (id: string): string => {
@@ -155,7 +150,7 @@ export default function TimelinePage() {
     const start = new Date(pairedAt)
     const now = new Date()
     const diffTime = now.getTime() - start.getTime()
-    return Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1 // +1 因为当天也算 1 天
+    return Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1
   }
 
   // 格式化时间显示 HH:MM
@@ -182,36 +177,27 @@ export default function TimelinePage() {
     return date.toLocaleDateString('zh-CN')
   }
 
-  // 提取地址中的城市部分（用于时间轴页面显示）
+  // 提取地址中的城市部分
   const extractCity = (fullAddress: string): string => {
     if (!fullAddress) return ''
-    // 地址格式：省 市 区 街道
-    // 只返回市/区部分
     const parts = fullAddress.split(/\s+/)
     if (parts.length === 0) return fullAddress
-    
-    // 如果只有 1 部分，直接返回
     if (parts.length === 1) return parts[0]
-    
-    // 返回前两部分（省 + 市 或 市 + 区）
-    // 例如："上海市 普陀区 长风新村街道 宁夏路" -> "上海市 普陀区"
     const cityIndex = parts.findIndex(p => p.includes('市') || p.includes('区'))
     if (cityIndex !== -1 && cityIndex < parts.length - 1) {
       return parts.slice(0, cityIndex + 2).join(' ')
     }
-    
-    // 默认返回前两部分
     return parts.slice(0, 2).join(' ')
   }
 
   // 渲染头像组件
-  const renderAvatar = (avatarUrl: string | null, name: string, size: string = 'w-8 h-8') => {
+  const renderAvatar = (avatarUrl: string | null, name: string, size: string = 'w-10 h-10') => {
     if (avatarUrl) {
       return (
         <img
           src={avatarUrl}
           alt={name}
-          className={`${size} rounded-full object-cover border border-gray-200`}
+          className={`${size} rounded-full object-cover border border-gray-100`}
         />
       )
     }
@@ -223,42 +209,18 @@ export default function TimelinePage() {
     )
   }
 
-  // 渲染标签页小头像组件（w-5 h-5）
-  const renderTabAvatar = (avatarUrl: string | null, name: string) => {
-    if (avatarUrl) {
-      return (
-        <img
-          src={avatarUrl}
-          alt={name}
-          className="w-5 h-5 rounded-full object-cover border border-gray-200"
-        />
-      )
-    }
-    const color = getDefaultAvatarColor(name)
-    return (
-      <div className="w-5 h-5 rounded-full bg-gradient-to-br ${color} flex items-center justify-center text-white text-[10px] font-bold">
-        {getInitial(name)}
-      </div>
-    )
-  }
-
   // 检查是否可以删除评论
   const canDeleteComment = (comment: Comment, postOwnerId: string): boolean => {
-    // 评论者可以删除自己的评论
     if (comment.user.id === user?.id) return true
-    // 分享作者可以删除他人对自己分享的评论
     if (postOwnerId === user?.id) return true
     return false
   }
 
   useEffect(() => {
-    // 先验证 session token，实现自动登录
     const checkAuthAndLoad = async () => {
       const sessionToken = localStorage.getItem('sessionToken')
       const userData = localStorage.getItem('user')
       
-      
-      // 如果没有 session token，但有用户数据，尝试从旧数据加载（兼容旧版本）
       if (!sessionToken && userData) {
         const parsedUser = JSON.parse(userData)
         setUser(parsedUser)
@@ -269,7 +231,6 @@ export default function TimelinePage() {
         return
       }
       
-      // 有 session token，验证是否有效
       if (sessionToken) {
         try {
           const res = await fetch('/api/auth/session', {
@@ -280,16 +241,7 @@ export default function TimelinePage() {
           
           if (res.ok) {
             const data = await res.json()
-            
-            // 额外验证：确保当前用户是有效的
             const serverUser = data.user
-            
-            // 验证：如果用户有 partnerId，确保 partner 存在
-            if (serverUser.partnerId && !serverUser.partner) {
-              // 不阻止访问，可能是数据不一致，让用户继续访问
-            }
-            
-            // Token 有效，使用服务器返回的用户数据
             setUser(serverUser)
             localStorage.setItem('user', JSON.stringify(serverUser))
             loadPosts(serverUser)
@@ -297,19 +249,16 @@ export default function TimelinePage() {
             checkAppealStatus(serverUser)
             fetchLatestUserInfo(serverUser)
           } else {
-            // Token 无效或过期，清除本地数据并跳转到登录页
             localStorage.removeItem('sessionToken')
             localStorage.removeItem('user')
             window.location.href = '/'
           }
         } catch (error) {
-          // 验证失败，清除本地数据并跳转到登录页
           localStorage.removeItem('sessionToken')
           localStorage.removeItem('user')
           window.location.href = '/'
         }
       } else {
-        // 没有任何认证信息，跳转到登录页
         window.location.href = '/'
       }
     }
@@ -317,7 +266,6 @@ export default function TimelinePage() {
     checkAuthAndLoad()
   }, [])
 
-  // 从服务器获取最新用户信息
   const fetchLatestUserInfo = async (localUser: User) => {
     try {
       const res = await fetch('/api/auth/me', {
@@ -326,10 +274,8 @@ export default function TimelinePage() {
       const data = await res.json()
       if (data.user) {
         const serverUser = data.user
-        // 更新本地存储
         localStorage.setItem('user', JSON.stringify(serverUser))
         setUser(serverUser)
-        // 现在检查挽回状态
         checkAppealStatus(serverUser)
       }
     } catch (error) {
@@ -337,10 +283,8 @@ export default function TimelinePage() {
     }
   }
 
-  // 检查挽回状态：如果对方发起了取消配对，显示挽回横幅
   const checkAppealStatus = (userData: User) => {
     if (userData.partnerId && !userData.breakupInitiated && userData.partner) {
-      // 检查伴侣是否发起了取消配对
       if (userData.partner.breakupInitiated) {
         setShowAppealBanner(true)
       } else {
@@ -349,7 +293,6 @@ export default function TimelinePage() {
     }
   }
 
-  // 发起挽回配对
   const handleAppeal = async () => {
     if (!user) return
     try {
@@ -376,7 +319,6 @@ export default function TimelinePage() {
     }
   }
 
-  // 处理挽回响应（接受/拒绝）
   const handleAppealResponse = async (accept: boolean) => {
     if (!user) return
     try {
@@ -393,7 +335,6 @@ export default function TimelinePage() {
       if (data.success) {
         setShowAppealResponseModal(false)
         setSelectedAppealNotification(null)
-        // 重新加载通知
         if (user) {
           await loadNotifications(user)
         }
@@ -426,21 +367,17 @@ export default function TimelinePage() {
       const myData = await myRes.json()
       const partnerData = partnerRes ? await partnerRes.json() : null
 
-      // 合并所有帖子，然后根据 userId 判断 owner
       const allPosts: Post[] = [
         ...(myData.posts || []),
         ...(partnerData?.posts || []),
       ]
 
-      // 根据 userId 设置正确的 owner
       const postsWithOwner = allPosts.map((p: Post): Post => ({
         ...p,
         owner: p.userId === userData.id ? '我' : 'TA',
       }))
 
-      // 分类存储
-      setPosts(postsWithOwner.filter(p => p.owner === '我'))
-      setPartnerPosts(postsWithOwner.filter(p => p.owner === 'TA'))
+      setPosts(postsWithOwner)
     } catch (error) {
       console.error('加载分享失败:', error)
     } finally {
@@ -448,22 +385,15 @@ export default function TimelinePage() {
     }
   }
 
-  // 当帖子列表加载完成后，加载所有帖子的评论数据
   useEffect(() => {
-    if (posts.length === 0 && partnerPosts.length === 0) return
-
-    const allPostIds = [...posts, ...partnerPosts].map(p => p.id)
+    if (posts.length === 0) return
+    const allPostIds = posts.map(p => p.id)
     const loadedPostIds = Object.keys(comments)
-
-    // 只加载尚未加载的帖子评论
     const postsToLoad = allPostIds.filter(id => !loadedPostIds.includes(id))
-
     if (postsToLoad.length === 0) return
-
     postsToLoad.forEach(postId => loadCommentCount(postId))
-  }, [posts, partnerPosts])
+  }, [posts])
 
-  // 只加载评论数据（包含完整评论列表，用于显示数量）
   const loadCommentCount = async (postId: string) => {
     try {
       const res = await fetch(`/api/comment?postId=${postId}`)
@@ -491,7 +421,6 @@ export default function TimelinePage() {
     }
   }
 
-  // 标记所有通知为已读
   const handleMarkAllNotificationsAsRead = async () => {
     try {
       const res = await fetch('/api/notification', {
@@ -505,7 +434,6 @@ export default function TimelinePage() {
 
       const data = await res.json()
       if (data.success) {
-        // 更新本地状态
         setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
         setUnreadCount(0)
       }
@@ -550,12 +478,9 @@ export default function TimelinePage() {
 
       const data = await res.json()
       if (data.success) {
-        // 重新加载评论
         await loadComments(postId)
-        // 清空输入框
         setNewComment('')
         setReplyTo(undefined)
-        // 刷新通知（因为评论可能会创建新通知）
         if (user) {
           await loadNotifications(user)
         }
@@ -588,7 +513,6 @@ export default function TimelinePage() {
     }
   }
 
-  // 删除单条通知
   const handleDeleteNotification = async (notificationId: string) => {
     try {
       const res = await fetch(`/api/notification?id=${notificationId}`, {
@@ -607,7 +531,6 @@ export default function TimelinePage() {
     }
   }
 
-  // 删除所有通知
   const handleDeleteAllNotifications = async () => {
     if (!confirm('确定要删除所有通知吗？')) return
 
@@ -631,28 +554,21 @@ export default function TimelinePage() {
     }
   }
 
-  // 处理通知点击
   const handleNotificationClick = async (notification: Notification) => {
-    // 如果是评论或新分享通知，跳转到对应分享并打开评论弹窗
     if ((notification.type === 'comment' || notification.type === 'comment_reply' || notification.type === 'new_post') && notification.post) {
-      // 找到对应的帖子
-      const targetPost = posts.find(p => p.id === notification.post!.id) || 
-                         partnerPosts.find(p => p.id === notification.post!.id)
+      const targetPost = posts.find(p => p.id === notification.post!.id)
       
       if (targetPost) {
-        // 打开评论弹窗
         setSelectedPost(targetPost)
         setShowCommentModal(true)
         setNewComment('')
         setReplyTo(undefined)
         await loadComments(targetPost.id)
-        // 标记该通知为已读
         await markNotificationAsRead(notification.id)
       }
     }
   }
 
-  // 标记单个通知为已读
   const markNotificationAsRead = async (notificationId: string) => {
     try {
       const res = await fetch('/api/notification', {
@@ -666,7 +582,6 @@ export default function TimelinePage() {
 
       const data = await res.json()
       if (data.success) {
-        // 更新本地状态
         setNotifications(prev => prev.map(n => 
           n.id === notificationId ? { ...n, isRead: true } : n
         ))
@@ -677,7 +592,6 @@ export default function TimelinePage() {
     }
   }
 
-  // 打开评论弹窗
   const openCommentModal = (post: Post) => {
     setSelectedPost(post)
     setShowCommentModal(true)
@@ -686,7 +600,6 @@ export default function TimelinePage() {
     loadComments(post.id)
   }
 
-  // 关闭评论弹窗
   const closeCommentModal = () => {
     setShowCommentModal(false)
     setSelectedPost(null)
@@ -704,17 +617,15 @@ export default function TimelinePage() {
     setNewComment('')
   }
 
-  // 根据筛选条件过滤帖子
   const filterPostsByDate = (posts: Post[]): Post[] => {
     if (timeFilter === 'all') {
-      return posts // 不过滤，返回所有帖子
+      return posts
     }
     
     if (posts.length === 0) {
       return []
     }
     
-    // 使用当前系统时间作为基准
     const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)
     
@@ -726,16 +637,13 @@ export default function TimelinePage() {
     } else if (timeFilter === '30days') {
       cutoffDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
     } else if (timeFilter === 'custom' && customStartDate && customEndDate) {
-      // 自定义时间段
       const startParts = customStartDate.split('-')
       const endParts = customEndDate.split('-')
       cutoffDate = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]), 0, 0, 0, 0)
       endDate = new Date(parseInt(endParts[0]), parseInt(endParts[1]) - 1, parseInt(endParts[2]), 23, 59, 59, 999)
     }
     
-    // 过滤出日期在 cutoffDate 和 endDate 之间的帖子
     return posts.filter(post => {
-      // 同样使用本地时间创建日期对象
       const postParts = post.date.split('-')
       const postYear = parseInt(postParts[0])
       const postMonth = parseInt(postParts[1]) - 1
@@ -749,78 +657,34 @@ export default function TimelinePage() {
     })
   }
 
-  // 应用筛选
   useEffect(() => {
     setFilteredPosts(filterPostsByDate(posts))
-    setFilteredPartnerPosts(filterPostsByDate(partnerPosts))
-  }, [posts, partnerPosts, timeFilter])
+  }, [posts, timeFilter])
 
-  // 按日期分组（使用过滤后的数据）
   const groupByDate = (): DayPosts[] => {
-    // 根据 activeTab 决定使用哪组数据
-    let myPostsToUse = filteredPosts
-    let partnerPostsToUse = filteredPartnerPosts
-    
-    const allPosts = [
-      ...myPostsToUse.map(p => ({ ...p, owner: '我' as const })),
-      ...partnerPostsToUse.map(p => ({ ...p, owner: 'TA' as const })),
-    ]
+    const allPosts = filteredPosts
 
-    const grouped: Record<string, { myPosts: Post[]; partnerPosts: Post[]; title: string | null }> = {}
+    const grouped: Record<string, Post[]> = {}
     
     allPosts.forEach(post => {
-      if (!grouped[post.date]) {
-        grouped[post.date] = { myPosts: [], partnerPosts: [], title: post.title }
-      }
-      if (post.owner === '我') {
-        grouped[post.date].myPosts.push(post)
-      } else {
-        grouped[post.date].partnerPosts.push(post)
-      }
-    })
-
-    return Object.entries(grouped)
-      .map(([date, data]) => ({
-        date,
-        title: data.title,
-        myPosts: data.myPosts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
-        partnerPosts: data.partnerPosts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
-      }))
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-  }
-
-  // 按日期分组显示个人帖子（用于 activeTab !== 'both' 的情况）
-  const groupPersonalPostsByDate = (): { date: string; posts: Post[] }[] => {
-    const postsToUse = activeTab === 'mine' ? filteredPosts : filteredPartnerPosts
-    
-    // 按日期分组
-    const grouped: Record<string, Post[]> = {}
-    postsToUse.forEach(post => {
       if (!grouped[post.date]) {
         grouped[post.date] = []
       }
       grouped[post.date].push(post)
     })
 
-    // 转换为数组并按日期排序（最新的日期在前）
     return Object.entries(grouped)
       .map(([date, posts]) => ({
         date,
+        title: posts[0]?.title || null,
         posts: posts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
       }))
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   }
 
-  const getDisplayPosts = () => {
-    if (activeTab === 'mine') return filteredPosts.map(p => ({ ...p, owner: '我' as const }))
-    if (activeTab === 'partner') return filteredPartnerPosts.map(p => ({ ...p, owner: 'TA' as const }))
-    return []
-  }
-
   const handleLogout = async () => {
     const sessionToken = localStorage.getItem('sessionToken')
     
-    // 调用登出 API 清除服务器端的 session
     if (sessionToken) {
       try {
         await fetch('/api/auth/logout', {
@@ -833,7 +697,6 @@ export default function TimelinePage() {
       }
     }
     
-    // 清除本地数据
     localStorage.removeItem('sessionToken')
     localStorage.removeItem('user')
     window.location.href = '/'
@@ -857,9 +720,9 @@ export default function TimelinePage() {
 
   if (!user) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-purple-100">
+      <main className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">加载中...</p>
+          <p className="text-gray-500 mb-4">加载中...</p>
           <a href="/" className="text-pink-600 hover:underline">返回首页</a>
         </div>
       </main>
@@ -867,13 +730,10 @@ export default function TimelinePage() {
   }
 
   const dayPosts = groupByDate()
-  const displayPosts = getDisplayPosts()
   
-  // 计算配对天数显示
   const pairDays = calculatePairDays(user?.partner?.pairedAt || user?.pairedAt)
   const showPairDays = user?.partnerId && pairDays > 0
 
-  // 格式化日期：返回 "今天"、"昨天" 或 "2026/5/31" 格式
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00')
     
@@ -889,7 +749,6 @@ export default function TimelinePage() {
     } else if (dateStr === yesterdayStr) {
       return '昨天'
     } else {
-      // 格式化为 2026/5/31 格式
       const year = date.getFullYear()
       const month = date.getMonth() + 1
       const day = date.getDate()
@@ -924,7 +783,6 @@ export default function TimelinePage() {
     }
   }
 
-  // 处理挽回通知点击
   const handleAppealNotificationClick = (notification: Notification) => {
     if (notification.type === 'breakup_appeal') {
       setSelectedAppealNotification(notification)
@@ -933,7 +791,7 @@ export default function TimelinePage() {
     }
   }
 
-  // 渲染评论列表组件（弹窗内使用）
+  // 渲染评论列表组件
   const renderCommentList = (postId: string, postOwnerId: string) => {
     const postComments = comments[postId] || []
     
@@ -970,7 +828,6 @@ export default function TimelinePage() {
               >
                 回复
               </button>
-              {/* 回复列表 */}
               {comment.replies && comment.replies.length > 0 && (
                 <div className="mt-3 space-y-2 ml-4 border-l-2 border-pink-100 pl-3">
                   {comment.replies.map((reply) => (
@@ -1043,7 +900,6 @@ export default function TimelinePage() {
           className="bg-white w-full sm:max-w-lg sm:rounded-xl sm:max-h-[80vh] flex flex-col animate-slideUp"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* 顶部栏 */}
           <div className="flex items-center justify-between p-3 border-b border-gray-200">
             <h3 className="font-semibold text-gray-800">评论</h3>
             <button
@@ -1054,7 +910,6 @@ export default function TimelinePage() {
             </button>
           </div>
           
-          {/* 帖子信息 */}
           <div className="p-3 border-b border-gray-100 bg-gray-50">
             <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
               <span>{selectedPost.date}</span>
@@ -1069,48 +924,223 @@ export default function TimelinePage() {
             )}
           </div>
           
-          {/* 评论列表 */}
           {renderCommentList(selectedPost.id, selectedPost.userId)}
-          
-          {/* 评论输入框 */}
           {renderCommentInput(selectedPost.id)}
         </div>
       </div>
     )
   }
 
+  // 图片网格布局组件
+  const renderPhotoGrid = (imageUrls: string[], postId: string) => {
+    if (imageUrls.length === 0) return null
+
+    // 1 张图：通栏大图
+    if (imageUrls.length === 1) {
+      return (
+        <div
+          className="relative w-full h-80 rounded-xl overflow-hidden bg-gray-100 cursor-pointer mb-3"
+          onClick={() => setSelectedPostImages({ images: imageUrls, index: 0 })}
+        >
+          <img
+            src={imageUrls[0]}
+            alt="分享图片"
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )
+    }
+
+    // 2 张图：2 列均分
+    if (imageUrls.length === 2) {
+      return (
+        <div className="grid grid-cols-2 gap-1 rounded-xl overflow-hidden bg-gray-100 cursor-pointer mb-3"
+          onClick={() => setSelectedPostImages({ images: imageUrls, index: 0 })}
+        >
+          {imageUrls.map((url, idx) => (
+            <div key={idx} className="relative h-48">
+              <img
+                src={url}
+                alt={`分享图片 ${idx + 1}`}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ))}
+        </div>
+      )
+    }
+
+    // 3+ 张图：随机排布的 2 列网格
+    const gridLayouts = [
+      // 布局 1: 左图跨 2 行
+      { main: 0, side: [1, 2], extra: [] },
+      // 布局 2: 右图跨 2 行
+      { main: 1, side: [0, 2], extra: [] },
+      // 布局 3: 4 图 - 左上跨 2 行
+      { main: 0, side: [1, 2], extra: [3] },
+      // 布局 4: 4 图 - 右上跨 2 行
+      { main: 1, side: [0, 2], extra: [3] },
+      // 布局 5: 5 图+ 随机
+      { main: 0, side: [1, 2], extra: [3, 4] },
+    ]
+
+    // 根据图片数量选择布局
+    let layoutIndex
+    if (imageUrls.length === 3) {
+      layoutIndex = Math.floor(Math.random() * 2)
+    } else if (imageUrls.length === 4) {
+      layoutIndex = 2 + Math.floor(Math.random() * 2)
+    } else {
+      layoutIndex = 4 + Math.floor(Math.random() * 3)
+    }
+
+    const layout = gridLayouts[Math.min(layoutIndex, gridLayouts.length - 1)]
+    const displayedImages = imageUrls.slice(0, 9)
+
+    return (
+      <div 
+        className="grid grid-cols-2 gap-1 rounded-xl overflow-hidden bg-gray-100 cursor-pointer mb-3"
+        onClick={() => setSelectedPostImages({ images: imageUrls, index: 0 })}
+      >
+        {/* 主图 - 跨 2 行 */}
+        <div className="row-span-2 relative h-96">
+          <img
+            src={displayedImages[layout.main]}
+            alt={`分享图片 ${layout.main + 1}`}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        
+        {/* 侧边图 */}
+        {layout.side.map((imgIdx) => (
+          <div key={imgIdx} className="relative h-48">
+            <img
+              src={displayedImages[imgIdx]}
+              alt={`分享图片 ${imgIdx + 1}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ))}
+        
+        {/* 额外图片 */}
+        {layout.extra && layout.extra.map((imgIdx) => (
+          <div key={imgIdx} className="relative h-48">
+            <img
+              src={displayedImages[imgIdx]}
+              alt={`分享图片 ${imgIdx + 1}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ))}
+        
+        {/* 超过 9 张图显示数量 */}
+        {imageUrls.length > 9 && (
+          <div className="absolute inset-0 bg-black/60 rounded-xl flex items-center justify-center">
+            <span className="text-white text-xl font-bold">+{imageUrls.length - 9}</span>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // 帖子卡片组件
+  const renderPostCard = (post: Post) => {
+    const postOwner = post.owner === '我' ? user : user?.partner
+
+    return (
+      <div key={post.id} className="bg-white border-b border-gray-100 pb-4">
+        {/* 头部 - 用户信息 */}
+        <div className="flex items-center gap-3 mb-3">
+          {renderAvatar(postOwner?.avatarUrl || null, postOwner?.username || '未知', 'w-10 h-10')}
+          <span className="font-semibold text-gray-900 text-base">
+            {postOwner?.username || '未知'}
+          </span>
+        </div>
+
+        {/* 图片网格 */}
+        {post.imageUrls && post.imageUrls.length > 0 && (
+          renderPhotoGrid(post.imageUrls, post.id)
+        )}
+
+        {/* 文字内容 */}
+        {(post.text || post.location) && (
+          <div className="mb-3">
+            {post.text && (
+              <p className="text-gray-900 text-sm leading-relaxed whitespace-pre-wrap break-words mb-2">
+                {post.text}
+              </p>
+            )}
+            {post.location && (
+              <div className="flex items-center gap-1 text-xs text-gray-500">
+                <svg className="w-3.5 h-3.5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                {extractCity(post.location)}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 底部操作栏 */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => openCommentModal(post)}
+              className={`flex items-center gap-1.5 text-sm ${
+                comments[post.id]?.length > 0 
+                  ? 'text-pink-500' 
+                  : 'text-gray-400'
+              } hover:text-pink-600 transition`}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              {comments[post.id]?.length > 0 && (
+                <span>{comments[post.id].length}</span>
+              )}
+            </button>
+          </div>
+          <span className="text-xs text-gray-400">{formatTime(post.createdAt)}</span>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100">
+    <main className="min-h-screen bg-white">
       {/* 顶部导航 */}
-      <header className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="max-w-3xl mx-auto px-4 py-1.5 flex relative">
-          {/* 漏斗筛选图标 - 只在已配对时显示 - 放在最左侧 */}
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+        <div className="max-w-[500px] mx-auto px-4 py-3 flex items-center justify-between">
+          {/* 左侧：时间筛选图标 */}
           {user?.partnerId && (
-            <div className="flex items-center relative mr-2">
+            <div className="flex items-center relative">
               <button
                 onClick={() => setShowDateFilter(true)}
-                className="p-0.5 hover:bg-gray-100 rounded-full transition"
+                className="p-2 hover:bg-gray-50 rounded-full transition"
                 title="时间筛选"
               >
-                <svg className="w-5 h-5 text-gray-600 align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
               </button>
               {timeFilter !== 'all' && (
-                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-pink-500 rounded-full"></span>
+                <span className="absolute top-1 right-1 w-2 h-2 bg-pink-500 rounded-full"></span>
               )}
             </div>
           )}
           
-          <h1 className="text-xl font-bold text-gray-800 absolute left-1/2 -translate-x-1/2">UsOnly</h1>
-          <div className="flex items-center ml-auto">
-            {/* 发布按钮 */}
+          {/* 中间：标题 */}
+          <h1 className="text-lg font-bold text-gray-900">UsOnly</h1>
+          
+          {/* 右侧：发布 + 通知 */}
+          <div className="flex items-center gap-1">
             <a
               href="/post"
-              className="p-0.5 hover:bg-gray-100 rounded-full transition mr-2 inline-flex items-center"
+              className="p-2 hover:bg-gray-50 rounded-full transition"
               title="发布分享"
             >
-              <svg className="w-5 h-5 text-gray-600 align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
             </a>
@@ -1121,24 +1151,22 @@ export default function TimelinePage() {
                 onClick={async () => {
                   const newState = !showNotifications
                   setShowNotifications(newState)
-                  // 打开通知面板时重新加载通知
                   if (newState && user) {
                     await loadNotifications(user)
                   }
                 }}
-                className="relative p-0.5 hover:bg-gray-100 rounded-full transition"
+                className="relative p-2 hover:bg-gray-50 rounded-full transition"
               >
-                <svg className="w-5 h-5 text-gray-600 align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
               </button>
 
-              {/* 通知遮罩层 - 点击页面其他地方关闭通知 */}
               {showNotifications && (
                 <div 
                   className="fixed inset-0 z-40"
@@ -1148,8 +1176,8 @@ export default function TimelinePage() {
               
               {/* 通知下拉面板 */}
               {showNotifications && (
-                <div className="absolute right-0 top-full mt-1 w-80 bg-white rounded-lg shadow-xl border z-50 max-h-[80vh] overflow-y-auto">
-                  <div className="p-3 border-b flex justify-between items-center">
+                <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 z-50 max-h-[80vh] overflow-y-auto">
+                  <div className="p-3 border-b border-gray-100 flex justify-between items-center">
                     <h3 className="font-semibold text-gray-800">通知</h3>
                     <div className="flex gap-2">
                       {unreadCount > 0 && (
@@ -1157,7 +1185,7 @@ export default function TimelinePage() {
                           onClick={handleMarkAllNotificationsAsRead}
                           className="text-xs text-pink-600 hover:underline"
                         >
-                          全部标记为已读
+                          全部已读
                         </button>
                       )}
                       {notifications.length > 0 && (
@@ -1177,9 +1205,7 @@ export default function TimelinePage() {
                   ) : (
                     <div>
                       {notifications.map(notification => {
-                        // 评论或新分享通知可点击
                         const isClickable = (notification.type === 'comment' || notification.type === 'comment_reply' || notification.type === 'new_post') && notification.post
-                        // 挽回请求通知可点击
                         const isAppealClickable = notification.type === 'breakup_appeal'
                         
                         return (
@@ -1189,7 +1215,7 @@ export default function TimelinePage() {
                               if (isClickable) handleNotificationClick(notification)
                               else if (isAppealClickable) handleAppealNotificationClick(notification)
                             }}
-                            className={`p-3 border-b last:border-b-0 transition relative ${
+                            className={`p-3 border-b border-gray-100 last:border-b-0 transition relative ${
                               !notification.isRead ? 'bg-pink-50' : ''
                             } ${(isClickable || isAppealClickable) ? 'hover:bg-gray-50 cursor-pointer' : 'hover:bg-gray-50'}`}
                           >
@@ -1205,7 +1231,6 @@ export default function TimelinePage() {
                                 <p className="text-xs text-gray-500">{formatRelativeTime(notification.createdAt)}</p>
                               </div>
                             </div>
-                            {/* 删除按钮 */}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation()
@@ -1226,7 +1251,6 @@ export default function TimelinePage() {
           </div>
         </div>
       </header>
-
 
       {/* 日期筛选弹窗 */}
       {showDateFilter && (
@@ -1321,7 +1345,7 @@ export default function TimelinePage() {
                 )}
               </button>
             </div>
-            <div className="mt-4 pt-4 border-t">
+            <div className="mt-4 pt-4 border-t border-gray-100">
               <button
                 onClick={() => setShowDateFilter(false)}
                 className="w-full py-2 text-gray-500 hover:text-gray-700"
@@ -1404,7 +1428,7 @@ export default function TimelinePage() {
 
       {/* 挽回配对横幅 */}
       {showAppealBanner && user?.partnerId && (
-        <div className="max-w-3xl mx-auto px-4 mb-4">
+        <div className="max-w-[500px] mx-auto px-4 mb-4">
           <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl shadow-lg p-4 text-white">
             <div className="flex items-center justify-between">
               <div>
@@ -1423,56 +1447,44 @@ export default function TimelinePage() {
         </div>
       )}
 
-      {/* 标签页 */}
-      <div className="max-w-3xl mx-auto px-4 py-4">
-        <div className={`flex bg-white rounded-lg shadow-sm p-1 ${!user.partnerId ? 'justify-center' : ''}`}>
-          {/* 我的标签 - 始终显示 */}
-          <button
-            onClick={() => setActiveTab('mine')}
-            className={`flex items-center justify-center gap-1.5 py-2 text-sm font-medium rounded-md transition ${
-              activeTab === 'mine' ? 'bg-pink-100 text-pink-600' : 'text-gray-500'
-            } ${user.partnerId ? 'flex-1' : 'w-full'}`}
-          >
-            {renderTabAvatar(user.avatarUrl, user.username)}
-            <span>{user.username}</span>
-          </button>
-          
-          {/* 配对后才显示另外两个标签 */}
-          {user.partnerId && user.partner && (
-            <>
-              {/* 我们的标签 - 显示双方头像 + 心形符号，点击可切换显示天数 */}
+      {/* 时间轴内容 */}
+      <div className="max-w-[500px] mx-auto pb-20">
+        {loading ? (
+          <div className="text-center py-8 text-gray-500">加载中...</div>
+        ) : dayPosts.length === 0 ? (
+          <div className="text-center py-16 text-gray-500">
+            <p className="mb-2">还没有分享</p>
+            {timeFilter !== 'all' && (
               <button
-                onClick={() => {
-                  setActiveTab('both')
-                  setShowPairDaysInTab(!showPairDaysInTab)
-                }}
-                className={`flex items-center justify-center gap-0.5 py-2 text-sm font-medium rounded-md transition ${
-                  activeTab === 'both' ? 'bg-pink-100 text-pink-600' : 'text-gray-500'
-                } flex-1 min-w-0`}
+                onClick={() => setTimeFilter('all')}
+                className="text-pink-600 hover:underline text-sm"
               >
-                {renderTabAvatar(user.avatarUrl, user.username)}
-                <span className="text-pink-500 text-xs whitespace-nowrap">
-                  {showPairDaysInTab && showPairDays ? pairDays : '❤️'}
-                </span>
-                {renderTabAvatar(user.partner.avatarUrl, user.partner.username)}
+                切换为"全部"时间范围
               </button>
-              
-              {/* TA 的标签 - 显示对方头像 + 对方用户名 */}
-              <button
-                onClick={() => setActiveTab('partner')}
-                className={`flex items-center justify-center gap-1.5 py-2 text-sm font-medium rounded-md transition ${
-                  activeTab === 'partner' ? 'bg-pink-100 text-pink-600' : 'text-gray-500'
-                } flex-1`}
-              >
-                {renderTabAvatar(user.partner.avatarUrl, user.partner.username)}
-                <span>{user.partner.username}</span>
-              </button>
-            </>
-          )}
-        </div>
+            )}
+          </div>
+        ) : (
+          <div>
+            {dayPosts.map((day) => (
+              <div key={day.date}>
+                {/* 日期标签 */}
+                <div className="sticky top-14 z-30 bg-white/90 backdrop-blur-sm py-2 px-4 border-b border-gray-100">
+                  <span className="text-sm font-semibold text-gray-700">
+                    {formatDate(day.date)}
+                  </span>
+                </div>
+                
+                {/* 帖子列表 */}
+                <div className="divide-y divide-gray-100">
+                  {day.posts.map((post) => renderPostCard(post))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-  {/* 图片放大查看器 */}
+      {/* 图片放大查看器 */}
       {selectedPostImages && (
         <ImageGallery
           images={selectedPostImages.images}
@@ -1481,7 +1493,7 @@ export default function TimelinePage() {
         />
       )}
 
-  {/* 评论弹窗 - 使用复用组件 */}
+      {/* 评论弹窗 */}
       {showCommentModal && (
         <CommentModal
           post={selectedPost}
@@ -1495,365 +1507,6 @@ export default function TimelinePage() {
           }}
         />
       )}
-
-      {/* 时间轴 */}
-      <div className="max-w-3xl mx-auto px-4 pb-8">
-        {loading ? (
-          <div className="text-center py-8 text-gray-500">加载中...</div>
-        ) : activeTab !== 'both' ? (
-          <div className="space-y-4">
-            {displayPosts.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>还没有分享</p>
-                {timeFilter !== 'all' && (
-                  <button
-                    onClick={() => setTimeFilter('all')}
-                    className="text-pink-600 hover:underline text-sm mt-1"
-                  >
-                    切换为"全部"时间范围
-                  </button>
-                )}
-                {!timeFilter && (
-                  <a href="/post" className="text-pink-600 hover:underline">去发布第一条</a>
-                )}
-              </div>
-            ) : (
-              <>
-                {groupByDate().map((day) => {
-                  // 根据 activeTab 判断是否有帖子需要显示
-                  const hasPosts = activeTab === 'mine' ? day.myPosts.length > 0 : day.partnerPosts.length > 0
-                  // 如果没有帖子，跳过渲染该日期
-                  if (!hasPosts) return null
-                  
-                  return (
-                    <div key={day.date} className={`border-2 rounded-xl p-4 bg-white/50 backdrop-blur-sm shadow-sm ${
-                      activeTab === 'mine' ? 'border-pink-200' : 'border-purple-200'
-                    }`}>
-                      {/* 日期头部 */}
-                      <div className={`bg-gradient-to-r px-4 py-2 rounded-lg mb-3 ${
-                        activeTab === 'mine' ? 'from-pink-50 to-purple-50' : 'from-purple-50 to-pink-50'
-                      }`}>
-                        <span className="text-sm font-bold text-gray-800">
-                          {formatDate(day.date)}
-                        </span>
-                      </div>
-                      {/* 帖子列表 - 根据 activeTab 决定显示哪组数据 */}
-                      <div className="space-y-3">
-                        {activeTab === 'mine' && day.myPosts.map((post) => (
-                          <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                            <div className="p-4">
-                              {post.title && (
-                                <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
-                              )}
-                              {post.imageUrls && post.imageUrls.length > 0 && (
-                                <div className="mb-3">
-                                  {/* 静态图片预览 - 点击打开大图查看器 */}
-                                  <div
-                                    className="relative w-full h-48 rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
-                                    onClick={() => setSelectedPostImages({ images: post.imageUrls!, index: 0 })}
-                                  >
-                                    {post.imageUrls.length === 1 ? (
-                                      <img
-                                        src={post.imageUrls[0]}
-                                        alt="分享图片"
-                                        className="w-full h-full object-cover"
-                                      />
-                                    ) : (
-                                      <div className="grid grid-cols-3 gap-1 h-full p-1">
-                                        {post.imageUrls.slice(0, 9).map((imageUrl, idx) => (
-                                          <div key={idx} className="relative">
-                                            <img
-                                              src={imageUrl}
-                                              alt={`分享图片 ${idx + 1}`}
-                                              className="w-full h-full object-cover rounded"
-                                            />
-                                          </div>
-                                        ))}
-                                        {post.imageUrls.length > 9 && (
-                                          <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center">
-                                            <span className="text-white text-xl font-bold">+{post.imageUrls.length - 9}</span>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                              {post.text && (
-                                <p className="text-gray-700 whitespace-pre-wrap break-words">{post.text}</p>
-                              )}
-                              <div className="flex justify-end">
-                                <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        {activeTab === 'partner' && day.partnerPosts.map((post) => (
-                          <div key={post.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                            <div className="p-4">
-                              {post.title && (
-                                <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
-                              )}
-                              {post.imageUrls && post.imageUrls.length > 0 && (
-                                <div className="mb-2">
-                                  {/* 静态图片预览 - 点击打开大图查看器 */}
-                                  <div
-                                    className="relative w-full h-32 rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
-                                    onClick={() => setSelectedPostImages({ images: post.imageUrls!, index: 0 })}
-                                  >
-                                    {post.imageUrls.length === 1 ? (
-                                      <img
-                                        src={post.imageUrls[0]}
-                                        alt="分享图片"
-                                        className="w-full h-full object-cover"
-                                      />
-                                    ) : (
-                                      <div className="grid grid-cols-3 gap-1 h-full p-1">
-                                        {post.imageUrls.slice(0, 9).map((imageUrl, idx) => (
-                                          <div key={idx} className="relative">
-                                            <img
-                                              src={imageUrl}
-                                              alt={`分享图片 ${idx + 1}`}
-                                              className="w-full h-full object-cover rounded"
-                                            />
-                                          </div>
-                                        ))}
-                                        {post.imageUrls.length > 9 && (
-                                          <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center">
-                                            <span className="text-white text-xl font-bold">+{post.imageUrls.length - 9}</span>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                              {post.text && (
-                                <p className="text-gray-700 whitespace-pre-wrap break-words">{post.text}</p>
-                              )}
-                              <div className="flex justify-end">
-                                <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                })}
-              </>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {dayPosts.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>还没有分享</p>
-                {timeFilter !== 'all' && (
-                  <button
-                    onClick={() => setTimeFilter('all')}
-                    className="text-pink-600 hover:underline text-sm mt-1"
-                  >
-                    切换为"全部"时间范围
-                  </button>
-                )}
-                {!timeFilter && (
-                  <a href="/post" className="text-pink-600 hover:underline">去发布第一条</a>
-                )}
-              </div>
-            ) : (
-              dayPosts.map((day) => (
-                <div key={day.date} className="bg-white rounded-xl shadow-sm overflow-hidden">
-                  {/* 日期头部 */}
-                  <div className="bg-gradient-to-r from-pink-50 to-purple-50 px-4 py-2">
-                    <span className="text-sm font-bold text-gray-800">
-                      {formatDate(day.date)}
-                    </span>
-                  </div>
-
-                  {/* 并排内容 - 保持并排布局 */}
-                  <div className="p-4">
-                    <div className="flex gap-4">
-                      {/* 我的分享列 */}
-                      <div className="flex-1 space-y-3 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          {renderAvatar(user.avatarUrl, user.username, 'w-8 h-8')}
-                          <span className="text-sm font-medium text-pink-600">{user.username}</span>
-                        </div>
-                        {day.myPosts.length === 0 ? (
-                          <div className="text-center py-4 text-gray-400 text-sm bg-gray-50 rounded-lg">
-                            暂无分享
-                          </div>
-                        ) : (
-                          day.myPosts.map((post) => (
-                            <div key={post.id} className="bg-pink-50 rounded-lg p-3 border border-pink-100">
-                              {post.title && (
-                                <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
-                              )}
-                              {post.imageUrls && post.imageUrls.length > 0 && (
-                                <div className="mb-2">
-                                  {/* 静态图片预览 - 点击打开大图查看器 */}
-                                  <div
-                                    className="relative w-full h-32 rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
-                                    onClick={() => setSelectedPostImages({ images: post.imageUrls!, index: 0 })}
-                                  >
-                                    {post.imageUrls.length === 1 ? (
-                                      <img
-                                        src={post.imageUrls[0]}
-                                        alt="分享图片"
-                                        className="w-full h-full object-cover"
-                                      />
-                                    ) : (
-                                      <div className="grid grid-cols-3 gap-1 h-full p-1">
-                                        {post.imageUrls.slice(0, 9).map((imageUrl, idx) => (
-                                          <div key={idx} className="relative">
-                                            <img
-                                              src={imageUrl}
-                                              alt={`分享图片 ${idx + 1}`}
-                                              className="w-full h-full object-cover rounded"
-                                            />
-                                          </div>
-                                        ))}
-                                        {post.imageUrls.length > 9 && (
-                                          <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center">
-                                            <span className="text-white text-xl font-bold">+{post.imageUrls.length - 9}</span>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                              {post.text && (
-                                <p className="text-sm text-gray-700 whitespace-pre-wrap break-words mb-2">{post.text}</p>
-                              )}
-                              {post.location && (
-                                <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-                                  <svg className="w-3 h-3 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                  </svg>
-                                  {extractCity(post.location)}
-                                </div>
-                              )}
-                              <div className="flex justify-between items-center mt-2">
-                                {/* 评论按钮 - 通过颜色区分有评论/无评论状态 */}
-                                <button
-                                  onClick={() => openCommentModal(post)}
-                                  className={`text-xs flex items-center gap-1 ${
-                                    comments[post.id]?.length > 0 
-                                      ? 'text-pink-600' 
-                                      : 'text-gray-400'
-                                  } hover:text-pink-600`}
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                  </svg>
-                                  评论
-                                </button>
-                                <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-
-                      {/* 分隔线 */}
-                      <div className="w-px bg-gradient-to-b from-pink-200 via-purple-200 to-pink-200" />
-
-                      {/* TA 的分享列 */}
-                      <div className="flex-1 space-y-3 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          {renderAvatar(user.partner?.avatarUrl || null, user.partner?.username || 'TA', 'w-8 h-8')}
-                          <span className="text-sm font-medium text-purple-600">
-                            {user.partner?.username || 'TA'}
-                          </span>
-                        </div>
-                        {day.partnerPosts.length === 0 ? (
-                          <div className="text-center py-4 text-gray-400 text-sm bg-gray-50 rounded-lg">
-                            暂无分享
-                          </div>
-                        ) : (
-                          day.partnerPosts.map((post) => (
-                            <div key={post.id} className="bg-purple-50 rounded-lg p-3 border border-purple-100">
-                              {post.title && (
-                                <p className="text-sm font-medium text-gray-700 mb-2">{post.title}</p>
-                              )}
-                              {post.imageUrls && post.imageUrls.length > 0 && (
-                                <div className="mb-2">
-                                  {/* 静态图片预览 - 点击打开大图查看器 */}
-                                  <div
-                                    className="relative w-full h-32 rounded-lg overflow-hidden bg-gray-100 cursor-pointer"
-                                    onClick={() => setSelectedPostImages({ images: post.imageUrls!, index: 0 })}
-                                  >
-                                    {post.imageUrls.length === 1 ? (
-                                      <img
-                                        src={post.imageUrls[0]}
-                                        alt="分享图片"
-                                        className="w-full h-full object-cover"
-                                      />
-                                    ) : (
-                                      <div className="grid grid-cols-3 gap-1 h-full p-1">
-                                        {post.imageUrls.slice(0, 9).map((imageUrl, idx) => (
-                                          <div key={idx} className="relative">
-                                            <img
-                                              src={imageUrl}
-                                              alt={`分享图片 ${idx + 1}`}
-                                              className="w-full h-full object-cover rounded"
-                                            />
-                                          </div>
-                                        ))}
-                                        {post.imageUrls.length > 9 && (
-                                          <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center">
-                                            <span className="text-white text-xl font-bold">+{post.imageUrls.length - 9}</span>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                              {post.text && (
-                                <p className="text-sm text-gray-700 whitespace-pre-wrap break-words mb-2">{post.text}</p>
-                              )}
-                              {post.location && (
-                                <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-                                  <svg className="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                  </svg>
-                                  {extractCity(post.location)}
-                                </div>
-                              )}
-                              <div className="flex justify-between items-center mt-2">
-                                {/* 评论按钮 - 通过颜色区分有评论/无评论状态 */}
-                                <button
-                                  onClick={() => openCommentModal(post)}
-                                  className={`text-xs flex items-center gap-1 ${
-                                    comments[post.id]?.length > 0 
-                                      ? 'text-purple-600' 
-                                      : 'text-gray-400'
-                                  } hover:text-purple-600`}
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                  </svg>
-                                  评论
-                                </button>
-                                <span className="text-xs text-gray-500">{formatTime(post.createdAt)}</span>
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-      </div>
 
       {/* 挽回响应弹窗 */}
       {showAppealResponseModal && selectedAppealNotification && (
@@ -1895,24 +1548,24 @@ export default function TimelinePage() {
         </div>
       )}
 
-      {/* 底部导航 - 3 个按钮：时间轴、足迹、我的 */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t">
-        <div className="max-w-3xl mx-auto flex">
-          <a href="/timeline" className="flex-1 py-1.5 text-center text-pink-600">
-            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      {/* 底部导航 */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100">
+        <div className="max-w-[500px] mx-auto flex">
+          <a href="/timeline" className="flex-1 py-3 text-center text-pink-600">
+            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span className="text-[10px]">时间轴</span>
           </a>
-          <a href="/map" className="flex-1 py-1.5 text-center text-gray-500">
-            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <a href="/map" className="flex-1 py-3 text-center text-gray-500">
+            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <span className="text-[10px]">足迹</span>
           </a>
-          <a href="/profile" className="flex-1 py-1.5 text-center text-gray-500">
-            <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <a href="/profile" className="flex-1 py-3 text-center text-gray-500">
+            <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
             <span className="text-[10px]">我的</span>
