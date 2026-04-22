@@ -136,7 +136,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
     const start = new Date(pairedAt)
     const end = new Date(archivedAt)
     const diffTime = end.getTime() - start.getTime()
-    return Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1 // +1 因为当天也算 1 天
+    return Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1
   }
 
   // 格式化时间显示 HH:MM
@@ -165,7 +165,6 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
       try {
         setLoading(true)
         
-        // 先从 localStorage 获取用户 ID
         const userData = localStorage.getItem('user')
         let localUser: User | null = null
         
@@ -179,7 +178,6 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
           return
         }
 
-        // 从服务器获取最新的用户信息（包含 archivedPartnerId）
         const userRes = await fetch(`/api/auth/me`, {
           headers: { 'x-user-id': localUser.id },
         })
@@ -191,11 +189,9 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
         }
 
         const serverUser = userData_response.user
-        // 更新 localStorage
         localStorage.setItem('user', JSON.stringify(serverUser))
         setUser(serverUser)
 
-        // 确定归档 partnerId：优先使用 URL 参数，否则使用服务器返回的 archivedPartnerId
         const targetPartnerId = partnerId || serverUser.archivedPartnerId
         
         if (!targetPartnerId) {
@@ -204,9 +200,6 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
           return
         }
         
-        // 加载归档数据 - 只需要一次请求，API 会返回双方的帖子
-        // userId: 要查看归档的用户 ID（对方）
-        // partnerId: 当前登录用户的 ID
         const res = await fetch(`/api/archive?userId=${targetPartnerId}&partnerId=${serverUser.id}`, {
           headers: { 'x-user-id': serverUser.id },
         })
@@ -225,7 +218,6 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
         }
 
         if (data.posts) {
-          // 根据帖子 userId 判断是"我"还是"TA"的帖子
           const myPostsData: Post[] = []
           const partnerPostsData: Post[] = []
           
@@ -240,14 +232,12 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
           setPosts(myPostsData)
           setPartnerPosts(partnerPostsData)
           
-          // 加载所有帖子的评论
           const allPosts = [...myPostsData, ...partnerPostsData]
           for (let i = 0; i < allPosts.length; i++) {
             loadComments(allPosts[i].id)
           }
         }
 
-        // 设置归档信息
         if (data.archivedInfo) {
           setArchiveInfo(data.archivedInfo)
         }
@@ -342,34 +332,34 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
 
   if (!user) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-purple-100">
-        <p className="text-gray-600">加载中...</p>
+      <main className="min-h-screen flex items-center justify-center bg-white">
+        <p className="text-gray-500">加载中...</p>
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100 pb-8">
+    <main className="min-h-screen bg-white pb-8">
       {/* 顶部导航 */}
-      <header className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
-          <a href="/profile" className="text-gray-600 hover:text-gray-800">
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+        <div className="max-w-[500px] mx-auto px-4 py-3 flex items-center gap-3">
+          <a href="/profile" className="text-gray-400 hover:text-gray-600">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </a>
-          <h1 className="text-lg font-bold text-gray-800 flex-1 text-center">归档回忆</h1>
+          <h1 className="text-lg font-bold text-gray-900 flex-1 text-center">归档回忆</h1>
           <div className="w-5" />
         </div>
       </header>
 
-      <div className="max-w-3xl mx-auto px-4 py-4">
+      <div className="max-w-[500px] mx-auto px-4 py-4">
         {/* 归档信息卡片 */}
         {archiveInfo && (
-          <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+          <div className="bg-white rounded-xl border border-gray-100 p-4 mb-4">
             {/* 配对天数显示 */}
             {archiveInfo.pairedAt && (
-              <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg p-3 text-center mb-3">
+              <div className="bg-pink-50 rounded-lg p-3 text-center mb-3 border border-pink-100">
                 <p className="text-sm text-gray-600 mb-1">💕 已配对</p>
                 <p className="text-2xl font-bold text-pink-600">
                   {calculatePairDays(archiveInfo.pairedAt, archiveInfo.archivedAt)}
@@ -381,7 +371,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
             <div className="flex items-center gap-3 mb-3">
               {renderAvatar(archiveInfo.partnerAvatarUrl, archiveInfo.partnerUsername, 'w-10 h-10')}
               <div className="flex-1">
-                <p className="font-medium text-gray-800">{archiveInfo.partnerUsername}</p>
+                <p className="font-medium text-gray-900">{archiveInfo.partnerUsername}</p>
                 <p className="text-xs text-gray-500">
                   归档时间：{new Date(archiveInfo.archivedAt).toLocaleDateString('zh-CN')}
                 </p>
@@ -393,7 +383,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
             <button
               onClick={() => setShowDeleteConfirm(true)}
               disabled={deleting}
-              className="w-full py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition disabled:opacity-50"
+              className="w-full py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition disabled:opacity-50 border border-red-200"
             >
               {deleting ? '删除中...' : '永久删除归档'}
             </button>
@@ -410,11 +400,11 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
         ) : (
           <div className="space-y-4">
             {dayPosts.map((day) => (
-              <div key={day.date} className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div key={day.date} className="bg-white rounded-xl border border-gray-100 overflow-hidden">
                 {/* 日期头部 */}
-                <div className="bg-gradient-to-r from-pink-50 to-purple-50 px-4 py-3 border-b">
+                <div className="bg-pink-50 px-4 py-3 border-b border-gray-100">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg font-bold text-gray-800">
+                    <span className="text-base font-bold text-gray-900">
                       {formatDate(day.date)}
                     </span>
                     <span className="text-xs text-gray-500">
@@ -429,11 +419,11 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                     {/* 我的分享列 */}
                     <div className="flex-1 space-y-3 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
-                        {renderAvatar(user.avatarUrl, user.username, 'w-8 h-8')}
+                        {renderAvatar(user.avatarUrl, user.username, 'w-7 h-7')}
                         <span className="text-sm font-medium text-pink-600">{user.username}</span>
                       </div>
                       {day.myPosts.length === 0 ? (
-                        <div className="text-center py-4 text-gray-400 text-sm bg-gray-50 rounded-lg">
+                        <div className="text-center py-4 text-gray-400 text-sm bg-gray-50 rounded-lg border border-gray-100">
                           暂无分享
                         </div>
                       ) : (
@@ -475,7 +465,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                             {post.text && (
                               <p className="text-sm text-gray-700 whitespace-pre-wrap">{post.text}</p>
                             )}
-                            {/* 评论按钮 - 通过颜色区分有评论/无评论状态 */}
+                            {/* 评论按钮 */}
                             <div className="mt-2 flex items-center gap-4">
                               <button
                                 onClick={() => {
@@ -500,18 +490,18 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                     </div>
 
                     {/* 分隔线 */}
-                    <div className="w-px bg-gradient-to-b from-pink-200 via-purple-200 to-pink-200" />
+                    <div className="w-px bg-gray-200" />
 
                     {/* TA 的分享列 */}
                     <div className="flex-1 space-y-3 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
-                        {renderAvatar(archiveInfo?.partnerAvatarUrl || null, archiveInfo?.partnerUsername || 'TA', 'w-8 h-8')}
+                        {renderAvatar(archiveInfo?.partnerAvatarUrl || null, archiveInfo?.partnerUsername || 'TA', 'w-7 h-7')}
                         <span className="text-sm font-medium text-purple-600">
                           {archiveInfo?.partnerUsername || 'TA'}
                         </span>
                       </div>
                       {day.partnerPosts.length === 0 ? (
-                        <div className="text-center py-4 text-gray-400 text-sm bg-gray-50 rounded-lg">
+                        <div className="text-center py-4 text-gray-400 text-sm bg-gray-50 rounded-lg border border-gray-100">
                           暂无分享
                         </div>
                       ) : (
@@ -553,7 +543,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                             {post.text && (
                               <p className="text-sm text-gray-700 whitespace-pre-wrap">{post.text}</p>
                             )}
-                            {/* 评论按钮 - 通过颜色区分有评论/无评论状态 */}
+                            {/* 评论按钮 */}
                             <div className="mt-2 flex items-center gap-4">
                               <button
                                 onClick={() => {
@@ -584,7 +574,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
         )}
       </div>
 
-      {/* 评论弹窗 - 使用复用组件，归档页面为只读模式 */}
+      {/* 评论弹窗 */}
       {showCommentModal && (
         <CommentModal
           post={selectedPost}
@@ -628,10 +618,10 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
           onClick={() => setShowDeleteConfirm(false)}
         >
           <div
-            className="bg-white w-full max-w-sm rounded-xl p-6 animate-slideUp"
+            className="bg-white w-full max-w-sm rounded-xl border border-gray-100 p-6 animate-slideUp"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-bold text-gray-800 mb-3">确认删除归档</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-3">确认删除归档</h3>
             <p className="text-gray-600 text-sm mb-4">
               删除后将无法恢复，确定要永久删除这段回忆吗？
             </p>
@@ -641,14 +631,14 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
             <div className="flex gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
+                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 border border-gray-200"
               >
                 再想想
               </button>
               <button
                 onClick={handleDeleteArchive}
                 disabled={deleting}
-                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
               >
                 {deleting ? '删除中...' : '确定删除'}
               </button>

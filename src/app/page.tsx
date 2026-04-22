@@ -140,15 +140,15 @@ export default function Home() {
 
   return (
     <>
-      <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-pink-100 to-purple-100">
-        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">UsOnly</h1>
+      <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-white">
+        <div className="bg-white rounded-xl border border-gray-100 p-8 w-full max-w-[500px]">
+        <h1 className="text-2xl font-bold text-center text-gray-900 mb-2">UsOnly</h1>
         <p className="text-center text-gray-500 mb-6">只属于两个人的私密空间</p>
         
         {/* 产品介绍区域 */}
-        <div className="mb-6 p-4 bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl border border-pink-100">
+        <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
           <div className="flex items-center mb-3">
-            <svg className="w-5 h-5 text-pink-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-5 h-5 text-pink-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
             </svg>
             <span className="text-sm font-medium text-gray-700">什么是 UsOnly？</span>
@@ -157,22 +157,22 @@ export default function Home() {
             UsOnly 是一个只属于你们两个人的私密空间。为想要记录日常却不想公开发布到社交媒体的情侣设计——没有他人的点赞和评论，只有你们彼此分享的真实瞬间。不需要精心修图、写文案，想发就发，随心记录。
           </p>
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="p-2 bg-white rounded-lg">
+            <div className="p-2 bg-white rounded-lg border border-gray-100">
               <div className="text-lg mb-1">🔒</div>
               <div className="text-xs text-gray-600">私密安全</div>
             </div>
-            <div className="p-2 bg-white rounded-lg">
+            <div className="p-2 bg-white rounded-lg border border-gray-100">
               <div className="text-lg mb-1">📸</div>
               <div className="text-xs text-gray-600">日常分享</div>
             </div>
-            <div className="p-2 bg-white rounded-lg">
+            <div className="p-2 bg-white rounded-lg border border-gray-100">
               <div className="text-lg mb-1">💕</div>
               <div className="text-xs text-gray-600">情感连接</div>
             </div>
           </div>
         </div>
         
-        <div className="flex mb-6 border-b">
+        <div className="flex mb-6 border-b border-gray-100">
           <button
             onClick={() => setIsLogin(true)}
             className={`flex-1 py-2 text-center font-medium transition ${
@@ -273,7 +273,7 @@ export default function Home() {
           </div>
 
           {error && (
-            <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">
+            <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg border border-red-100">
               {error}
             </div>
           )}
@@ -281,7 +281,7 @@ export default function Home() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:from-pink-600 hover:to-purple-600 transition disabled:opacity-50"
+            className="w-full py-3 px-4 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition disabled:opacity-50"
           >
             {loading ? '加载中...' : isLogin ? '登录' : '注册'}
           </button>
@@ -297,11 +297,11 @@ export default function Home() {
       {/* 邀请码显示弹窗 */}
       {showInviteCode && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
           onClick={() => setShowInviteCode(false)}
         >
           <div 
-            className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl relative"
+            className="bg-white rounded-xl border border-gray-100 p-6 max-w-sm w-full shadow-xl relative"
             onClick={(e) => e.stopPropagation()}
           >
             {/* 关闭按钮 */}
@@ -310,24 +310,24 @@ export default function Home() {
               className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition"
               title="关闭"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
             
             <div className="text-center mb-4">
-              <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <div className="w-14 h-14 bg-pink-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">注册成功！</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">注册成功！</h3>
               <p className="text-sm text-gray-600">
                 下面是你的专属邀请码，分享给 TA 后即可完成配对
               </p>
             </div>
             
-            <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-4 mb-4">
+            <div className="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-100">
               <p className="text-xs text-gray-500 text-center mb-2">你的专属邀请码</p>
               <div className="flex items-center justify-center gap-2">
                 <span className="text-2xl font-mono font-bold text-pink-600 tracking-wider">
@@ -338,7 +338,7 @@ export default function Home() {
                     navigator.clipboard.writeText(userInviteCode)
                     alert('邀请码已复制！')
                   }}
-                  className="p-2 hover:bg-white rounded-lg transition"
+                  className="p-2 hover:bg-white rounded-lg transition border border-gray-200"
                   title="复制邀请码"
                 >
                   <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -349,7 +349,7 @@ export default function Home() {
             </div>
             
             {/* 备选配对方式提示 */}
-            <div className="border-t pt-4">
+            <div className="border-t border-gray-100 pt-4">
               <p className="text-xs text-gray-500 text-center">
                 如果 TA 已经注册，可以在"我的"页面通过用户名搜索进行匹配
               </p>

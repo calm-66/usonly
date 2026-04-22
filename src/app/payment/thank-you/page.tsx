@@ -46,12 +46,12 @@ function ThankYouContent() {
   }, [outTradeNo]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-100 to-red-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm max-w-sm w-full p-6 text-center">
         {/* 图标 */}
-        <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-pink-500 to-red-500 rounded-full flex items-center justify-center">
+        <div className="w-16 h-16 mx-auto mb-4 bg-pink-600 rounded-full flex items-center justify-center">
           <svg
-            className="w-10 h-10 text-white"
+            className="w-8 h-8 text-white"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -67,15 +67,15 @@ function ThankYouContent() {
 
         {/* 金额 */}
         {isLoading ? (
-          <p className="text-gray-500 mb-6">正在确认支付状态...</p>
+          <p className="text-gray-500 mb-4">正在确认支付状态...</p>
         ) : orderStatus === 'PAID' ? (
           <>
             {money && (
-              <p className="text-2xl font-bold text-pink-600 mb-6">
+              <p className="text-xl font-bold text-pink-600 mb-4">
                 ¥{parseFloat(money).toFixed(2)}
               </p>
             )}
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div className="bg-green-50 border border-green-100 rounded-lg p-3 mb-4">
               <p className="text-green-700 text-sm">
                 感谢您的支持，我们会继续努力做得更好！🎉
               </p>
@@ -83,10 +83,10 @@ function ThankYouContent() {
           </>
         ) : orderStatus === 'PENDING' ? (
           <>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 mb-4">
               正在等待支付完成...
             </p>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-3 mb-4">
               <p className="text-yellow-700 text-sm">
                 如果您已完成支付，请等待系统确认
               </p>
@@ -94,7 +94,7 @@ function ThankYouContent() {
           </>
         ) : (
           <>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 mb-4">
               订单状态查询中
             </p>
           </>
@@ -103,14 +103,14 @@ function ThankYouContent() {
         {/* 返回按钮 */}
         <Link
           href="/profile"
-          className="inline-block w-full py-3 px-6 bg-gradient-to-r from-pink-500 to-red-500 text-white font-medium rounded-lg hover:from-pink-600 hover:to-red-600 transition-colors"
+          className="inline-block w-full py-2.5 px-6 bg-pink-600 text-white font-medium rounded-lg hover:bg-pink-700 transition-colors"
         >
           返回
         </Link>
 
         {/* 订单号（用于调试） */}
         {outTradeNo && (
-          <p className="text-xs text-gray-400 mt-4">
+          <p className="text-xs text-gray-400 mt-3">
             订单号：{outTradeNo}
           </p>
         )}
@@ -122,7 +122,7 @@ function ThankYouContent() {
 export default function ThankYouPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-pink-100 to-red-100 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-gray-500">加载中...</div>
       </div>
     }>

@@ -247,8 +247,8 @@ export default function PostPage() {
 
   if (!user) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-purple-100">
-        <div className="text-center text-gray-600">加载中...</div>
+      <main className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center text-gray-500">加载中...</div>
       </main>
     )
   }
@@ -256,34 +256,34 @@ export default function PostPage() {
   const today = new Date().toISOString().split('T')[0]
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100">
+    <main className="min-h-screen bg-white pb-20">
       {/* 顶部导航 */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-gray-800">发布分享</h1>
-          <a href="/timeline" className="text-gray-600 hover:text-gray-800">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+        <div className="max-w-[500px] mx-auto px-4 py-3 flex justify-between items-center">
+          <h1 className="text-lg font-bold text-gray-900">发布分享</h1>
+          <a href="/timeline" className="text-gray-400 hover:text-gray-600">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </a>
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
+      <div className="max-w-[500px] mx-auto px-4 py-4">
         {/* 消息提示 */}
         {message && (
-          <div className="mb-4 text-green-500 text-sm bg-green-50 p-3 rounded-lg">
+          <div className="mb-4 text-green-600 text-sm bg-green-50 p-3 rounded-lg border border-green-100">
             {message}
           </div>
         )}
         {error && (
-          <div className="mb-4 text-red-500 text-sm bg-red-50 p-3 rounded-lg">
+          <div className="mb-4 text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-100">
             {error}
           </div>
         )}
 
         {/* 发布表单 */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <div className="bg-white rounded-xl border border-gray-100 p-4 mb-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -366,7 +366,7 @@ export default function PostPage() {
               ) : (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
@@ -395,7 +395,7 @@ export default function PostPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:from-pink-600 hover:to-purple-600 transition disabled:opacity-50"
+              className="w-full py-3 px-4 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition disabled:opacity-50"
             >
               {loading ? '发布中...' : '发布分享'}
             </button>
@@ -403,8 +403,8 @@ export default function PostPage() {
         </div>
 
         {/* 今日分享列表 */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">今日分享</h2>
+        <div className="bg-white rounded-xl border border-gray-100 p-4">
+          <h2 className="text-base font-bold text-gray-900 mb-3">今日分享</h2>
           {posts.filter(p => p.date === today).length === 0 ? (
             <p className="text-center text-gray-500 py-4">今日还没有分享</p>
           ) : (
@@ -412,7 +412,7 @@ export default function PostPage() {
               {posts.filter(p => p.date === today).map((post) => (
                 <div
                   key={post.id}
-                  className="p-4 bg-gray-50 rounded-lg"
+                  className="p-3 bg-gray-50 rounded-lg border border-gray-100"
                 >
                   <div className="flex justify-between items-start mb-2">
                     {post.title && (
@@ -467,26 +467,26 @@ export default function PostPage() {
       </div>
 
       {/* 底部导航 - 3 个按钮：时间轴、足迹、我的 */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t">
-        <div className="max-w-2xl mx-auto flex">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100">
+        <div className="max-w-[500px] mx-auto flex">
           <a href="/timeline" className="flex-1 py-3 text-center text-gray-500">
             <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-xs">时间轴</span>
+            <span className="text-[10px]">时间轴</span>
           </a>
           <a href="/map" className="flex-1 py-3 text-center text-gray-500">
             <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <span className="text-xs">足迹</span>
+            <span className="text-[10px]">足迹</span>
           </a>
           <a href="/profile" className="flex-1 py-3 text-center text-gray-500">
             <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
-            <span className="text-xs">我的</span>
+            <span className="text-[10px]">我的</span>
           </a>
         </div>
       </nav>

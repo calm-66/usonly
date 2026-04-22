@@ -155,33 +155,36 @@ export default function PairPage() {
 
   if (!user) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-purple-100">
-        <div className="text-center text-gray-600">加载中...</div>
+      <main className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <p className="text-gray-500 mb-4">加载中...</p>
+          <a href="/" className="text-pink-600 hover:underline">返回首页</a>
+        </div>
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-100">
+    <main className="min-h-screen bg-white pb-20">
       {/* 顶部导航 */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-gray-800">配对中心</h1>
-          <a href="/" className="text-gray-600 hover:text-gray-800">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+        <div className="max-w-[500px] mx-auto px-4 py-3 flex items-center justify-between">
+          <h1 className="text-lg font-bold text-gray-900">配对中心</h1>
+          <a href="/" className="text-gray-400 hover:text-gray-600">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </a>
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
+      <div className="max-w-[500px] mx-auto px-4 py-4">
         {/* 标签页 */}
-        <div className="flex bg-white rounded-lg shadow-sm p-1 mb-4">
+        <div className="flex bg-gray-50 rounded-lg p-1 mb-4 border border-gray-100">
           <button
             onClick={() => handleTabChange('search')}
             className={`flex-1 py-2 text-sm font-medium rounded-md transition ${
-              activeTab === 'search' ? 'bg-blue-100 text-blue-600' : 'text-gray-500'
+              activeTab === 'search' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-500'
             }`}
           >
             搜索用户
@@ -189,13 +192,13 @@ export default function PairPage() {
           <button
             onClick={() => handleTabChange('requests')}
             className={`flex-1 py-2 text-sm font-medium rounded-md transition ${
-              activeTab === 'requests' ? 'bg-blue-100 text-blue-600' : 'text-gray-500'
+              activeTab === 'requests' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-500'
             }`}
           >
             收到的请求
             {/* 只有当有请求且用户未查看时才显示徽章 */}
             {requests.length > 0 && !hasViewedRequests && (
-              <span className="ml-1 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+              <span className="ml-1 bg-pink-600 text-white text-xs px-2 py-0.5 rounded-full">
                 {requests.length}
               </span>
             )}
@@ -204,19 +207,19 @@ export default function PairPage() {
 
         {/* 消息提示 */}
         {message && (
-          <div className="mb-4 text-green-500 text-sm bg-green-50 p-3 rounded-lg">
+          <div className="mb-4 text-green-600 text-sm bg-green-50 p-3 rounded-lg border border-green-100">
             {message}
           </div>
         )}
         {error && (
-          <div className="mb-4 text-red-500 text-sm bg-red-50 p-3 rounded-lg">
+          <div className="mb-4 text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-100">
             {error}
           </div>
         )}
 
         {/* 搜索用户 */}
         {activeTab === 'search' && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="bg-white rounded-xl border border-gray-100 p-4">
             <div className="flex gap-2 mb-4">
               <input
                 type="text"
@@ -224,12 +227,12 @@ export default function PairPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder="输入用户名搜索"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
               />
               <button
                 onClick={handleSearch}
                 disabled={loading}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
+                className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition disabled:opacity-50"
               >
                 搜索
               </button>
@@ -246,16 +249,16 @@ export default function PairPage() {
                 {searchResults.map((result) => (
                   <div
                     key={result.id}
-                    className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                    className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-100"
                   >
                     <div>
-                      <p className="font-medium text-gray-800">{result.username}</p>
-                      <p className="text-sm text-gray-500">{result.email}</p>
+                      <p className="font-medium text-gray-800 text-sm">{result.username}</p>
+                      <p className="text-xs text-gray-500">{result.email}</p>
                     </div>
                     <button
                       onClick={() => handleSendRequest(result.id)}
                       disabled={loading || !!result.partnerId}
-                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
+                      className="px-3 py-1.5 bg-pink-600 text-white text-sm rounded-lg hover:bg-pink-700 transition disabled:opacity-50"
                     >
                       {result.partnerId ? '已有伴侣' : '发送请求'}
                     </button>
@@ -268,7 +271,7 @@ export default function PairPage() {
 
         {/* 收到的请求 */}
         {activeTab === 'requests' && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="bg-white rounded-xl border border-gray-100 p-4">
             {requests.length === 0 ? (
               <p className="text-center text-gray-500 py-4">
                 暂无配对请求
@@ -278,16 +281,16 @@ export default function PairPage() {
                 {requests.map((request) => (
                   <div
                     key={request.id}
-                    className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                    className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-100"
                   >
                     <div>
-                      <p className="font-medium text-gray-800">{request.sender.username}</p>
-                      <p className="text-sm text-gray-500">{request.sender.email}</p>
+                      <p className="font-medium text-gray-800 text-sm">{request.sender.username}</p>
+                      <p className="text-xs text-gray-500">{request.sender.email}</p>
                     </div>
                     <button
                       onClick={() => handleAcceptRequest(request.id)}
                       disabled={loading}
-                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition disabled:opacity-50"
+                      className="px-3 py-1.5 bg-pink-600 text-white text-sm rounded-lg hover:bg-pink-700 transition disabled:opacity-50"
                     >
                       接受
                     </button>
@@ -300,25 +303,25 @@ export default function PairPage() {
       </div>
 
       {/* 底部导航 - 固定 3 个按钮 */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t">
-        <div className="max-w-2xl mx-auto flex">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100">
+        <div className="max-w-[500px] mx-auto flex">
           <a href="/timeline" className="flex-1 py-3 text-center text-gray-500">
             <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-xs">时间轴</span>
+            <span className="text-[10px]">时间轴</span>
           </a>
           <a href="/post" className="flex-1 py-3 text-center text-gray-500">
             <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span className="text-xs">发布</span>
+            <span className="text-[10px]">发布</span>
           </a>
           <a href="/profile" className="flex-1 py-3 text-center text-gray-500">
             <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
-            <span className="text-xs">我的</span>
+            <span className="text-[10px]">我的</span>
           </a>
         </div>
       </nav>
