@@ -945,7 +945,7 @@ export default function TimelinePage() {
           <img
             src={imageUrls[0]}
             alt="分享图片"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover rounded-xl"
           />
         </div>
       )
@@ -958,11 +958,11 @@ export default function TimelinePage() {
           onClick={() => setSelectedPostImages({ images: imageUrls, index: 0 })}
         >
           {imageUrls.map((url, idx) => (
-            <div key={idx} className="relative h-48">
+            <div key={idx} className="relative h-48 overflow-hidden">
               <img
                 src={url}
                 alt={`分享图片 ${idx + 1}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover rounded-lg"
               />
             </div>
           ))}
@@ -980,7 +980,7 @@ export default function TimelinePage() {
       { main: 0, side: [1, 2], extra: [3] },
       // 布局 4: 4 图 - 右上跨 2 行
       { main: 1, side: [0, 2], extra: [3] },
-      // 布局 5: 5 图+ 随机
+      // 布局 5: 5 图 + 随机
       { main: 0, side: [1, 2], extra: [3, 4] },
     ]
 
@@ -1003,32 +1003,32 @@ export default function TimelinePage() {
         onClick={() => setSelectedPostImages({ images: imageUrls, index: 0 })}
       >
         {/* 主图 - 跨 2 行 */}
-        <div className="row-span-2 relative h-96">
+        <div className="row-span-2 relative h-96 overflow-hidden">
           <img
             src={displayedImages[layout.main]}
             alt={`分享图片 ${layout.main + 1}`}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover rounded-l-xl rounded-tr-none rounded-br-none"
           />
         </div>
         
         {/* 侧边图 */}
         {layout.side.map((imgIdx) => (
-          <div key={imgIdx} className="relative h-48">
+          <div key={imgIdx} className="relative h-48 overflow-hidden">
             <img
               src={displayedImages[imgIdx]}
               alt={`分享图片 ${imgIdx + 1}`}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-lg"
             />
           </div>
         ))}
         
         {/* 额外图片 */}
         {layout.extra && layout.extra.map((imgIdx) => (
-          <div key={imgIdx} className="relative h-48">
+          <div key={imgIdx} className="relative h-48 overflow-hidden">
             <img
               src={displayedImages[imgIdx]}
               alt={`分享图片 ${imgIdx + 1}`}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-lg"
             />
           </div>
         ))}
@@ -1048,9 +1048,9 @@ export default function TimelinePage() {
     const postOwner = post.owner === '我' ? user : user?.partner
 
     return (
-      <div key={post.id} className="bg-white border-b border-gray-100 pb-4">
+      <div key={post.id} className="bg-white border-b border-gray-100 pb-4 px-4">
         {/* 头部 - 用户信息 */}
-        <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center gap-3 mb-3 pt-4">
           {renderAvatar(postOwner?.avatarUrl || null, postOwner?.username || '未知', 'w-10 h-10')}
           <span className="font-semibold text-gray-900 text-base">
             {postOwner?.username || '未知'}
