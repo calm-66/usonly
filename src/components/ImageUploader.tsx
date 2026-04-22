@@ -172,6 +172,9 @@ export default function ImageUploader({
     }
   }
 
+  // 检查是否达到最大张数限制
+  const isMaxReached = images.length >= maxCount
+
   const handleButtonClick = () => {
     if (isMobileDevice) {
       // 移动端显示选择弹窗
@@ -271,16 +274,30 @@ export default function ImageUploader({
             <span className="text-sm text-gray-500">最多 {maxCount} 张</span>
           </div>
         ) : (
-          /* 已选择图片时显示轮播预览 - 移除按钮已集成到 Carousel 组件中 */
+          /* 已选择图片时显示轮播预览 */
           <div className="relative">
+            {/* 预览区域 */}
             <Carousel
               images={images}
               className={previewSize}
               onImageClick={() => {}}
-              onRemoveCurrent={showRemove && !uploading ? handleRemoveImage : undefined}
-              onRemoveAll={showRemove && !uploading ? handleRemoveAll : undefined}
             />
             
+            {/* 移除所有图片按钮 - 放在预览区域外部右上角 */}
+            {showRemove && !uploading && (
+              <button
+                type="button"
+                onClick={handleRemoveAll}
+                className="absolute top-2 right-2 z-20 bg-red-500/80 hover:bg-red-600 text-white p-1.5 rounded-full transition transform hover:scale-110"
+                title="移除所有图片"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+            
+            {/* 上传进度遮罩 */}
             {uploading && showProgress && (
               <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center z-10">
                 <div className="text-white text-center">
@@ -296,31 +313,35 @@ export default function ImageUploader({
         )}
 
         {/* 添加更多图片按钮 */}
-        {canAddMore && images.length > 0 && (
-          <div className="flex items-center gap-3">
-            <input
-              ref={fileInputRef}
-              {...inputProps}
-            />
-            <button
-              type="button"
-              onClick={handleButtonClick}
-              disabled={disabled || uploading}
-              className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition disabled:opacity-50 flex items-center gap-2 text-sm"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              添加图片 ({maxCount - images.length} 张)
-            </button>
-          </div>
-        )}
-
-        {/* 已上传数量提示 */}
         {images.length > 0 && (
-          <div className="flex items-center justify-between text-sm text-gray-500">
-            <span>已上传 {images.length} 张</span>
-            <span>最多 {maxCount} 张</span>
+          <div className="flex items-center gap-3">
+            {isMaxReached ? (
+              /* 达到最大张数时的提示 */
+              <div className="px-4 py-2 bg-red-100 text-red-600 rounded-lg flex items-center gap-2 text-sm font-medium">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                已达最大张数限制 ({maxCount} 张)
+              </div>
+            ) : (
+              <>
+                <input
+                  ref={fileInputRef}
+                  {...inputProps}
+                />
+                <button
+                  type="button"
+                  onClick={handleButtonClick}
+                  disabled={disabled || uploading}
+                  className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition disabled:opacity-50 flex items-center gap-2 text-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  添加图片 ({maxCount - images.length} 张)
+                </button>
+              </>
+            )}
           </div>
         )}
 
