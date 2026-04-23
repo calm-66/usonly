@@ -3,6 +3,7 @@
 import { useState, useRef, ChangeEvent, useEffect } from 'react'
 import { uploadImage, validateImageFile, validateImageFileWithSize } from '@/lib/imageUpload'
 import ImageGallery from './ImageGallery'
+import { MAX_POST_IMAGES } from '@/lib/constants'
 
 interface ImageUploaderProps {
   value: string[] | null         // 当前图片 URL 数组
@@ -41,7 +42,7 @@ export default function ImageUploader({
   onUploadStart,
   onUploadComplete,
   onUploadError,
-  maxCount = 6,
+  maxCount = MAX_POST_IMAGES,
 }: ImageUploaderProps) {
   console.log('[ImageUploader] 组件渲染开始，props:', { value, maxCount })
   
