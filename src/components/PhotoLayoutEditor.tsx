@@ -32,62 +32,106 @@ function getDefaultLayout(imageUrls: string[]): ImageLayoutItem[] {
   }))
 }
 
+// 预设布局生成函数
+function generatePresetLayouts(imageUrls: string[]): { name: string; layout: ImageLayoutItem[]; preview: { col: number; row: number; colSpan: number; rowSpan: number }[] }[] {
+  const presets: { name: string; layout: ImageLayoutItem[]; preview: { col: number; row: number; colSpan: number; rowSpan: number }[] }[] = [
+    {
+      name: '左大右小',
+      layout: [
+        { url: imageUrls[0] || '', col: 0, row: 0, colSpan: 1, rowSpan: 3 },
+        { url: imageUrls[1] || '', col: 1, row: 0, colSpan: 1, rowSpan: 1 },
+        { url: imageUrls[2] || '', col: 2, row: 0, colSpan: 1, rowSpan: 1 },
+        { url: imageUrls[3] || '', col: 1, row: 1, colSpan: 2, rowSpan: 1 },
+        { url: imageUrls[4] || '', col: 1, row: 2, colSpan: 2, rowSpan: 1 },
+      ].slice(0, imageUrls.length),
+      preview: [
+        { col: 0, row: 0, colSpan: 1, rowSpan: 3 },
+        { col: 1, row: 0, colSpan: 1, rowSpan: 1 },
+        { col: 2, row: 0, colSpan: 1, rowSpan: 1 },
+        { col: 1, row: 1, colSpan: 2, rowSpan: 1 },
+        { col: 1, row: 2, colSpan: 2, rowSpan: 1 },
+      ].slice(0, Math.min(imageUrls.length, 5)),
+    },
+    {
+      name: '上一下三',
+      layout: [
+        { url: imageUrls[0] || '', col: 0, row: 0, colSpan: 3, rowSpan: 1 },
+        { url: imageUrls[1] || '', col: 0, row: 1, colSpan: 1, rowSpan: 1 },
+        { url: imageUrls[2] || '', col: 1, row: 1, colSpan: 1, rowSpan: 1 },
+        { url: imageUrls[3] || '', col: 2, row: 1, colSpan: 1, rowSpan: 1 },
+        { url: imageUrls[4] || '', col: 0, row: 2, colSpan: 3, rowSpan: 1 },
+      ].slice(0, imageUrls.length),
+      preview: [
+        { col: 0, row: 0, colSpan: 3, rowSpan: 1 },
+        { col: 0, row: 1, colSpan: 1, rowSpan: 1 },
+        { col: 1, row: 1, colSpan: 1, rowSpan: 1 },
+        { col: 2, row: 1, colSpan: 1, rowSpan: 1 },
+        { col: 0, row: 2, colSpan: 3, rowSpan: 1 },
+      ].slice(0, Math.min(imageUrls.length, 5)),
+    },
+    {
+      name: '均匀分布',
+      layout: getDefaultLayout(imageUrls),
+      preview: imageUrls.map((_, i) => ({
+        col: i % GRID_SIZE,
+        row: Math.floor(i / GRID_SIZE),
+        colSpan: 1,
+        rowSpan: 1,
+      })),
+    },
+  ]
+  return presets
+}
+
 export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEditorProps) {
   const [layout, setLayout] = useState<ImageLayoutItem[]>(() => getDefaultLayout(imageUrls))
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const [isResizing, setIsResizing] = useState(false)
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, colSpan: 1, rowSpan: 1 })
   const gridRef = useRef<HTMLDivElement>(null)
 
   // 验证缩放是否有效
   const isValidResize = useCallback((index: number, newColSpan: number, newRowSpan: number): boolean => {
-    const totalCells = GRID_SIZE * GRID_SIZE
-    const otherImagesCount = imageUrls.length - 1
-    const neededCells = newColSpan * newRowSpan + otherImagesCount
-    return neededCells <= totalCells
-  }, [imageUrls.length])
-
-  // 处理缩放
-  const handleResize = useCallback((index: number, colSpan: number, rowSpan: number) => {
-    if (!isValidResize(index, colSpan, rowSpan)) {
-      return // 无效缩放，不执行
-    }
-
-    const newLayout = [...layout]
-    const item = newLayout[index]
+    const item = layout[index]
+    if (!item) return false
     
     // 检查边界
-    const maxCol = GRID_SIZE - colSpan
-    const maxRow = GRID_SIZE - rowSpan
+    if (item.col + newColSpan > GRID_SIZE) return false
+    if (item.row + newRowSpan > GRID_SIZE) return false
     
-    item.colSpan = colSpan
-    item.rowSpan = rowSpan
-    item.col = Math.min(item.col, maxCol)
-    item.row = Math.min(item.row, maxRow)
+    return true
+  }, [layout])
 
-    setLayout(newLayout)
-    onChange({ images: newLayout })
-  }, [layout, onChange, isValidResize])
+  // 处理右下角拖拽缩放
+  const handleResizeStart = useCallback((e: React.MouseEvent | React.TouchEvent, index: number) => {
+    e.stopPropagation()
+    e.preventDefault()
+    
+    const item = layout[index]
+    if (!item) return
+    
+    setIsResizing(true)
+    const touch = 'touches' in e ? e.touches[0] : e
+    setResizeStart({
+      x: touch.clientX,
+      y: touch.clientY,
+      colSpan: item.colSpan,
+      rowSpan: item.rowSpan,
+    })
+    setDraggingIndex(index)
+  }, [layout])
 
-  // 拖拽开始
+  // 拖拽开始（移动）
   const handleDragStart = useCallback((e: React.MouseEvent | React.TouchEvent, index: number) => {
-    // 如果点击的是按钮，不触发拖拽
-    if ((e.target as HTMLElement).closest('.resize-btn, .delete-btn')) return
+    // 如果点击的是拖拽手柄，不触发移动
+    if ((e.target as HTMLElement).closest('.resize-handle, .delete-btn')) return
 
     e.preventDefault()
     setDraggingIndex(index)
-    
-    const touch = 'touches' in e ? e.touches[0] : e
-    const rect = gridRef.current?.getBoundingClientRect()
-    if (rect) {
-      setDragOffset({
-        x: touch.clientX - rect.left,
-        y: touch.clientY - rect.top,
-      })
-    }
   }, [])
 
-  // 拖拽移动
+  // 拖拽/缩放移动
   const handleDragMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     if (draggingIndex === null) return
     
@@ -98,28 +142,54 @@ export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEd
     const cellWidth = rect.width / GRID_SIZE
     const cellHeight = rect.height / GRID_SIZE
 
-    const relativeX = touch.clientX - rect.left
-    const relativeY = touch.clientY - rect.top
-
-    // 计算目标网格位置
-    let targetCol = Math.floor(relativeX / cellWidth)
-    let targetRow = Math.floor(relativeY / cellHeight)
-
-    // 边界检查
     const item = layout[draggingIndex]
-    targetCol = Math.max(0, Math.min(targetCol, GRID_SIZE - item.colSpan))
-    targetRow = Math.max(0, Math.min(targetRow, GRID_SIZE - item.rowSpan))
+    if (!item) return
 
-    // 更新位置
-    const newLayout = [...layout]
-    newLayout[draggingIndex] = { ...item, col: targetCol, row: targetRow }
-    setLayout(newLayout)
-    onChange({ images: newLayout })
-  }, [draggingIndex, layout, onChange])
+    if (isResizing) {
+      // 缩放模式
+      const deltaX = touch.clientX - resizeStart.x
+      const deltaY = touch.clientY - resizeStart.y
+      
+      // 计算新的尺寸（基于拖拽距离）
+      const deltaCols = Math.round(deltaX / cellWidth)
+      const deltaRows = Math.round(deltaY / cellHeight)
+      
+      let newColSpan = Math.max(1, Math.min(GRID_SIZE - item.col, resizeStart.colSpan + deltaCols))
+      let newRowSpan = Math.max(1, Math.min(GRID_SIZE - item.row, resizeStart.rowSpan + deltaRows))
+      
+      if (!isValidResize(draggingIndex, newColSpan, newRowSpan)) {
+        return
+      }
+      
+      const newLayout = [...layout]
+      newLayout[draggingIndex] = { ...item, colSpan: newColSpan, rowSpan: newRowSpan }
+      setLayout(newLayout)
+      onChange({ images: newLayout })
+    } else {
+      // 移动模式
+      const relativeX = touch.clientX - rect.left
+      const relativeY = touch.clientY - rect.top
 
-  // 拖拽结束
+      // 计算目标网格位置
+      let targetCol = Math.floor(relativeX / cellWidth)
+      let targetRow = Math.floor(relativeY / cellHeight)
+
+      // 边界检查
+      targetCol = Math.max(0, Math.min(targetCol, GRID_SIZE - item.colSpan))
+      targetRow = Math.max(0, Math.min(targetRow, GRID_SIZE - item.rowSpan))
+
+      // 更新位置
+      const newLayout = [...layout]
+      newLayout[draggingIndex] = { ...item, col: targetCol, row: targetRow }
+      setLayout(newLayout)
+      onChange({ images: newLayout })
+    }
+  }, [draggingIndex, isResizing, resizeStart, layout, onChange, isValidResize])
+
+  // 拖拽/缩放结束
   const handleDragEnd = useCallback(() => {
     setDraggingIndex(null)
+    setIsResizing(false)
   }, [])
 
   // 删除图片
@@ -144,73 +214,55 @@ export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEd
   }, [imageUrls, onChange])
 
   // 应用预设布局
-  const applyPreset = useCallback((preset: string) => {
-    let newLayout: ImageLayoutItem[] = []
+  const applyPreset = useCallback((presetIndex: number) => {
+    const presets = generatePresetLayouts(imageUrls)
+    const preset = presets[presetIndex]
+    if (!preset) return
     
-    switch (preset) {
-      case 'featured-left':
-        // 左大右三
-        newLayout = [
-          { url: imageUrls[0], col: 0, row: 0, colSpan: 1, rowSpan: 3 },
-          { url: imageUrls[1], col: 1, row: 0, colSpan: 1, rowSpan: 1 },
-          { url: imageUrls[2], col: 2, row: 0, colSpan: 1, rowSpan: 1 },
-          { url: imageUrls[3], col: 1, row: 1, colSpan: 2, rowSpan: 1 },
-          { url: imageUrls[4], col: 1, row: 2, colSpan: 2, rowSpan: 1 },
-        ].filter((_, i) => i < imageUrls.length)
-        break
-      case 'uniform':
-        // 均匀分布
-        newLayout = getDefaultLayout(imageUrls)
-        break
-      case 'center-big':
-        // 中心大图
-        if (imageUrls.length >= 2) {
-          newLayout = [
-            { url: imageUrls[0], col: 1, row: 1, colSpan: 1, rowSpan: 1 },
-            { url: imageUrls[1], col: 0, row: 0, colSpan: 1, rowSpan: 1 },
-            ...imageUrls.slice(2).map((url, i) => ({
-              url,
-              col: (i + 2) % GRID_SIZE,
-              row: Math.floor((i + 2) / GRID_SIZE),
-              colSpan: 1,
-              rowSpan: 1,
-            }))
-          ]
-        } else {
-          newLayout = getDefaultLayout(imageUrls)
-        }
-        break
-      default:
-        newLayout = getDefaultLayout(imageUrls)
-    }
+    // 只取实际有图片的部分
+    const newLayout = imageUrls.map((url, i) => {
+      const p = preset.layout[i]
+      return p ? { ...p, url } : { url, col: i % GRID_SIZE, row: Math.floor(i / GRID_SIZE), colSpan: 1, rowSpan: 1 }
+    })
     
-    // 确保不超过图片数量
-    newLayout = newLayout.slice(0, imageUrls.length)
     setLayout(newLayout)
     onChange({ images: newLayout })
+    setSelectedIndex(null)
   }, [imageUrls, onChange])
 
   if (imageUrls.length === 0) return null
+
+  const presets = generatePresetLayouts(imageUrls)
 
   return (
     <div className="space-y-3">
       {/* 工具栏 */}
       <div className="flex items-center justify-between">
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => applyPreset('featured-left')}
-            className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-pink-50 hover:text-pink-600 rounded-lg transition"
-          >
-            左大右三
-          </button>
-          <button
-            type="button"
-            onClick={() => applyPreset('uniform')}
-            className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-pink-50 hover:text-pink-600 rounded-lg transition"
-          >
-            均匀分布
-          </button>
+        <div className="flex gap-2 overflow-x-auto">
+          {presets.map((preset, index) => (
+            <button
+              key={index}
+              type="button"
+              onClick={() => applyPreset(index)}
+              className="flex-shrink-0 w-16 h-16 bg-gray-50 hover:bg-pink-50 rounded-lg p-1 transition border-2 border-transparent hover:border-pink-300"
+              title={preset.name}
+            >
+              <div className="relative w-full h-full">
+                {preset.preview.map((cell, i) => (
+                  <div
+                    key={i}
+                    className="absolute bg-gray-300 rounded-sm border border-gray-400"
+                    style={{
+                      left: `${(cell.col / GRID_SIZE) * 100}%`,
+                      top: `${(cell.row / GRID_SIZE) * 100}%`,
+                      width: `${(cell.colSpan / GRID_SIZE) * 100}%`,
+                      height: `${(cell.rowSpan / GRID_SIZE) * 100}%`,
+                    }}
+                  />
+                ))}
+              </div>
+            </button>
+          ))}
         </div>
         <button
           type="button"
@@ -270,27 +322,18 @@ export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEd
             {/* 选中时显示控制按钮 */}
             {selectedIndex === index && (
               <>
-                {/* 缩放按钮 */}
-                <div className="absolute bottom-1 right-1 flex gap-0.5">
-                  {[
-                    { colSpan: 1, rowSpan: 1, label: '1×1' },
-                    { colSpan: 2, rowSpan: 1, label: '2×1' },
-                    { colSpan: 1, rowSpan: 2, label: '1×2' },
-                    { colSpan: 2, rowSpan: 2, label: '2×2' },
-                  ].filter(size => isValidResize(index, size.colSpan, size.rowSpan)).map(size => (
-                    <button
-                      key={size.label}
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleResize(index, size.colSpan, size.rowSpan)
-                      }}
-                      className="resize-btn w-6 h-6 bg-black/60 text-white text-xs rounded flex items-center justify-center hover:bg-black/80 transition"
-                      title={size.label}
-                    >
-                      {size.label}
-                    </button>
-                  ))}
+                {/* 缩放拖拽手柄 */}
+                <div
+                  className="resize-handle absolute bottom-0 right-0 w-6 h-6 cursor-se-resize z-20 flex items-center justify-center"
+                  onMouseDown={(e) => handleResizeStart(e, index)}
+                  onTouchStart={(e) => handleResizeStart(e, index)}
+                >
+                  <div className="w-4 h-4 bg-pink-500 rounded-full flex items-center justify-center shadow-lg">
+                    <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <path d="M21 15v4a2 2 0 01-2 2H5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M15 21l6-6" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
                 </div>
 
                 {/* 删除按钮 */}
@@ -300,7 +343,7 @@ export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEd
                     e.stopPropagation()
                     handleDelete(index)
                   }}
-                  className="delete-btn absolute top-1 right-1 w-5 h-5 bg-red-500/80 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition"
+                  className="delete-btn absolute top-1 right-1 w-5 h-5 bg-red-500/80 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition z-20"
                 >
                   ×
                 </button>
@@ -312,7 +355,7 @@ export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEd
 
       {/* 提示文字 */}
       <p className="text-xs text-gray-400 text-center">
-        点击图片选中，拖拽移动位置，使用缩放按钮调整大小
+        点击图片选中，拖拽移动位置，拖拽右下角手柄调整大小
       </p>
     </div>
   )
