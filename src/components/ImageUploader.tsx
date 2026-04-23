@@ -120,13 +120,6 @@ export default function ImageUploader({
     // 逐个上传
     for (const file of filesToProcess) {
       try {
-        // 创建预览 URL
-        const reader = new FileReader()
-        reader.onload = (event) => {
-          // 上传成功后添加到数组
-        }
-        reader.readAsDataURL(file)
-
         // 上传图片（自动压缩）
         const imageUrl = await uploadImage(file)
         
