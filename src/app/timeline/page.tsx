@@ -1059,15 +1059,47 @@ export default function TimelinePage() {
     const allImageUrls = post.imageUrls || []
     const layoutImages = post.layoutConfig.images
 
+    // 创建 3x3 网格的占用情况，用于显示空白方格的留白效果
+    const gridOccupied: boolean[][] = Array.from({ length: 3 }, () => Array(3).fill(false))
+    layoutImages.forEach((img) => {
+      for (let r = img.row; r < img.row + img.rowSpan && r < 3; r++) {
+        for (let c = img.col; c < img.col + img.colSpan && c < 3; c++) {
+          gridOccupied[r][c] = true
+        }
+      }
+    })
+
     return (
       <div 
         className="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer mb-3"
         onClick={() => setSelectedPostImages({ images: allImageUrls, index: 0 })}
       >
+        {/* 渲染空白方格的留白效果 */}
+        {Array.from({ length: 3 }).map((_, row) =>
+          Array.from({ length: 3 }).map((_, col) => {
+            if (!gridOccupied[row][col]) {
+              return (
+                <div
+                  key={`blank-${row}-${col}`}
+                  className="absolute bg-white rounded-lg shadow-sm"
+                  style={{
+                    left: `${(col / 3) * 100}%`,
+                    top: `${(row / 3) * 100}%`,
+                    width: `${(1 / 3) * 100}%`,
+                    height: `${(1 / 3) * 100}%`,
+                    padding: '2px',
+                  }}
+                />
+              )
+            }
+            return null
+          })
+        )}
+        {/* 渲染图片 */}
         {layoutImages.map((img, index) => (
           <div
             key={img.url + index}
-            className="absolute overflow-hidden"
+            className="absolute overflow-hidden z-10"
             style={{
               left: `${(img.col / 3) * 100}%`,
               top: `${(img.row / 3) * 100}%`,
