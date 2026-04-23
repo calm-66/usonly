@@ -1069,50 +1069,116 @@ export default function TimelinePage() {
       }
     })
 
+    // 检测哪些行是完全空白的（3个格子都是空白）
+    const emptyRows: boolean[] = gridOccupied.map(row => row.every(cell => !cell))
+    // 检测哪些列是完全空白的（3个格子都是空白）
+    const emptyCols: boolean[] = [0, 1, 2].map(col => 
+      gridOccupied.every(row => !row[col])
+    )
+
+    // 计算实际可见的行数和列数
+    const visibleRowCount = emptyRows.filter(e => !e).length
+    const visibleColCount = emptyCols.filter(e => !e).length
+
+    // 如果没有可见内容，返回 null
+    if (visibleRowCount === 0 || visibleColCount === 0) return null
+
+    // 计算容器高度比例（基于可见行数）
+    const aspectRatio = visibleRowCount / visibleColCount
+
+    // 创建行索引映射：原始行索引 -> 可见行索引
+    const rowMapping: Record<number, number> = {}
+    let visibleRowIndex = 0
+    for (let r = 0; r < 3; r++) {
+      if (!emptyRows[r]) {
+        rowMapping[r] = visibleRowIndex
+        visibleRowIndex++
+      }
+    }
+
+    // 创建列索引映射：原始列索引 -> 可见列索引
+    const colMapping: Record<number, number> = {}
+    let visibleColIndex = 0
+    for (let c = 0; c < 3; c++) {
+      if (!emptyCols[c]) {
+        colMapping[c] = visibleColIndex
+        visibleColIndex++
+      }
+    }
+
+    // 判断某个格子是否应该显示（如果所在的行或列被隐藏，则不显示）
+    const shouldShowCell = (row: number, col: number): boolean => {
+      return !emptyRows[row] && !emptyCols[col]
+    }
+
     return (
       <div 
-        className="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer mb-3 p-[2px]"
+        className="relative w-full rounded-xl overflow-hidden bg-gray-100 cursor-pointer mb-3 p-[2px]"
+        style={{ aspectRatio: `${visibleColCount} / ${visibleRowCount}` }}
         onClick={() => setSelectedPostImages({ images: allImageUrls, index: 0 })}
       >
         {/* 渲染空白方格的留白效果 */}
         {Array.from({ length: 3 }).map((_, row) =>
           Array.from({ length: 3 }).map((_, col) => {
-            if (!gridOccupied[row][col]) {
-              return (
-                <div
-                  key={`blank-${row}-${col}`}
-                  className="absolute bg-white rounded-lg shadow"
-                  style={{
-                    left: `calc(${(col / 3) * 100}% + 2px)`,
-                    top: `calc(${(row / 3) * 100}% + 2px)`,
-                    width: `calc(${(1 / 3) * 100}% - 4px)`,
-                    height: `calc(${(1 / 3) * 100}% - 4px)`,
-                  }}
-                />
-              )
-            }
-            return null
+            // 如果该行或该列被隐藏，则不渲染
+            if (!shouldShowCell(row, col)) return null
+            // 如果是被图片占用的格子，也不渲染空白方块
+            if (gridOccupied[row][col]) return null
+            
+            const visibleRow = rowMapping[row]
+            const visibleCol = colMapping[col]
+            
+            return (
+              <div
+                key={`blank-${row}-${col}`}
+                className="absolute bg-white rounded-lg shadow"
+                style={{
+                  left: `calc(${(visibleCol / visibleColCount) * 100}% + 2px)`,
+                  top: `calc(${(visibleRow / visibleRowCount) * 100}% + 2px)`,
+                  width: `calc(${(1 / visibleColCount) * 100}% - 4px)`,
+                  height: `calc(${(1 / visibleRowCount) * 100}% - 4px)`,
+                }}
+              />
+            )
           })
         )}
         {/* 渲染图片 */}
-        {layoutImages.map((img, index) => (
-          <div
-            key={img.url + index}
-            className="absolute overflow-hidden z-10"
-            style={{
-              left: `calc(${(img.col / 3) * 100}% + 2px)`,
-              top: `calc(${(img.row / 3) * 100}% + 2px)`,
-              width: `calc(${(img.colSpan / 3) * 100}% - 4px)`,
-              height: `calc(${(img.rowSpan / 3) * 100}% - 4px)`,
-            }}
-          >
-            <img
-              src={img.url}
-              alt={`分享图片 ${index + 1}`}
-              className="w-full h-full object-cover rounded-lg"
-            />
-          </div>
-        ))}
+        {layoutImages.map((img, index) => {
+          // 如果图片所在的行或列被隐藏，则不渲染该图片
+          if (!shouldShowCell(img.row, img.col)) return null
+          
+          const startVisibleRow = rowMapping[img.row]
+          const startVisibleCol = colMapping[img.col]
+          
+          // 计算图片在可见网格中占据的行列数
+          let visibleRowSpan = 0
+          for (let r = img.row; r < img.row + img.rowSpan && r < 3; r++) {
+            if (!emptyRows[r]) visibleRowSpan++
+          }
+          let visibleColSpan = 0
+          for (let c = img.col; c < img.col + img.colSpan && c < 3; c++) {
+            if (!emptyCols[c]) visibleColSpan++
+          }
+
+          return (
+            <div
+              key={img.url + index}
+              className="absolute overflow-hidden z-10"
+              style={{
+                left: `calc(${(startVisibleCol / visibleColCount) * 100}% + 2px)`,
+                top: `calc(${(startVisibleRow / visibleRowCount) * 100}% + 2px)`,
+                width: `calc(${(visibleColSpan / visibleColCount) * 100}% - 4px)`,
+                height: `calc(${(visibleRowSpan / visibleRowCount) * 100}% - 4px)`,
+              }}
+            >
+              <img
+                src={img.url}
+                alt={`分享图片 ${index + 1}`}
+                className="w-full h-full object-cover rounded-lg"
+              />
+            </div>
+          )
+        })}
       </div>
     )
   }
