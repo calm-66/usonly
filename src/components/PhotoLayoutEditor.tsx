@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 
 export interface ImageLayoutItem {
   url: string
@@ -86,6 +86,28 @@ function generatePresetLayouts(imageUrls: string[]): { name: string; layout: Ima
 export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEditorProps) {
   const [layout, setLayout] = useState<ImageLayoutItem[]>(() => getDefaultLayout(imageUrls))
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+
+  // 监听 imageUrls 变化，同步更新 layout
+  useEffect(() => {
+    if (imageUrls.length > layout.length) {
+      // 有新图片添加，追加到 layout
+      const newItems = imageUrls.slice(layout.length).map((url, index) => ({
+        url,
+        col: (layout.length + index) % GRID_SIZE,
+        row: Math.floor((layout.length + index) / GRID_SIZE),
+        colSpan: 1,
+        rowSpan: 1,
+      }))
+      const newLayout = [...layout, ...newItems]
+      setLayout(newLayout)
+      onChange({ images: newLayout })
+    } else if (imageUrls.length < layout.length) {
+      // 有图片被删除，从 layout 中移除对应的项
+      const newLayout = layout.slice(0, imageUrls.length)
+      setLayout(newLayout)
+      onChange({ images: newLayout })
+    }
+  }, [imageUrls])
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
   const [isResizing, setIsResizing] = useState(false)
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, colSpan: 1, rowSpan: 1 })
