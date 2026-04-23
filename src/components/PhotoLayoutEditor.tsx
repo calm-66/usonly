@@ -89,9 +89,32 @@ export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEd
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
   const [isResizing, setIsResizing] = useState(false)
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, colSpan: 1, rowSpan: 1 })
+  const [originalPosition, setOriginalPosition] = useState<{ col: number; row: number } | null>(null)
   const gridRef = useRef<HTMLDivElement>(null)
 
-  // 验证缩放是否有效
+  // 检查位置是否与其他图片重叠
+  const checkOverlap = useCallback((excludeIndex: number, col: number, row: number, colSpan: number, rowSpan: number): boolean => {
+    // 检查边界
+    if (col < 0 || row < 0 || col + colSpan > GRID_SIZE || row + rowSpan > GRID_SIZE) {
+      return true // 超出边界也算重叠
+    }
+
+    // 检查与其他图片是否重叠
+    for (let i = 0; i < layout.length; i++) {
+      if (i === excludeIndex) continue
+      
+      const other = layout[i]
+      // 检查两个矩形是否重叠
+      const overlap = !(col + colSpan <= other.col || 
+                       other.col + other.colSpan <= col || 
+                       row + rowSpan <= other.row || 
+                       other.row + other.rowSpan <= row)
+      if (overlap) return true
+    }
+    return false
+  }, [layout])
+
+  // 验证缩放是否有效（不重叠且在边界内）
   const isValidResize = useCallback((index: number, newColSpan: number, newRowSpan: number): boolean => {
     const item = layout[index]
     if (!item) return false
@@ -100,8 +123,9 @@ export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEd
     if (item.col + newColSpan > GRID_SIZE) return false
     if (item.row + newRowSpan > GRID_SIZE) return false
     
-    return true
-  }, [layout])
+    // 检查是否与其他图片重叠
+    return !checkOverlap(index, item.col, item.row, newColSpan, newRowSpan)
+  }, [layout, checkOverlap])
 
   // 处理右下角拖拽缩放
   const handleResizeStart = useCallback((e: React.MouseEvent | React.TouchEvent, index: number) => {
@@ -120,20 +144,25 @@ export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEd
       rowSpan: item.rowSpan,
     })
     setDraggingIndex(index)
+    setOriginalPosition({ col: item.col, row: item.row })
   }, [layout])
 
   // 拖拽开始（移动）
   const handleDragStart = useCallback((e: React.MouseEvent | React.TouchEvent, index: number) => {
-    // 如果点击的是拖拽手柄，不触发移动
+    // 如果点击的是拖拽手柄或删除按钮，不触发移动
     if ((e.target as HTMLElement).closest('.resize-handle, .delete-btn')) return
 
     e.preventDefault()
+    e.stopPropagation()
     setDraggingIndex(index)
-  }, [])
+    setOriginalPosition({ col: layout[index].col, row: layout[index].row })
+  }, [layout])
 
   // 拖拽/缩放移动
   const handleDragMove = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     if (draggingIndex === null) return
+    
+    e.preventDefault()
     
     const touch = 'touches' in e ? e.touches[0] : e
     const rect = gridRef.current?.getBoundingClientRect()
@@ -158,7 +187,7 @@ export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEd
       let newRowSpan = Math.max(1, Math.min(GRID_SIZE - item.row, resizeStart.rowSpan + deltaRows))
       
       if (!isValidResize(draggingIndex, newColSpan, newRowSpan)) {
-        return
+        return // 无效缩放，不执行
       }
       
       const newLayout = [...layout]
@@ -178,18 +207,32 @@ export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEd
       targetCol = Math.max(0, Math.min(targetCol, GRID_SIZE - item.colSpan))
       targetRow = Math.max(0, Math.min(targetRow, GRID_SIZE - item.rowSpan))
 
-      // 更新位置
-      const newLayout = [...layout]
-      newLayout[draggingIndex] = { ...item, col: targetCol, row: targetRow }
-      setLayout(newLayout)
-      onChange({ images: newLayout })
+      // 检查是否与当前位置不同且有重叠
+      const isSamePosition = targetCol === item.col && targetRow === item.row
+      const hasOverlap = checkOverlap(draggingIndex, targetCol, targetRow, item.colSpan, item.rowSpan)
+      
+      // 如果位置没变或者没有重叠，则更新位置
+      if (isSamePosition || !hasOverlap) {
+        const newLayout = [...layout]
+        newLayout[draggingIndex] = { ...item, col: targetCol, row: targetRow }
+        setLayout(newLayout)
+        onChange({ images: newLayout })
+      }
+      // 如果有重叠且有原位置，吸附回原位置
+      else if (originalPosition && (targetCol !== item.col || targetRow !== item.row)) {
+        const newLayout = [...layout]
+        newLayout[draggingIndex] = { ...item, col: originalPosition.col, row: originalPosition.row }
+        setLayout(newLayout)
+        onChange({ images: newLayout })
+      }
     }
-  }, [draggingIndex, isResizing, resizeStart, layout, onChange, isValidResize])
+  }, [draggingIndex, isResizing, resizeStart, layout, onChange, isValidResize, checkOverlap, originalPosition])
 
   // 拖拽/缩放结束
   const handleDragEnd = useCallback(() => {
     setDraggingIndex(null)
     setIsResizing(false)
+    setOriginalPosition(null)
   }, [])
 
   // 删除图片
@@ -276,7 +319,7 @@ export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEd
       {/* 网格编辑器 */}
       <div
         ref={gridRef}
-        className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden"
+        className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden touch-none"
         onMouseMove={handleDragMove}
         onMouseUp={handleDragEnd}
         onMouseLeave={handleDragEnd}
@@ -294,7 +337,7 @@ export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEd
         {layout.map((item, index) => (
           <div
             key={item.url + index}
-            className={`absolute rounded-lg overflow-hidden cursor-grab transition-shadow ${
+            className={`absolute rounded-lg overflow-hidden cursor-grab transition-shadow touch-none ${
               draggingIndex === index ? 'z-50 shadow-xl scale-105' : 'z-10'
             } ${selectedIndex === index ? 'ring-2 ring-pink-500' : ''}`}
             style={{
