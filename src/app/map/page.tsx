@@ -56,7 +56,7 @@ const Avatar = ({
     lg: 'w-10 h-10 text-base',
   }
   const colorIndex = username.charCodeAt(0) % 6
-  const bgColors = ['bg-pink-500', 'bg-purple-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500']
+  const bgColors = ['bg-gray-600', 'bg-gray-700', 'bg-gray-500', 'bg-gray-600', 'bg-gray-700', 'bg-red-500']
   
   if (avatarUrl) {
     return (
@@ -78,7 +78,7 @@ const Avatar = ({
 // 获取头像背景颜色（与 Avatar 组件逻辑一致）
 function getAvatarColor(username: string): string {
   const colorIndex = username.charCodeAt(0) % 6
-  const bgColors = ['bg-pink-500', 'bg-purple-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500']
+  const bgColors = ['bg-gray-600', 'bg-gray-700', 'bg-gray-500', 'bg-gray-600', 'bg-gray-700', 'bg-red-500']
   return bgColors[colorIndex]
 }
 
@@ -170,7 +170,7 @@ export default function MapPage() {
       <main className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <p className="text-gray-500 mb-4">加载中...</p>
-          <a href="/" className="text-pink-600 hover:underline">返回首页</a>
+          <a href="/" className="text-gray-600 hover:underline">返回首页</a>
         </div>
       </main>
     )
@@ -227,14 +227,14 @@ export default function MapPage() {
         <button
           onClick={() => setSelectedUserId(user.id)}
           className={`bg-gray-50 rounded-lg p-3 text-center transition ${
-            selectedUserId === user.id ? 'bg-pink-50 ring-2 ring-pink-500' : 'hover:bg-gray-100'
+            selectedUserId === user.id ? 'bg-gray-100 ring-2 ring-gray-800' : 'hover:bg-gray-100'
           }`}
         >
           <div className="flex items-center justify-center gap-1 mb-1">
             <Avatar username={user.username} avatarUrl={user.avatarUrl} size="sm" />
             <span className="text-xs text-gray-600 truncate">{user.username}</span>
           </div>
-          <div className="text-base font-bold text-pink-500">{myPostsCount}</div>
+          <div className="text-base font-bold text-gray-800">{myPostsCount}</div>
         </button>
         
         {/* TA 的打卡 */}
@@ -242,7 +242,7 @@ export default function MapPage() {
           onClick={() => setSelectedUserId(user.partnerId || 'none')}
           disabled={!user.partnerId}
           className={`bg-gray-50 rounded-lg p-3 text-center transition disabled:opacity-50 ${
-            selectedUserId === user.partnerId ? 'bg-purple-50 ring-2 ring-purple-500' : 'hover:bg-gray-100'
+            selectedUserId === user.partnerId ? 'bg-gray-100 ring-2 ring-gray-800' : 'hover:bg-gray-100'
           }`}
         >
           <div className="flex items-center justify-center gap-1 mb-1">
@@ -255,21 +255,21 @@ export default function MapPage() {
               <div className="w-6 h-6 rounded-full bg-gray-300" />
             )}
           </div>
-          <div className="text-base font-bold text-purple-500">{partnerPostsCount}</div>
+          <div className="text-base font-bold text-gray-800">{partnerPostsCount}</div>
         </button>
         
         {/* 地点数 - 显示两人的头像 */}
         <button
           onClick={() => setSelectedUserId('all')}
           className={`bg-gray-50 rounded-lg p-3 text-center transition ${
-            selectedUserId === 'all' ? 'bg-blue-50 ring-2 ring-blue-500' : 'hover:bg-gray-100'
+            selectedUserId === 'all' ? 'bg-gray-100 ring-2 ring-gray-800' : 'hover:bg-gray-100'
           }`}
         >
           <div className="flex justify-center gap-0.5 mb-1">
             <Avatar username={user.username} avatarUrl={user.avatarUrl} size="sm" />
             {user.partner && <Avatar username={user.partner.username} avatarUrl={user.partner.avatarUrl} size="sm" />}
           </div>
-          <div className="text-base font-bold text-blue-500">{allLocationsMap.size}</div>
+          <div className="text-base font-bold text-gray-800">{allLocationsMap.size}</div>
         </button>
       </div>
 
@@ -320,10 +320,10 @@ export default function MapPage() {
                   const avatarIcon = L.divIcon({
                     className: 'avatar-marker',
                     html: postUser.avatarUrl 
-                      ? `<div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; border: 2px solid ${isMyPost ? '#ec4899' : '#a855f8'}; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                      ? `<div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; border: 2px solid #374151; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                            <img src="${postUser.avatarUrl}" style="width: 100%; height: 100%; object-fit: cover;" />
                          </div>`
-                      : `<div class="w-8 h-8 rounded-full ${getAvatarColor(postUser.username)} flex items-center justify-center text-white text-xs font-medium border-2 ${isMyPost ? 'border-pink-500' : 'border-purple-500'} shadow-lg">${postUser.username.charAt(0).toUpperCase()}</div>`,
+                      : `<div class="w-8 h-8 rounded-full ${getAvatarColor(postUser.username)} flex items-center justify-center text-white text-xs font-medium border-2 border-gray-500 shadow-lg">${postUser.username.charAt(0).toUpperCase()}</div>`,
                     iconSize: [32, 32],
                     iconAnchor: [16, 16],
                   })
@@ -389,7 +389,7 @@ export default function MapPage() {
                     id={`post-${post.id}`}
                     className={`bg-white rounded-lg p-3 border border-gray-100 transition-all ${
                       isSelected 
-                        ? 'ring-2 ring-pink-300' 
+                        ? 'ring-2 ring-gray-800' 
                         : ''
                     }`}
                     onClick={() => {
@@ -417,7 +417,7 @@ export default function MapPage() {
                         {/* 位置 */}
                         {post.location && (
                           <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
-                            <svg className="w-3.5 h-3.5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
@@ -459,7 +459,7 @@ export default function MapPage() {
             </svg>
             <span className="text-[10px]">时间轴</span>
           </a>
-          <a href="/map" className="flex-1 py-3 text-center text-pink-600">
+          <a href="/map" className="flex-1 py-3 text-center text-gray-800">
             <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />

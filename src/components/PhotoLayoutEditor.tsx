@@ -324,7 +324,7 @@ export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEd
             key={item.url + index}
             className={`absolute rounded-lg overflow-hidden cursor-grab transition-shadow touch-none ${
               draggingIndex === index ? 'z-50 shadow-xl scale-105' : 'z-10'
-            } ${selectedIndex === index ? 'ring-2 ring-pink-500' : ''}`}
+            } ${selectedIndex === index ? 'ring-2 ring-gray-800' : ''}`}
             style={{
               left: `${(item.col / GRID_SIZE) * 100}%`,
               top: `${(item.row / GRID_SIZE) * 100}%`,
@@ -356,7 +356,7 @@ export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEd
                   onMouseDown={(e) => handleResizeStart(e, index)}
                   onTouchStart={(e) => handleResizeStart(e, index)}
                 >
-                  <div className="w-4 h-4 bg-pink-500 rounded-full flex items-center justify-center shadow-lg">
+                  <div className="w-4 h-4 bg-gray-800 rounded-full flex items-center justify-center shadow-lg">
                     <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                       <path d="M21 15v4a2 2 0 01-2 2H5" strokeLinecap="round" strokeLinejoin="round"/>
                       <path d="M15 21l6-6" strokeLinecap="round" strokeLinejoin="round"/>

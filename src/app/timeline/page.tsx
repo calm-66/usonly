@@ -123,14 +123,14 @@ export default function TimelinePage() {
   // 生成默认头像颜色（根据用户 ID 哈希）
   const getDefaultAvatarColor = (id: string): string => {
     const colors = [
-      'from-pink-400 to-pink-500',
-      'from-purple-400 to-purple-500',
-      'from-blue-400 to-blue-500',
-      'from-green-400 to-green-500',
-      'from-yellow-400 to-yellow-500',
+      'from-gray-500 to-gray-600',
+      'from-gray-600 to-gray-700',
+      'from-gray-500 to-gray-600',
+      'from-gray-600 to-gray-700',
+      'from-gray-500 to-gray-600',
       'from-red-400 to-red-500',
-      'from-indigo-400 to-indigo-500',
-      'from-teal-400 to-teal-500',
+      'from-gray-600 to-gray-700',
+      'from-gray-500 to-gray-600',
     ]
     let hash = 0
     for (let i = 0; i < id.length; i++) {
@@ -724,7 +724,7 @@ export default function TimelinePage() {
       <main className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <p className="text-gray-500 mb-4">加载中...</p>
-          <a href="/" className="text-pink-600 hover:underline">返回首页</a>
+          <a href="/" className="text-gray-600 hover:underline">返回首页</a>
         </div>
       </main>
     )
@@ -825,14 +825,14 @@ export default function TimelinePage() {
               <p className="text-gray-700 break-words text-sm mb-2">{comment.content}</p>
               <button
                 onClick={() => handleReplyClick(comment.id, comment.user.username)}
-                className="text-xs text-pink-600 hover:underline"
+                className="text-xs text-gray-600 hover:underline"
               >
                 回复
               </button>
               {comment.replies && comment.replies.length > 0 && (
-                <div className="mt-3 space-y-2 ml-4 border-l-2 border-pink-100 pl-3">
+                <div className="mt-3 space-y-2 ml-4 border-l-2 border-gray-200 pl-3">
                   {comment.replies.map((reply) => (
-                    <div key={reply.id} className="bg-pink-50 rounded-lg p-3">
+                    <div key={reply.id} className="bg-gray-50 rounded-lg p-3">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
                           {renderAvatar(reply.user.avatarUrl, reply.user.username, 'w-6 h-6 shrink-0')}
@@ -875,12 +875,12 @@ export default function TimelinePage() {
           onChange={(e) => setNewComment(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSendComment(postId)}
           placeholder={replyTo ? `回复 @${replyTo.username}` : '发表评论...'}
-          className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-full focus:outline-none focus:border-pink-300"
+          className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-full focus:outline-none focus:border-gray-400"
         />
         <button
           onClick={() => handleSendComment(postId)}
           disabled={!newComment.trim()}
-          className="px-4 py-2 text-sm bg-pink-500 text-white rounded-full hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+          className="px-4 py-2 text-sm bg-gray-800 text-white rounded-full hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
         >
           发送
         </button>
@@ -1118,7 +1118,7 @@ export default function TimelinePage() {
             )}
             {post.location && (
               <div className="flex items-center gap-1 text-xs text-gray-500">
-                <svg className="w-3.5 h-3.5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -1135,9 +1135,9 @@ export default function TimelinePage() {
               onClick={() => openCommentModal(post)}
               className={`flex items-center gap-1.5 text-sm ${
                 comments[post.id]?.length > 0 
-                  ? 'text-pink-500' 
+                  ? 'text-gray-500'
                   : 'text-gray-400'
-              } hover:text-pink-600 transition`}
+              } hover:text-gray-600 transition`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -1171,7 +1171,7 @@ export default function TimelinePage() {
                 </svg>
               </button>
               {timeFilter !== 'all' && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-pink-500 rounded-full"></span>
+                <span className="absolute top-1 right-1 w-2 h-2 bg-gray-800 rounded-full"></span>
               )}
             </div>
           )}
@@ -1229,7 +1229,7 @@ export default function TimelinePage() {
                       {unreadCount > 0 && (
                         <button
                           onClick={handleMarkAllNotificationsAsRead}
-                          className="text-xs text-pink-600 hover:underline"
+                          className="text-xs text-gray-600 hover:underline"
                         >
                           全部已读
                         </button>
@@ -1262,7 +1262,7 @@ export default function TimelinePage() {
                               else if (isAppealClickable) handleAppealNotificationClick(notification)
                             }}
                             className={`p-3 border-b border-gray-100 last:border-b-0 transition relative ${
-                              !notification.isRead ? 'bg-pink-50' : ''
+                              !notification.isRead ? 'bg-gray-50' : ''
                             } ${(isClickable || isAppealClickable) ? 'hover:bg-gray-50 cursor-pointer' : 'hover:bg-gray-50'}`}
                           >
                             <div className="flex gap-2">
@@ -1325,7 +1325,7 @@ export default function TimelinePage() {
                 }}
                 className={`w-full py-3 px-4 rounded-lg text-left flex items-center justify-between ${
                   timeFilter === 'all' 
-                    ? 'bg-pink-100 text-pink-600' 
+                    ? 'bg-gray-200 text-gray-800'
                     : 'hover:bg-gray-50'
                 }`}
               >
@@ -1343,7 +1343,7 @@ export default function TimelinePage() {
                 }}
                 className={`w-full py-3 px-4 rounded-lg text-left flex items-center justify-between ${
                   timeFilter === '7days' 
-                    ? 'bg-pink-100 text-pink-600' 
+                    ? 'bg-gray-200 text-gray-800' 
                     : 'hover:bg-gray-50'
                 }`}
               >
@@ -1361,7 +1361,7 @@ export default function TimelinePage() {
                 }}
                 className={`w-full py-3 px-4 rounded-lg text-left flex items-center justify-between ${
                   timeFilter === '30days' 
-                    ? 'bg-pink-100 text-pink-600' 
+                    ? 'bg-gray-200 text-gray-800' 
                     : 'hover:bg-gray-50'
                 }`}
               >
@@ -1379,7 +1379,7 @@ export default function TimelinePage() {
                 }}
                 className={`w-full py-3 px-4 rounded-lg text-left flex items-center justify-between ${
                   timeFilter === 'custom' 
-                    ? 'bg-pink-100 text-pink-600' 
+                    ? 'bg-gray-200 text-gray-800' 
                     : 'hover:bg-gray-50'
                 }`}
               >
@@ -1429,7 +1429,7 @@ export default function TimelinePage() {
                   type="date"
                   value={customStartDate}
                   onChange={(e) => setCustomStartDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-pink-300"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-500"
                 />
               </div>
               <div>
@@ -1438,7 +1438,7 @@ export default function TimelinePage() {
                   type="date"
                   value={customEndDate}
                   onChange={(e) => setCustomEndDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-pink-300"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-500"
                 />
               </div>
             </div>
@@ -1463,7 +1463,7 @@ export default function TimelinePage() {
                     alert('请选择开始和结束日期')
                   }
                 }}
-                className="flex-1 px-4 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600"
+                className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-gray-900"
               >
                 确定
               </button>
@@ -1475,16 +1475,16 @@ export default function TimelinePage() {
       {/* 挽回配对横幅 */}
       {showAppealBanner && user?.partnerId && (
         <div className="max-w-[500px] mx-auto px-4 mb-4">
-          <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl shadow-lg p-4 text-white">
+          <div className="bg-gray-800 rounded-xl shadow-lg p-4 text-white">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-semibold text-lg mb-1">💕 挽回配对</p>
-                <p className="text-sm text-pink-100">你的伴侣发起了取消配对，现在还有 7 天冷静期，发送挽回请求恢复关系吧！</p>
+                <p className="text-sm text-gray-300">你的伴侣发起了取消配对，现在还有 7 天冷静期，发送挽回请求恢复关系吧！</p>
               </div>
               <button
                 onClick={handleAppeal}
                 disabled={appealLoading}
-                className="px-6 py-2 bg-white text-pink-600 rounded-full font-medium hover:bg-pink-50 disabled:opacity-50 shrink-0 ml-4"
+                className="px-6 py-2 bg-white text-gray-800 rounded-full font-medium hover:bg-gray-100 disabled:opacity-50 shrink-0 ml-4"
               >
                 {appealLoading ? '发送中...' : '发送挽回请求'}
               </button>
@@ -1503,7 +1503,7 @@ export default function TimelinePage() {
             {timeFilter !== 'all' && (
               <button
                 onClick={() => setTimeFilter('all')}
-                className="text-pink-600 hover:underline text-sm"
+                className="text-gray-600 hover:underline text-sm"
               >
                 切换为"全部"时间范围
               </button>
@@ -1585,7 +1585,7 @@ export default function TimelinePage() {
               <button
                 onClick={() => handleAppealResponse(true)}
                 disabled={appealLoading}
-                className="flex-1 px-4 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600 disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-gray-900 disabled:opacity-50"
               >
                 {appealLoading ? '处理中...' : '接受'}
               </button>
@@ -1597,7 +1597,7 @@ export default function TimelinePage() {
       {/* 底部导航 */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100">
         <div className="max-w-[500px] mx-auto flex">
-          <a href="/timeline" className="flex-1 py-3 text-center text-pink-600">
+          <a href="/timeline" className="flex-1 py-3 text-center text-gray-800">
             <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>

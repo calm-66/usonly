@@ -75,8 +75,8 @@ export default function FeedbackModal({ isOpen, onClose, userId }: FeedbackModal
         className="bg-white w-full max-w-sm rounded-xl p-6 animate-slideUp"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-2 mb-4">
-          <svg className="w-6 h-6 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex items-center gap-2 mb-4">
+            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
           <h3 className="text-lg font-bold text-gray-800">联系我们</h3>
@@ -104,7 +104,7 @@ export default function FeedbackModal({ isOpen, onClose, userId }: FeedbackModal
                 value={userEmail}
                 onChange={(e) => setUserEmail(e.target.value)}
                 placeholder="your@email.com"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
               />
             </div>
 
@@ -119,7 +119,7 @@ export default function FeedbackModal({ isOpen, onClose, userId }: FeedbackModal
                   onClick={() => setFeedbackType('suggestion')}
                   className={`flex-1 py-2 px-3 text-sm rounded-lg border transition ${
                     feedbackType === 'suggestion'
-                      ? 'bg-pink-50 border-pink-500 text-pink-600'
+                      ? 'bg-gray-50 border-gray-500 text-gray-600'
                       : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
                   }`}
                 >
@@ -160,7 +160,7 @@ export default function FeedbackModal({ isOpen, onClose, userId }: FeedbackModal
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="请详细描述您的建议或问题..."
                 rows={5}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 resize-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 resize-none"
                 autoFocus
               />
             </div>
@@ -178,7 +178,7 @@ export default function FeedbackModal({ isOpen, onClose, userId }: FeedbackModal
               <button
                 type="submit"
                 disabled={sending || !content.trim()}
-                className="flex-1 px-4 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600 disabled:opacity-50 transition flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-gray-900 disabled:opacity-50 transition flex items-center justify-center gap-2"
               >
                 {sending ? (
                   <>

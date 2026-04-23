@@ -132,8 +132,8 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
   // 生成默认头像颜色（根据用户 ID 哈希）
   const getDefaultAvatarColor = (id: string): string => {
     const colors = [
-      'from-pink-400 to-pink-500',
-      'from-purple-400 to-purple-500',
+      'from-gray-500 to-gray-600',
+      'from-gray-600 to-gray-700',
       'from-blue-400 to-blue-500',
       'from-green-400 to-green-500',
       'from-yellow-400 to-yellow-500',
@@ -586,11 +586,11 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
       const partnerUsername = user?.partner?.username || 'TA'
       const myAvatarHtml = user?.avatarUrl 
         ? `<img src="${user.avatarUrl}" alt="${myUsername}" class="avatar">`
-        : `<div class="avatar w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-pink-500 flex items-center justify-center text-white text-xs font-bold">${getInitial(myUsername)}</div>`
+        : `<div class="avatar w-8 h-8 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center text-white text-xs font-bold">${getInitial(myUsername)}</div>`
       
       const partnerAvatarHtml = user?.partner?.avatarUrl 
         ? `<img src="${user.partner.avatarUrl}" alt="${partnerUsername}" class="avatar">`
-        : `<div class="avatar w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold">${getInitial(partnerUsername)}</div>`
+        : `<div class="avatar w-8 h-8 rounded-full bg-gradient-to-br from-gray-600 to-gray-700 flex items-center justify-center text-white text-xs font-bold">${getInitial(partnerUsername)}</div>`
       
       return `
     <div class="date-section">
@@ -615,7 +615,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
               ${post.text ? `<div class="post-text">${post.text}</div>` : ''}
               ${post.location ? `
               <div class="post-location">
-                <svg class="w-3 h-3 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -659,7 +659,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
               ${post.text ? `<div class="post-text">${post.text}</div>` : ''}
               ${post.location ? `
               <div class="post-location">
-                <svg class="w-3 h-3 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -818,7 +818,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
               onClick={() => setDateRange('7days')}
               className={`px-3 py-2 text-sm rounded-lg transition ${
                 dateRange === '7days' 
-                  ? 'bg-pink-500 text-white' 
+                  ? 'bg-gray-800 text-white' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -828,7 +828,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
               onClick={() => setDateRange('30days')}
               className={`px-3 py-2 text-sm rounded-lg transition ${
                 dateRange === '30days' 
-                  ? 'bg-pink-500 text-white' 
+                  ? 'bg-gray-800 text-white' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -838,7 +838,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
               onClick={() => setDateRange('all')}
               className={`px-3 py-2 text-sm rounded-lg transition ${
                 dateRange === 'all' 
-                  ? 'bg-pink-500 text-white' 
+                  ? 'bg-gray-800 text-white' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -848,7 +848,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
               onClick={() => setDateRange('custom')}
               className={`px-3 py-2 text-sm rounded-lg transition ${
                 dateRange === 'custom' 
-                  ? 'bg-pink-500 text-white' 
+                  ? 'bg-gray-800 text-white' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -862,13 +862,13 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
                 type="date"
                 value={customStartDate}
                 onChange={(e) => setCustomStartDate(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
               />
               <input
                 type="date"
                 value={customEndDate}
                 onChange={(e) => setCustomEndDate(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
               />
             </div>
           )}
@@ -881,7 +881,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
               type="checkbox"
               checked={includeComments}
               onChange={(e) => setIncludeComments(e.target.checked)}
-              className="w-4 h-4 text-pink-500 rounded focus:ring-pink-500"
+              className="w-4 h-4 text-gray-800 rounded focus:ring-gray-500"
             />
             <span className="text-sm text-gray-700">包含评论</span>
           </label>
@@ -893,15 +893,15 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
             <p className="text-sm text-gray-500">加载中...</p>
           ) : (
             <p className="text-sm text-gray-600">
-              将导出 <span className="font-medium text-pink-600">{postsData.length}</span> 天的分享，
-              共 <span className="font-medium text-pink-600">{previewCount}</span> 条内容
+              将导出 <span className="font-medium text-gray-800">{postsData.length}</span> 天的分享，
+              共 <span className="font-medium text-gray-800">{previewCount}</span> 条内容
             </p>
           )}
         </div>
 
         {/* 说明信息 */}
-        <div className="mb-6 p-3 bg-pink-50 rounded-lg border border-pink-100">
-          <p className="text-sm text-pink-700">
+        <div className="mb-6 p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <p className="text-sm text-gray-700">
             💡 导出为 HTML 文件，可在浏览器中打开后使用"打印"功能保存为 PDF
           </p>
         </div>
@@ -917,7 +917,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
           <button
             onClick={handleExportHTML}
             disabled={loading || exporting || postsData.length === 0}
-            className="flex-1 px-4 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600 disabled:opacity-50 transition"
+            className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-gray-900 disabled:opacity-50 transition"
           >
             {exporting ? '导出中...' : '导出 HTML'}
           </button>

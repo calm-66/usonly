@@ -89,14 +89,14 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
   // 生成默认头像颜色（根据用户 ID 哈希）
   const getDefaultAvatarColor = (id: string): string => {
     const colors = [
-      'from-pink-400 to-pink-500',
-      'from-purple-400 to-purple-500',
-      'from-blue-400 to-blue-500',
-      'from-green-400 to-green-500',
-      'from-yellow-400 to-yellow-500',
+      'from-gray-500 to-gray-600',
+      'from-gray-600 to-gray-700',
+      'from-gray-500 to-gray-600',
+      'from-gray-600 to-gray-700',
+      'from-gray-500 to-gray-600',
       'from-red-400 to-red-500',
-      'from-indigo-400 to-indigo-500',
-      'from-teal-400 to-teal-500',
+      'from-gray-600 to-gray-700',
+      'from-gray-500 to-gray-600',
     ]
     let hash = 0
     for (let i = 0; i < id.length; i++) {
@@ -359,9 +359,9 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
           <div className="bg-white rounded-xl border border-gray-100 p-4 mb-4">
             {/* 配对天数显示 */}
             {archiveInfo.pairedAt && (
-              <div className="bg-pink-50 rounded-lg p-3 text-center mb-3 border border-pink-100">
+              <div className="bg-gray-50 rounded-lg p-3 text-center mb-3 border border-gray-100">
                 <p className="text-sm text-gray-600 mb-1">💕 已配对</p>
-                <p className="text-2xl font-bold text-pink-600">
+                <p className="text-2xl font-bold text-gray-800">
                   {calculatePairDays(archiveInfo.pairedAt, archiveInfo.archivedAt)}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">天</p>
@@ -402,7 +402,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
             {dayPosts.map((day) => (
               <div key={day.date} className="bg-white rounded-xl border border-gray-100 overflow-hidden">
                 {/* 日期头部 */}
-                <div className="bg-pink-50 px-4 py-3 border-b border-gray-100">
+                <div className="bg-gray-50 px-4 py-3 border-b border-gray-100">
                   <div className="flex items-center gap-2">
                     <span className="text-base font-bold text-gray-900">
                       {formatDate(day.date)}
@@ -420,7 +420,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                     <div className="flex-1 space-y-3 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
                         {renderAvatar(user.avatarUrl, user.username, 'w-7 h-7')}
-                        <span className="text-sm font-medium text-pink-600">{user.username}</span>
+                        <span className="text-sm font-medium text-gray-800">{user.username}</span>
                       </div>
                       {day.myPosts.length === 0 ? (
                         <div className="text-center py-4 text-gray-400 text-sm bg-gray-50 rounded-lg border border-gray-100">
@@ -428,7 +428,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                         </div>
                       ) : (
                         day.myPosts.map((post) => (
-                          <div key={post.id} className="bg-pink-50 rounded-lg p-3 border border-pink-100">
+                          <div key={post.id} className="bg-gray-50 rounded-lg p-3 border border-gray-100">
                             <div className="flex justify-between items-start mb-2">
                               {post.title && (
                                 <span className="text-sm font-medium text-gray-700">{post.title}</span>
@@ -474,9 +474,9 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                                 }}
                                 className={`text-xs flex items-center gap-1 ${
                                   comments[post.id]?.length > 0 
-                                    ? 'text-pink-600' 
+                                    ? 'text-gray-600' 
                                     : 'text-gray-400'
-                                } hover:text-pink-600`}
+                                } hover:text-gray-600`}
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -496,7 +496,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                     <div className="flex-1 space-y-3 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
                         {renderAvatar(archiveInfo?.partnerAvatarUrl || null, archiveInfo?.partnerUsername || 'TA', 'w-7 h-7')}
-                        <span className="text-sm font-medium text-purple-600">
+                        <span className="text-sm font-medium text-gray-800">
                           {archiveInfo?.partnerUsername || 'TA'}
                         </span>
                       </div>
@@ -506,7 +506,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                         </div>
                       ) : (
                         day.partnerPosts.map((post) => (
-                          <div key={post.id} className="bg-purple-50 rounded-lg p-3 border border-purple-100">
+                          <div key={post.id} className="bg-gray-50 rounded-lg p-3 border border-gray-100">
                             <div className="flex justify-between items-start mb-2">
                               {post.title && (
                                 <span className="text-sm font-medium text-gray-700">{post.title}</span>
@@ -552,9 +552,9 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                                 }}
                                 className={`text-xs flex items-center gap-1 ${
                                   comments[post.id]?.length > 0 
-                                    ? 'text-purple-600' 
+                                    ? 'text-gray-600' 
                                     : 'text-gray-400'
-                                } hover:text-purple-600`}
+                                } hover:text-gray-600`}
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />

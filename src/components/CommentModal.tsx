@@ -50,9 +50,9 @@ interface CommentModalProps {
 // 生成默认头像颜色（根据用户 ID 哈希）
 const getDefaultAvatarColor = (id: string): string => {
   const colors = [
-    'from-pink-400 to-pink-500',
-    'from-purple-400 to-purple-500',
-    'from-blue-400 to-blue-500',
+    'from-gray-500 to-gray-600',
+    'from-gray-600 to-gray-700',
+    'from-gray-500 to-gray-600',
     'from-green-400 to-green-500',
     'from-yellow-400 to-yellow-500',
     'from-red-400 to-red-500',
@@ -306,7 +306,7 @@ export default function CommentModal({
                     <div className="flex items-center gap-2 shrink-0 ml-2">
                       <button
                         onClick={() => handleReplyClick(comment.id, comment.user.username)}
-                        className="text-xs text-pink-600 hover:underline"
+                        className="text-xs text-gray-600 hover:underline"
                       >
                         回复
                       </button>
@@ -324,9 +324,9 @@ export default function CommentModal({
                 <p className="text-gray-700 break-words text-sm mb-2">{comment.content}</p>
                 {/* 回复列表 */}
                 {comment.replies && comment.replies.length > 0 && (
-                  <div className="mt-3 space-y-2 ml-4 border-l-2 border-pink-100 pl-3">
+                  <div className="mt-3 space-y-2 ml-4 border-l-2 border-gray-200 pl-3">
                     {comment.replies.map((reply) => (
-                      <div key={reply.id} className="bg-pink-50 rounded-lg p-3">
+                      <div key={reply.id} className="bg-gray-50 rounded-lg p-3">
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-2 flex-1 min-w-0">
                             {renderAvatar(reply.user.avatarUrl, reply.user.username, 'w-6 h-6 shrink-0')}
@@ -341,7 +341,7 @@ export default function CommentModal({
                             <div className="flex items-center gap-2 shrink-0 ml-2">
                               <button
                                 onClick={() => handleReplyClick(reply.id, reply.user.username, comment.id)}
-                                className="text-xs text-pink-600 hover:underline"
+                                className="text-xs text-gray-600 hover:underline"
                               >
                                 回复
                               </button>
@@ -377,12 +377,12 @@ export default function CommentModal({
                 onChange={(e) => setNewComment(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendComment()}
                 placeholder={replyTo ? `回复 @${replyTo.username}` : '发表评论...'}
-                className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-full focus:outline-none focus:border-pink-300"
+                className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-full focus:outline-none focus:border-gray-300"
               />
               <button
                 onClick={handleSendComment}
                 disabled={!newComment.trim()}
-                className="px-4 py-2 text-sm bg-pink-500 text-white rounded-full hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                className="px-4 py-2 text-sm bg-gray-800 text-white rounded-full hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
               >
                 发送
               </button>

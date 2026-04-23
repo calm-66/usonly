@@ -157,7 +157,7 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
           {/* 头部 */}
-          <div className="bg-gradient-to-r from-pink-500 to-red-500 px-6 py-4">
+          <div className="bg-gradient-to-r from-gray-700 to-gray-800 px-6 py-4">
             <h2 className="text-xl font-bold text-white text-center flex items-center justify-center gap-2">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" />
@@ -185,8 +185,8 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
                     }}
                     className={`py-2 px-3 rounded-lg border-2 transition-colors ${
                       amount === val && customAmount === val.toString()
-                        ? 'border-pink-500 bg-pink-50 text-pink-600'
-                        : 'border-gray-200 hover:border-pink-300'
+                        ? 'border-gray-800 bg-gray-50 text-gray-800'
+                        : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     ¥{val}
@@ -200,13 +200,13 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
                   value={customAmount}
                   onChange={(e) => handleCustomAmountChange(e.target.value)}
                   placeholder="自定义金额"
-                  className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                   min="0.01"
                   step="0.01"
                 />
               </div>
               {amount > 0 && (
-                <p className="text-sm text-pink-600 mt-2 font-medium">
+                <p className="text-sm text-gray-800 mt-2 font-medium">
                   当前金额：¥{amount.toFixed(2)}
                 </p>
               )}
@@ -231,7 +231,7 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="写下你想对作者说的话..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent resize-none"
                 rows={3}
                 maxLength={200}
               />
@@ -247,7 +247,7 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
                   type="checkbox"
                   checked={isAnonymous}
                   onChange={(e) => setIsAnonymous(e.target.checked)}
-                  className="w-4 h-4 text-pink-600 rounded focus:ring-pink-500"
+                  className="w-4 h-4 text-gray-800 rounded focus:ring-gray-500"
                 />
                 <span className="text-sm text-gray-600">匿名打赏</span>
               </label>
@@ -273,7 +273,7 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
             <button
               type="submit"
               disabled={isLoading || amount <= 0}
-              className="w-full py-3 px-4 bg-gradient-to-r from-pink-500 to-red-500 text-white font-medium rounded-lg hover:from-pink-600 hover:to-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full py-3 px-4 bg-gradient-to-r from-gray-800 to-gray-900 text-white font-medium rounded-lg hover:from-gray-900 hover:to-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading 
                 ? '处理中...' 
@@ -305,7 +305,7 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
             className="bg-white rounded-xl overflow-hidden max-w-sm w-full"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-gradient-to-r from-pink-500 to-red-500 px-4 py-3">
+            <div className="bg-gradient-to-r from-gray-700 to-gray-800 px-4 py-3">
               <h3 className="text-lg font-bold text-white text-center">
                 扫码支付
               </h3>
@@ -324,7 +324,7 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
               {h5Data?.payurl && (
                 <button
                   onClick={handlePayNow}
-                  className="w-full py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition"
+                  className="w-full py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition"
                 >
                   点击跳转支付
                 </button>

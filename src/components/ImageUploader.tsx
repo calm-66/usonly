@@ -372,7 +372,7 @@ export default function ImageUploader({
             <div className="space-y-3">
               <button
                 onClick={() => handleSelectCamera('environment')}
-                className="w-full py-3 px-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:from-pink-600 hover:to-purple-600 transition flex items-center justify-center gap-2"
+                className="w-full py-3 px-4 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-lg hover:from-gray-900 hover:to-black transition flex items-center justify-center gap-2"
               >
                 📷 拍照
               </button>

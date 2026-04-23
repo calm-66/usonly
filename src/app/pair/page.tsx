@@ -158,7 +158,7 @@ export default function PairPage() {
       <main className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <p className="text-gray-500 mb-4">加载中...</p>
-          <a href="/" className="text-pink-600 hover:underline">返回首页</a>
+          <a href="/" className="text-gray-600 hover:underline">返回首页</a>
         </div>
       </main>
     )
@@ -184,7 +184,7 @@ export default function PairPage() {
           <button
             onClick={() => handleTabChange('search')}
             className={`flex-1 py-2 text-sm font-medium rounded-md transition ${
-              activeTab === 'search' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-500'
+              activeTab === 'search' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500'
             }`}
           >
             搜索用户
@@ -192,13 +192,13 @@ export default function PairPage() {
           <button
             onClick={() => handleTabChange('requests')}
             className={`flex-1 py-2 text-sm font-medium rounded-md transition ${
-              activeTab === 'requests' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-500'
+              activeTab === 'requests' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500'
             }`}
           >
             收到的请求
             {/* 只有当有请求且用户未查看时才显示徽章 */}
             {requests.length > 0 && !hasViewedRequests && (
-              <span className="ml-1 bg-pink-600 text-white text-xs px-2 py-0.5 rounded-full">
+              <span className="ml-1 bg-gray-800 text-white text-xs px-2 py-0.5 rounded-full">
                 {requests.length}
               </span>
             )}
@@ -227,12 +227,12 @@ export default function PairPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder="输入用户名搜索"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
               />
               <button
                 onClick={handleSearch}
                 disabled={loading}
-                className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition disabled:opacity-50"
+                className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition disabled:opacity-50"
               >
                 搜索
               </button>
@@ -258,7 +258,7 @@ export default function PairPage() {
                     <button
                       onClick={() => handleSendRequest(result.id)}
                       disabled={loading || !!result.partnerId}
-                      className="px-3 py-1.5 bg-pink-600 text-white text-sm rounded-lg hover:bg-pink-700 transition disabled:opacity-50"
+                      className="px-3 py-1.5 bg-gray-800 text-white text-sm rounded-lg hover:bg-gray-900 transition disabled:opacity-50"
                     >
                       {result.partnerId ? '已有伴侣' : '发送请求'}
                     </button>
@@ -290,7 +290,7 @@ export default function PairPage() {
                     <button
                       onClick={() => handleAcceptRequest(request.id)}
                       disabled={loading}
-                      className="px-3 py-1.5 bg-pink-600 text-white text-sm rounded-lg hover:bg-pink-700 transition disabled:opacity-50"
+                      className="px-3 py-1.5 bg-gray-800 text-white text-sm rounded-lg hover:bg-gray-900 transition disabled:opacity-50"
                     >
                       接受
                     </button>

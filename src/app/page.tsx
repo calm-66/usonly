@@ -148,7 +148,7 @@ export default function Home() {
         {/* 产品介绍区域 */}
         <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
           <div className="flex items-center mb-3">
-            <svg className="w-5 h-5 text-pink-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-5 h-5 text-gray-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
             </svg>
             <span className="text-sm font-medium text-gray-700">什么是 UsOnly？</span>
@@ -177,7 +177,7 @@ export default function Home() {
             onClick={() => setIsLogin(true)}
             className={`flex-1 py-2 text-center font-medium transition ${
               isLogin
-                ? 'text-pink-600 border-b-2 border-pink-600'
+                ? 'text-gray-800 border-b-2 border-gray-800'
                 : 'text-gray-400'
             }`}
           >
@@ -187,7 +187,7 @@ export default function Home() {
             onClick={() => setIsLogin(false)}
             className={`flex-1 py-2 text-center font-medium transition ${
               !isLogin
-                ? 'text-pink-600 border-b-2 border-pink-600'
+                ? 'text-gray-800 border-b-2 border-gray-800'
                 : 'text-gray-400'
             }`}
           >
@@ -198,15 +198,15 @@ export default function Home() {
         {/* 如何开始步骤 */}
           <div className="mb-6 space-y-2">
           <div className="flex items-start text-xs text-gray-600">
-            <span className="flex-shrink-0 w-5 h-5 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center text-xs font-medium mr-2">1</span>
+            <span className="flex-shrink-0 w-5 h-5 bg-gray-200 text-gray-700 rounded-full flex items-center justify-center text-xs font-medium mr-2">1</span>
             <span>注册账号，获取专属邀请码</span>
           </div>
           <div className="flex items-start text-xs text-gray-600">
-            <span className="flex-shrink-0 w-5 h-5 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center text-xs font-medium mr-2">2</span>
+            <span className="flex-shrink-0 w-5 h-5 bg-gray-200 text-gray-700 rounded-full flex items-center justify-center text-xs font-medium mr-2">2</span>
             <span>将邀请码分享给 TA，TA 输入邀请码注册后自动配对</span>
           </div>
           <div className="flex items-start text-xs text-gray-600">
-            <span className="flex-shrink-0 w-5 h-5 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center text-xs font-medium mr-2">3</span>
+            <span className="flex-shrink-0 w-5 h-5 bg-gray-200 text-gray-700 rounded-full flex items-center justify-center text-xs font-medium mr-2">3</span>
             <span>每天轻松分享，记录美好日常</span>
           </div>
         </div>
@@ -223,7 +223,7 @@ export default function Home() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                 placeholder="你的用户名（支持中文）"
               />
             </div>
@@ -237,7 +237,7 @@ export default function Home() {
                 value={inviteCode}
                 onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
                 placeholder="如果你有邀请码，请输入"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent uppercase"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent uppercase"
                 maxLength={8}
               />
             </div>
@@ -253,7 +253,7 @@ export default function Home() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
               placeholder="your@email.com"
             />
           </div>
@@ -267,7 +267,7 @@ export default function Home() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
               placeholder="••••••••"
             />
           </div>
@@ -281,7 +281,7 @@ export default function Home() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition disabled:opacity-50"
+            className="w-full py-3 px-4 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition disabled:opacity-50"
           >
             {loading ? '加载中...' : isLogin ? '登录' : '注册'}
           </button>
@@ -316,7 +316,7 @@ export default function Home() {
             </button>
             
             <div className="text-center mb-4">
-              <div className="w-14 h-14 bg-pink-600 rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-14 h-14 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
                 <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
                 </svg>
@@ -330,7 +330,7 @@ export default function Home() {
             <div className="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-100">
               <p className="text-xs text-gray-500 text-center mb-2">你的专属邀请码</p>
               <div className="flex items-center justify-center gap-2">
-                <span className="text-2xl font-mono font-bold text-pink-600 tracking-wider">
+                <span className="text-2xl font-mono font-bold text-gray-800 tracking-wider">
                   {userInviteCode}
                 </span>
                 <button
