@@ -1071,7 +1071,7 @@ export default function TimelinePage() {
 
     return (
       <div 
-        className="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer mb-3"
+        className="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer mb-3 p-[2px]"
         onClick={() => setSelectedPostImages({ images: allImageUrls, index: 0 })}
       >
         {/* 渲染空白方格的留白效果 */}
@@ -1083,11 +1083,10 @@ export default function TimelinePage() {
                   key={`blank-${row}-${col}`}
                   className="absolute bg-white rounded-lg shadow"
                   style={{
-                    left: `${(col / 3) * 100}%`,
-                    top: `${(row / 3) * 100}%`,
-                    width: `${(1 / 3) * 100}%`,
-                    height: `${(1 / 3) * 100}%`,
-                    padding: '2px',
+                    left: `calc(${(col / 3) * 100}% + 2px)`,
+                    top: `calc(${(row / 3) * 100}% + 2px)`,
+                    width: `calc(${(1 / 3) * 100}% - 4px)`,
+                    height: `calc(${(1 / 3) * 100}% - 4px)`,
                   }}
                 />
               )
@@ -1101,11 +1100,10 @@ export default function TimelinePage() {
             key={img.url + index}
             className="absolute overflow-hidden z-10"
             style={{
-              left: `${(img.col / 3) * 100}%`,
-              top: `${(img.row / 3) * 100}%`,
-              width: `${(img.colSpan / 3) * 100}%`,
-              height: `${(img.rowSpan / 3) * 100}%`,
-              padding: '2px',
+              left: `calc(${(img.col / 3) * 100}% + 2px)`,
+              top: `calc(${(img.row / 3) * 100}% + 2px)`,
+              width: `calc(${(img.colSpan / 3) * 100}% - 4px)`,
+              height: `calc(${(img.rowSpan / 3) * 100}% - 4px)`,
             }}
           >
             <img
