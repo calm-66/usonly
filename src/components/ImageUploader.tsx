@@ -235,13 +235,8 @@ export default function ImageUploader({
   const canAddMore = images.length < maxCount
 
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div className={`space-y-3 ${className}`}>
       {/* 消息提示 */}
-      {message && (
-        <div className="text-green-500 text-sm bg-green-50 p-3 rounded-lg">
-          {message}
-        </div>
-      )}
       {error && (
         <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">
           {error}
@@ -253,105 +248,107 @@ export default function ImageUploader({
         </div>
       )}
 
-      {/* 上传按钮和预览区域 */}
-      <div className="space-y-2">
-        {images.length === 0 ? (
-          // 未选择图片时显示上传按钮
-          <div className="flex items-center gap-3">
-            <input
-              ref={fileInputRef}
-              {...inputProps}
+      {/* 顶部状态栏：进度条 + 上传状态 + 清空按钮 */}
+      {images.length > 0 && (
+        <div className="flex items-center gap-3 bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-3">
+          {/* 进度条 */}
+          <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-pink-500 to-purple-500 rounded-full transition-all duration-300"
+              style={{ width: `${(images.length / maxCount) * 100}%` }}
             />
+          </div>
+          {/* 上传状态 */}
+          <span className="text-sm text-gray-600 whitespace-nowrap">
+            已上传 {images.length}/{maxCount} 张图片
+          </span>
+          {/* 清空按钮 */}
+          {showRemove && !uploading && (
             <button
               type="button"
-              onClick={handleButtonClick}
-              disabled={disabled || uploading}
-              className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition disabled:opacity-50 flex items-center gap-2"
+              onClick={handleRemoveAll}
+              className="text-gray-400 hover:text-red-500 transition flex items-center gap-1 text-sm"
+              title="清空所有图片"
             >
-              {uploading ? (
-                <>
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  上传中...
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  {placeholder}
-                </>
-              )}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              清空
             </button>
-            <span className="text-sm text-gray-500">最多 {maxCount} 张</span>
-          </div>
-        ) : (
-          // 已选择图片时只显示状态提示
-          <div className="relative">
-            {/* 上传进度遮罩 */}
-            {uploading && showProgress && (
-              <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center z-10">
-                <div className="text-white text-center">
-                  <svg className="animate-spin h-8 w-8 mx-auto mb-2" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  <span className="text-sm">上传中...</span>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
+      )}
 
-        {/* 操作按钮区域 */}
-        {images.length > 0 && (
-          <div className="flex items-center justify-between gap-3">
-            {/* 左侧：清空所有图片按钮 */}
-            {showRemove && !uploading && (
-              <button
-                type="button"
-                onClick={handleRemoveAll}
-                className="px-3 py-1.5 text-sm text-red-500 hover:text-red-700 transition flex items-center gap-1"
-                title="清空所有图片"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+      {/* 未选择图片时显示上传按钮 */}
+      {images.length === 0 && (
+        <div className="flex items-center gap-3">
+          <input
+            ref={fileInputRef}
+            {...inputProps}
+          />
+          <button
+            type="button"
+            onClick={handleButtonClick}
+            disabled={disabled || uploading}
+            className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition disabled:opacity-50 flex items-center gap-2"
+          >
+            {uploading ? (
+              <>
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                清空所有
-              </button>
+                上传中...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                {placeholder}
+              </>
             )}
-            
-            {/* 右侧：添加图片按钮或提示 */}
-            <div className="flex items-center gap-2 ml-auto">
-              {isMaxReached ? (
-                /* 达到最大张数时不显示任何提示 */
-                <span className="text-sm text-gray-400">已达上限</span>
-              ) : (
-                <>
-                  <input
-                    ref={fileInputRef}
-                    {...inputProps}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleButtonClick}
-                    disabled={disabled || uploading}
-                    className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition disabled:opacity-50 flex items-center gap-2 text-sm"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    添加图片 ({maxCount - images.length} 张)
-                  </button>
-                </>
-              )}
+          </button>
+          <span className="text-sm text-gray-500">最多 {maxCount} 张</span>
+        </div>
+      )}
+
+      {/* 已选择图片时显示添加图片按钮 */}
+      {images.length > 0 && !isMaxReached && (
+        <button
+          type="button"
+          onClick={handleButtonClick}
+          disabled={disabled || uploading}
+          className="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl hover:from-pink-600 hover:to-purple-600 transition disabled:opacity-50 flex items-center justify-center gap-2 font-medium shadow-lg shadow-pink-200"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          添加图片 ({maxCount - images.length} 张)
+        </button>
+      )}
+
+      {/* 达到最大张数时显示提示 */}
+      {isMaxReached && (
+        <div className="text-center text-sm text-gray-400 py-3">
+          已达上限 ({maxCount} 张)
+        </div>
+      )}
+
+      {/* 上传中遮罩 */}
+      {uploading && showProgress && images.length > 0 && (
+        <div className="relative">
+          <div className="absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center z-10">
+            <div className="text-white text-center bg-black/50 px-4 py-2 rounded-lg">
+              <svg className="animate-spin h-6 w-6 mx-auto mb-1" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              <span className="text-sm">上传中...</span>
             </div>
           </div>
-        )}
-
-      </div>
+        </div>
+      )}
 
       {/* 大图预览模式 */}
       {showGallery && images.length > 0 && (

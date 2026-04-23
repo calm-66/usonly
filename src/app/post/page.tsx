@@ -318,7 +318,6 @@ export default function PostPage() {
                <ImageUploader
                  value={imageUrls}
                  onChange={setImageUrls}
-                 previewSize="w-full h-48"
                  placeholder="选择图片"
                  accept="image/*"
                  maxCount={MAX_POST_IMAGES}
@@ -328,7 +327,7 @@ export default function PostPage() {
              {/* 照片排版编辑器 */}
              {imageUrls && imageUrls.length > 0 && (
                <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                 <label className="block text-sm font-medium text-gray-700 mb-2">
                    照片排版
                  </label>
                  <PhotoLayoutEditor

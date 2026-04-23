@@ -301,43 +301,6 @@ export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEd
 
   return (
     <div className="space-y-3">
-      {/* 工具栏 */}
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2 overflow-x-auto">
-          {presets.map((preset, index) => (
-            <button
-              key={index}
-              type="button"
-              onClick={() => applyPreset(index)}
-              className="flex-shrink-0 w-16 h-16 bg-gray-50 hover:bg-pink-50 rounded-lg p-1 transition border-2 border-transparent hover:border-pink-300"
-              title={preset.name}
-            >
-              <div className="relative w-full h-full">
-                {preset.preview.map((cell, i) => (
-                  <div
-                    key={i}
-                    className="absolute bg-gray-300 rounded-sm border border-gray-400"
-                    style={{
-                      left: `${(cell.col / GRID_SIZE) * 100}%`,
-                      top: `${(cell.row / GRID_SIZE) * 100}%`,
-                      width: `${(cell.colSpan / GRID_SIZE) * 100}%`,
-                      height: `${(cell.rowSpan / GRID_SIZE) * 100}%`,
-                    }}
-                  />
-                ))}
-              </div>
-            </button>
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={handleReset}
-          className="px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 transition"
-        >
-          重置
-        </button>
-      </div>
-
       {/* 网格编辑器 */}
       <div
         ref={gridRef}
@@ -418,10 +381,19 @@ export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEd
         ))}
       </div>
 
-      {/* 提示文字 */}
-      <p className="text-xs text-gray-400 text-center">
-        点击图片选中，拖拽移动位置，拖拽右下角手柄调整大小
-      </p>
+      {/* 提示文字和重置按钮 */}
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-gray-400">
+          点击图片选中，拖拽移动位置，拖拽右下角手柄调整大小
+        </p>
+        <button
+          type="button"
+          onClick={handleReset}
+          className="px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 transition flex-shrink-0"
+        >
+          重置
+        </button>
+      </div>
     </div>
   )
 }
