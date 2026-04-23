@@ -186,10 +186,10 @@ export default function ImageUploader({
   const handleSelectCamera = (capture: 'user' | 'environment' | undefined) => {
     setCurrentCapture(capture)
     setShowMobileDialog(false)
-    // 延迟一下让 input 重新渲染
-    setTimeout(() => {
+    // 使用 requestAnimationFrame 确保状态更新后再触发点击
+    requestAnimationFrame(() => {
       fileInputRef.current?.click()
-    }, 100)
+    })
   }
 
   // 打开大图预览
@@ -348,6 +348,12 @@ export default function ImageUploader({
           </div>
         </div>
       )}
+
+      {/* 隐藏的 file input 元素 */}
+      <input
+        ref={fileInputRef}
+        {...inputProps}
+      />
 
       {/* 大图预览模式 */}
       {showGallery && images.length > 0 && (
