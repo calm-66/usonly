@@ -1081,7 +1081,7 @@ export default function TimelinePage() {
               return (
                 <div
                   key={`blank-${row}-${col}`}
-                  className="absolute bg-white rounded-lg shadow-sm"
+                  className="absolute bg-white rounded-lg shadow"
                   style={{
                     left: `${(col / 3) * 100}%`,
                     top: `${(row / 3) * 100}%`,
