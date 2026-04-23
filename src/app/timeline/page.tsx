@@ -1590,7 +1590,7 @@ export default function TimelinePage() {
       )}
 
       {/* 时间轴内容 */}
-      <div className="max-w-[500px] mx-auto pb-20">
+      <div className="max-w-[500px] mx-auto pb-24">
         {loading ? (
           <div className="text-center py-8 text-gray-500">加载中...</div>
         ) : dayPosts.length === 0 ? (
@@ -1691,7 +1691,7 @@ export default function TimelinePage() {
       )}
 
       {/* 底部导航 */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-lg z-50">
         <div className="max-w-[500px] mx-auto flex">
           <a href="/timeline" className="flex-1 py-3 text-center text-gray-800">
             <svg className="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
