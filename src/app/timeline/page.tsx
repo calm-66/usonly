@@ -16,6 +16,7 @@ interface Post {
   latitude?: number | null
   longitude?: number | null
   location?: string | null
+  layoutConfig?: { images: Array<{ url: string; col: number; row: number; colSpan: number; rowSpan: number }> } | null
 }
 
 interface DayPosts {
@@ -1051,6 +1052,41 @@ export default function TimelinePage() {
     )
   }
 
+  // 自定义排版渲染组件
+  const renderCustomLayout = (post: Post) => {
+    if (!post.layoutConfig?.images || post.layoutConfig.images.length === 0) return null
+
+    const allImageUrls = post.imageUrls || []
+    const layoutImages = post.layoutConfig.images
+
+    return (
+      <div 
+        className="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer mb-3"
+        onClick={() => setSelectedPostImages({ images: allImageUrls, index: 0 })}
+      >
+        {layoutImages.map((img, index) => (
+          <div
+            key={img.url + index}
+            className="absolute overflow-hidden"
+            style={{
+              left: `${(img.col / 3) * 100}%`,
+              top: `${(img.row / 3) * 100}%`,
+              width: `${(img.colSpan / 3) * 100}%`,
+              height: `${(img.rowSpan / 3) * 100}%`,
+              padding: '2px',
+            }}
+          >
+            <img
+              src={img.url}
+              alt={`分享图片 ${index + 1}`}
+              className="w-full h-full object-cover rounded-lg"
+            />
+          </div>
+        ))}
+      </div>
+    )
+  }
+
   // 帖子卡片组件
   const renderPostCard = (post: Post) => {
     const postOwner = post.owner === '我' ? user : user?.partner
@@ -1065,9 +1101,11 @@ export default function TimelinePage() {
           </span>
         </div>
 
-        {/* 图片网格 */}
+        {/* 图片网格/自定义排版 */}
         {post.imageUrls && post.imageUrls.length > 0 && (
-          renderPhotoGrid(post.imageUrls, post.id)
+          post.layoutConfig?.images 
+            ? renderCustomLayout(post)
+            : renderPhotoGrid(post.imageUrls, post.id)
         )}
 
         {/* 文字内容 */}

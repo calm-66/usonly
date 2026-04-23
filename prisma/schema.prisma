@@ -71,15 +71,16 @@ model PairRequest {
   @@unique([senderId, receiverId]) // 同一对用户之间只能有一个请求
 }
 
-// 分享表 - 支持多张照片
+// 分享表 - 支持多张照片和自定义排版
 model Post {
   id        String        @id @default(uuid())
   userId    String
   user      User          @relation(fields: [userId], references: [id])
   date      String        // 日期格式：YYYY-MM-DD
   title     String?       // 标题（可选）
-  imageUrls String[]      // 图片 URL 数组（最多 6 张）
+  imageUrls String[]      // 图片 URL 数组（最多 9 张）
   text      String?       // 文字内容（可选）
+  layoutConfig  Json?     // 照片排版配置: { images: [{ url, col, row, colSpan, rowSpan }] }
   // 位置相关字段（地图打卡）
   latitude    Float?      // 纬度
   longitude   Float?      // 经度

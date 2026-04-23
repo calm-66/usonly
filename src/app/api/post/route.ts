@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
   try {
     const userId = request.headers.get('x-user-id')
     const body = await request.json()
-    const { date, title, imageUrls, text, latitude, longitude, location } = body
+    const { date, title, imageUrls, layoutConfig, text, latitude, longitude, location } = body
 
     if (!userId) {
       return NextResponse.json(
@@ -106,8 +106,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 验证图片数量（最多 MAX_POST_IMAGES 张）
-    if (imageUrls && imageUrls.length > MAX_POST_IMAGES) {
+    // 验证图片数量（最多 9 张）
+    if (imageUrls && imageUrls.length > 9) {
       return NextResponse.json(
         { error: `最多只能上传 ${MAX_POST_IMAGES} 张图片` },
         { status: 400 }
@@ -126,6 +126,7 @@ export async function POST(request: NextRequest) {
         date,
         title: title || null,
         imageUrls: imageUrls || [],
+        layoutConfig: layoutConfig || null,
         text,
         latitude: latitude || null,
         longitude: longitude || null,

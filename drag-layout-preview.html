@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>可拖拽图片排版编辑器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+        }
+        
+        .preview-container {
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 24px;
+        }
+        
+        .header h1 {
+            margin: 0 0 8px;
+            font-size: 20px;
+        }
+        
+        .header p {
+            margin: 0;
+            font-size: 13px;
+            opacity: 0.8;
+        }
+        
+        /* 编辑器容器 */
+        .editor-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .editor-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .editor-header h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .editor-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        /* 网格编辑器 */
+        .grid-editor {
+            padding: 12px;
+            position: relative;
+        }
+        
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+            gap: 4px;
+            aspect-ratio: 1;
+            background: #f3f4f6;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .grid-cell {
+            background: #e5e7eb;
+            border-radius: 4px;
+            position: relative;
+        }
+        
+        .grid-cell.occupied {
+            background: transparent;
+        }
+        
+        /* 图片块 */
+        .image-block {
+            position: absolute;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: grab;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            user-select: none;
+            touch-action: none;
+        }
+        
+        .image-block:active {
+            cursor: grabbing;
+        }
+        
+        .image-block.dragging {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+        }
+        
+        .image-block img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+        
+        /* 图片控制 */
+        .image-controls {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .image-block:hover .image-controls,
+        .image-block:active .image-controls {
+            opacity: 1;
+        }
+        
+        .control-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        /* 角落拖拽手柄 */
+        .resize-handle {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 24px;
+            height: 24px;
+            cursor: nwse-resize;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .image-block:hover .resize-handle {
+            opacity: 1;
+        }
+        
+        .resize-handle::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 12px;
+            height: 12px;
+            border-right: 3px solid white;
+            border-bottom: 3px solid white;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+        }
+        
+        /* 序号标签 */
+        .image-number {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        /* 空位提示 */
+        .empty-slot {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .empty-slot:hover {
+            border-color: #ec4899;
+            color: #ec4899;
+            background: #fdf2f8;
+        }
+        
+        /* 底部工具栏 */
+        .toolbar {
+            padding: 16px 20px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-around;
+        }
+        
+        .tool-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 16px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: #6b7280;
+            transition: color 0.2s;
+        }
+        
+        .tool-btn:hover,
+        .tool-btn.active {
+            color: #ec4899;
+        }
+        
+        .tool-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+        
+        .tool-btn span {
+            font-size: 11px;
+        }
+        
+        /* 提示信息 */
+        .tips-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tips-card h4 {
+            margin: 0 0 12px;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .tip-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 0;
+            font-size: 13px;
+            color: #6b7280;
+        }
+        
+        .tip-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        
+        /* 布局示例 */
+        .examples-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .examples-card h4 {
+            margin: 0 0 16px;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .example-item {
+            border: 2px solid #f3f4f6;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .example-item:hover {
+            border-color: #ec4899;
+        }
+        
+        .example-preview {
+            aspect-ratio: 1;
+            display: grid;
+            gap: 2px;
+            padding: 4px;
+            background: #f9fafb;
+        }
+        
+        .example-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        
+        .example-label {
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            background: #f9fafb;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <div class="header">
+            <h1>🎨 可拖拽图片排版编辑器</h1>
+            <p>自由拖动、缩放，打造你的专属排版</p>
+        </div>
+        
+        <!-- 编辑器 -->
+        <div class="editor-card">
+            <div class="editor-header">
+                <h3>排版编辑</h3>
+                <div class="editor-actions">
+                    <button class="btn btn-secondary" onclick="resetLayout()">重置</button>
+                    <button class="btn btn-primary">完成</button>
+                </div>
+            </div>
+            
+            <div class="grid-editor">
+                <div class="grid-container" id="gridContainer">
+                    <!-- 网格背景 -->
+                    <div class="grid-cell" style="grid-column: 1/3; grid-row: 1/4;"></div>
+                    <div class="grid-cell" style="grid-column: 3/5; grid-row: 1/3;"></div>
+                    <div class="grid-cell" style="grid-column: 5/7; grid-row: 1/3;"></div>
+                    <div class="grid-cell" style="grid-column: 3/5; grid-row: 3/5;"></div>
+                    <div class="grid-cell" style="grid-column: 5/7; grid-row: 3/5;"></div>
+                    <div class="grid-cell" style="grid-column: 1/3; grid-row: 4/7;"></div>
+                    <div class="grid-cell" style="grid-column: 3/5; grid-row: 5/7;"></div>
+                    <div class="grid-cell" style="grid-column: 5/7; grid-row: 5/7;"></div>
+                    
+                    <!-- 图片块 -->
+                    <div class="image-block" id="img1" 
+                         style="grid-column: 1/3; grid-row: 1/4;"
+                         onmousedown="startDrag(event, 'img1')" 
+                         ontouchstart="startDrag(event, 'img1')">
+                        <img src="https://picsum.photos/seed/cathedral/400/600" alt="">
+                        <span class="image-number">1</span>
+                        <div class="image-controls">
+                            <button class="control-btn" onclick="removeImage('img1')">×</button>
+                        </div>
+                        <div class="resize-handle" onmousedown="startResize(event, 'img1')" ontouchstart="startResize(event, 'img1')"></div>
+                    </div>
+                    
+                    <div class="image-block" id="img2" 
+                         style="grid-column: 3/5; grid-row: 1/3;"
+                         onmousedown="startDrag(event, 'img2')" 
+                         ontouchstart="startDrag(event, 'img2')">
+                        <img src="https://picsum.photos/seed/food/400/300" alt="">
+                        <span class="image-number">2</span>
+                        <div class="image-controls">
+                            <button class="control-btn" onclick="removeImage('img2')">×</button>
+                        </div>
+                        <div class="resize-handle" onmousedown="startResize(event, 'img2')" ontouchstart="startResize(event, 'img2')"></div>
+                    </div>
+                    
+                    <div class="image-block" id="img3" 
+                         style="grid-column: 5/7; grid-row: 1/3;"
+                         onmousedown="startDrag(event, 'img3')" 
+                         ontouchstart="startDrag(event, 'img3')">
+                        <img src="https://picsum.photos/seed/city/400/300" alt="">
+                        <span class="image-number">3</span>
+                        <div class="image-controls">
+                            <button class="control-btn" onclick="removeImage('img3')">×</button>
+                        </div>
+                        <div class="resize-handle" onmousedown="startResize(event, 'img3')" ontouchstart="startResize(event, 'img3')"></div>
+                    </div>
+                    
+                    <div class="image-block" id="img4" 
+                         style="grid-column: 3/7; grid-row: 3/5;"
+                         onmousedown="startDrag(event, 'img4')" 
+                         ontouchstart="startDrag(event, 'img4')">
+                        <img src="https://picsum.photos/seed/park/800/300" alt="">
+                        <span class="image-number">4</span>
+                        <div class="image-controls">
+                            <button class="control-btn" onclick="removeImage('img4')">×</button>
+                        </div>
+                        <div class="resize-handle" onmousedown="startResize(event, 'img4')" ontouchstart="startResize(event, 'img4')"></div>
+                    </div>
+                    
+                    <div class="image-block" id="img5" 
+                         style="grid-column: 1/4; grid-row: 4/7;"
+                         onmousedown="startDrag(event, 'img5')" 
+                         ontouchstart="startDrag(event, 'img5')">
+                        <img src="https://picsum.photos/seed/dog/600/400" alt="">
+                        <span class="image-number">5</span>
+                        <div class="image-controls">
+                            <button class="control-btn" onclick="removeImage('img5')">×</button>
+                        </div>
+                        <div class="resize-handle" onmousedown="startResize(event, 'img5')" ontouchstart="startResize(event, 'img5')"></div>
+                    </div>
+                    
+                    <div class="image-block" id="img6" 
+                         style="grid-column: 4/7; grid-row: 5/7;"
+                         onmousedown="startDrag(event, 'img6')" 
+                         ontouchstart="startDrag(event, 'img6')">
+                        <img src="https://picsum.photos/seed/mountain/600/400" alt="">
+                        <span class="image-number">6</span>
+                        <div class="image-controls">
+                            <button class="control-btn" onclick="removeImage('img6')">×</button>
+                        </div>
+                        <div class="resize-handle" onmousedown="startResize(event, 'img6')" ontouchstart="startResize(event, 'img6')"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="toolbar">
+                <button class="tool-btn active">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                    </svg>
+                    <span>拖拽</span>
+                </button>
+                <button class="tool-btn">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                    </svg>
+                    <span>缩放</span>
+                </button>
+                <button class="tool-btn">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    <span>旋转</span>
+                </button>
+                <button class="tool-btn">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    <span>添加</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 预设布局示例 -->
+        <div class="examples-card">
+            <h4>📐 预设布局模板（一键应用）</h4>
+            <div class="example-grid">
+                <div class="example-item">
+                    <div class="example-preview" style="grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr;">
+                        <img src="https://picsum.photos/seed/a/200/300" style="grid-row: 1/4;">
+                        <img src="https://picsum.photos/seed/b/200/200">
+                        <img src="https://picsum.photos/seed/c/200/200">
+                        <img src="https://picsum.photos/seed/d/200/200">
+                    </div>
+                    <div class="example-label">左大右小</div>
+                </div>
+                <div class="example-item">
+                    <div class="example-preview" style="grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr;">
+                        <img src="https://picsum.photos/seed/e/200/200">
+                        <img src="https://picsum.photos/seed/f/200/200">
+                        <img src="https://picsum.photos/seed/g/200/200">
+                        <img src="https://picsum.photos/seed/h/200/200">
+                        <img src="https://picsum.photos/seed/i/200/200">
+                        <img src="https://picsum.photos/seed/j/200/200">
+                    </div>
+                    <div class="example-label">均匀六宫格</div>
+                </div>
+                <div class="example-item">
+                    <div class="example-preview" style="grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;">
+                        <img src="https://picsum.photos/seed/k/300/200" style="grid-column: 1/3;">
+                        <img src="https://picsum.photos/seed/l/200/200">
+                        <img src="https://picsum.photos/seed/m/200/200">
+                    </div>
+                    <div class="example-label">上横下两格</div>
+                </div>
+                <div class="example-item">
+                    <div class="example-preview" style="grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr;">
+                        <img src="https://picsum.photos/seed/n/200/200">
+                        <img src="https://picsum.photos/seed/o/200/200" style="grid-column: 2/4; grid-row: 1/3;">
+                        <img src="https://picsum.photos/seed/p/200/200">
+                        <img src="https://picsum.photos/seed/q/200/200">
+                        <img src="https://picsum.photos/seed/r/200/200" style="grid-column: 1/3; grid-row: 2/4;">
+                        <img src="https://picsum.photos/seed/s/200/200">
+                    </div>
+                    <div class="example-label">交错布局</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 功能说明 -->
+        <div class="tips-card">
+            <h4>✨ 功能说明</h4>
+            <div class="tip-item">
+                <div class="tip-icon">1</div>
+                <div><strong>拖拽移动</strong> - 长按图片并拖动，可交换位置或移动到任意网格区域</div>
+            </div>
+            <div class="tip-item">
+                <div class="tip-icon">2</div>
+                <div><strong>缩放调整</strong> - 拖动右下角手柄，可调整图片占据的网格大小（1×1 到 3×3）</div>
+            </div>
+            <div class="tip-item">
+                <div class="tip-icon">3</div>
+                <div><strong>自动排列</strong> - 其他图片会自动填充空位，保持排版紧凑美观</div>
+            </div>
+            <div class="tip-item">
+                <div class="tip-icon">4</div>
+                <div><strong>预设模板</strong> - 提供多种精美排版模板，一键应用快速开始</div>
+            </div>
+            <div class="tip-item">
+                <div class="tip-icon">5</div>
+                <div><strong>保存布局</strong> - 排版完成后，布局数据会保存到帖子中，在时间轴展示</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let draggedElement = null;
+        let startX, startY;
+        let startCol, startRow, startColSpan, startRowSpan;
+        
+        function startDrag(e, id) {
+            e.preventDefault();
+            draggedElement = document.getElementById(id);
+            
+            const touch = e.touches ? e.touches[0] : e;
+            startX = touch.clientX;
+            startY = touch.clientY;
+            
+            const style = window.getComputedStyle(draggedElement);
+            startCol = parseInt(style.gridColumnStart);
+            startRow = parseInt(style.gridRowStart);
+            startColSpan = parseInt(style.gridColumnEnd) - startCol;
+            startRowSpan = parseInt(style.gridRowEnd) - startRow;
+            
+            draggedElement.classList.add('dragging');
+            
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchmove', onDrag, { passive: false });
+            document.addEventListener('touchend', endDrag);
+        }
+        
+        function onDrag(e) {
+            if (!draggedElement) return;
+            e.preventDefault();
+            
+            const touch = e.touches ? e.touches[0] : e;
+            const dx = touch.clientX - startX;
+            const dy = touch.clientY - startY;
+            
+            // 移动图片跟随手指
+            draggedElement.style.transform = `translate(${dx}px, ${dy}px) scale(1.05)`;
+        }
+        
+        function endDrag(e) {
+            if (!draggedElement) return;
+            
+            draggedElement.classList.remove('dragging');
+            draggedElement.style.transform = '';
+            
+            // 这里可以添加碰撞检测和自动排列逻辑
+            // 简化版：直接放回原位（实际实现需要更复杂的网格计算）
+            
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('mouseup', endDrag);
+            document.removeEventListener('touchmove', onDrag);
+            document.removeEventListener('touchend', endDrag);
+            
+            draggedElement = null;
+        }
+        
+        function startResize(e, id) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const element = document.getElementById(id);
+            const startW = element.offsetWidth;
+            const startH = element.offsetHeight;
+            const startX = e.touches ? e.touches[0].clientX : e.clientX;
+            const startY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            function onResize(e) {
+                const touch = e.touches ? e.touches[0] : e;
+                const dx = touch.clientX - startX;
+                const dy = touch.clientY - startY;
+                
+                // 简化版：这里可以实现网格对齐逻辑
+                element.style.transform = `scale(${1 + dx / 200}, ${1 + dy / 200})`;
+            }
+            
+            function endResize() {
+                element.style.transform = '';
+                document.removeEventListener('mousemove', onResize);
+                document.removeEventListener('mouseup', endResize);
+                document.removeEventListener('touchmove', onResize);
+                document.removeEventListener('touchend', endResize);
+            }
+            
+            document.addEventListener('mousemove', onResize);
+            document.addEventListener('mouseup', endResize);
+            document.addEventListener('touchmove', onResize, { passive: false });
+            document.addEventListener('touchend', endResize);
+        }
+        
+        function removeImage(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+        
+        function resetLayout() {
+            document.querySelectorAll('.image-block').forEach(el => {
+                el.style.display = '';
+                el.style.transform = '';
+            });
+        }
+    </script>
+</body>
+</html>

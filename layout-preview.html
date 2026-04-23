@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>照片布局选择器预览</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+        }
+        .preview-container {
+            max-width: 400px;
+            width: 100%;
+        }
+        .preview-card {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        /* 布局选择器样式 */
+        .layout-selector {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .layout-option {
+            flex: 1;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .layout-option:hover {
+            border-color: #ec4899;
+            background: #fdf2f8;
+        }
+        .layout-option.active {
+            border-color: #ec4899;
+            background: #fdf2f8;
+        }
+        .layout-option .preview {
+            height: 60px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .layout-option .label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* 布局预览样式 */
+        .preview-grid {
+            display: grid;
+            gap: 2px;
+            height: 100%;
+        }
+        .preview-grid img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        
+        /* 布局1: 均匀网格 */
+        .layout-uniform .preview-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
+        /* 布局2: 首图突出 */
+        .layout-featured .preview-grid {
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+        .layout-featured .preview-grid .first {
+            grid-row: 1 / 3;
+        }
+        
+        /* 布局3: 瀑布流 */
+        .layout-masonry .preview-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .layout-masonry .preview-grid .tall {
+            grid-row: span 2;
+        }
+        
+        /* 帖子展示效果 */
+        .post-demo {
+            background: #f9fafb;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .post-header .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+        }
+        .post-header .username {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .post-images {
+            padding: 8px;
+        }
+        .post-images .grid {
+            display: grid;
+            gap: 4px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .post-images img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .post-footer {
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            color: #9ca3af;
+            font-size: 12px;
+        }
+        
+        /* 具体布局样式 */
+        .grid-uniform-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .grid-uniform-3 .item { aspect-ratio: 1; }
+        
+        .grid-featured-3 {
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+        .grid-featured-3 .item:first-child {
+            grid-row: 1 / 3;
+            aspect-ratio: auto;
+        }
+        .grid-featured-3 .item:not(:first-child) {
+            aspect-ratio: 1;
+        }
+        
+        .grid-masonry-3 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .grid-masonry-3 .item:first-child {
+            grid-row: span 2;
+        }
+        .grid-masonry-3 .item:first-child { aspect-ratio: auto; height: 200px; }
+        .grid-masonry-3 .item:not(:first-child) { aspect-ratio: 1; }
+        
+        /* 4张图片布局 */
+        .grid-uniform-4 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .grid-uniform-4 .item { aspect-ratio: 1; }
+        
+        .grid-featured-4 {
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+        }
+        .grid-featured-4 .item:first-child {
+            grid-row: 1 / 4;
+        }
+        .grid-featured-4 .item:not(:first-child) {
+            aspect-ratio: 1;
+        }
+        
+        /* 5张图片布局 */
+        .grid-uniform-5 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .grid-uniform-5 .item { aspect-ratio: 1; }
+        
+        .grid-featured-5 {
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+        }
+        .grid-featured-5 .item:first-child {
+            grid-row: 1 / 3;
+        }
+        .grid-featured-5 .item:not(:first-child) {
+            aspect-ratio: 1;
+        }
+        
+        /* 6张图片布局 */
+        .grid-uniform-6 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .grid-uniform-6 .item { aspect-ratio: 1; }
+        
+        .grid-featured-6 {
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: repeat(3, 1fr);
+        }
+        .grid-featured-6 .item:first-child {
+            grid-row: 1 / 4;
+        }
+        .grid-featured-6 .item:not(:first-child) {
+            aspect-ratio: 1;
+        }
+        
+        .grid-masonry-6 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .grid-masonry-6 .item:nth-child(1) { grid-row: span 2; }
+        .grid-masonry-6 .item:nth-child(4) { grid-row: span 2; }
+        .grid-masonry-6 .item:nth-child(1),
+        .grid-masonry-6 .item:nth-child(4) { aspect-ratio: auto; height: 180px; }
+        .grid-masonry-6 .item:not(:nth-child(1)):not(:nth-child(4)) { aspect-ratio: 1; }
+        
+        .section-title {
+            font-size: 14px;
+            color: #666;
+            margin: 20px 0 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .note {
+            font-size: 12px;
+            color: #9ca3af;
+            text-align: center;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <h2>📸 照片布局选择器预览</h2>
+        
+        <!-- 布局选择器 -->
+        <div class="preview-card">
+            <h3 style="margin: 0 0 16px; font-size: 14px; color: #333;">选择排列方式：</h3>
+            <div class="layout-selector">
+                <div class="layout-option active" onclick="selectLayout(this, 'uniform')">
+                    <div class="preview layout-uniform">
+                        <div class="preview-grid">
+                            <img src="https://picsum.photos/seed/a/200/200" alt="">
+                            <img src="https://picsum.photos/seed/b/200/200" alt="">
+                            <img src="https://picsum.photos/seed/c/200/200" alt="">
+                            <img src="https://picsum.photos/seed/d/200/200" alt="">
+                            <img src="https://picsum.photos/seed/e/200/200" alt="">
+                            <img src="https://picsum.photos/seed/f/200/200" alt="">
+                        </div>
+                    </div>
+                    <div class="label">均匀网格</div>
+                </div>
+                <div class="layout-option" onclick="selectLayout(this, 'featured')">
+                    <div class="preview layout-featured">
+                        <div class="preview-grid">
+                            <div class="first">
+                                <img src="https://picsum.photos/seed/a/200/300" alt="">
+                            </div>
+                            <div>
+                                <img src="https://picsum.photos/seed/b/200/200" alt="">
+                            </div>
+                            <div>
+                                <img src="https://picsum.photos/seed/c/200/200" alt="">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="label">首图突出</div>
+                </div>
+                <div class="layout-option" onclick="selectLayout(this, 'masonry')">
+                    <div class="preview layout-masonry">
+                        <div class="preview-grid">
+                            <div class="tall">
+                                <img src="https://picsum.photos/seed/a/200/300" alt="">
+                            </div>
+                            <div>
+                                <img src="https://picsum.photos/seed/b/200/200" alt="">
+                            </div>
+                            <div>
+                                <img src="https://picsum.photos/seed/c/200/200" alt="">
+                            </div>
+                            <div>
+                                <img src="https://picsum.photos/seed/d/200/200" alt="">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="label">错落有致</div>
+                </div>
+            </div>
+            <p class="note">点击选择你喜欢的排版方式</p>
+        </div>
+        
+        <!-- 3张图片效果展示 -->
+        <div class="preview-card">
+            <div class="section-title">3 张图片效果对比</div>
+            
+            <div class="post-demo" style="margin-bottom: 16px;">
+                <div class="post-header">
+                    <div class="avatar"></div>
+                    <div class="username">Peter</div>
+                </div>
+                <div class="post-images">
+                    <div class="grid grid-uniform-3">
+                        <div class="item"><img src="https://picsum.photos/seed/1/300/300" alt=""></div>
+                        <div class="item"><img src="https://picsum.photos/seed/2/300/300" alt=""></div>
+                        <div class="item"><img src="https://picsum.photos/seed/3/300/300" alt=""></div>
+                    </div>
+                </div>
+                <div class="post-footer">
+                    <span>💬 12 评论</span>
+                    <span>19:13</span>
+                </div>
+            </div>
+            
+            <div class="post-demo" style="margin-bottom: 16px;">
+                <div class="post-header">
+                    <div class="avatar"></div>
+                    <div class="username">Peter</div>
+                </div>
+                <div class="post-images">
+                    <div class="grid grid-featured-3">
+                        <div class="item"><img src="https://picsum.photos/seed/1/300/400" alt=""></div>
+                        <div class="item"><img src="https://picsum.photos/seed/2/300/300" alt=""></div>
+                        <div class="item"><img src="https://picsum.photos/seed/3/300/300" alt=""></div>
+                    </div>
+                </div>
+                <div class="post-footer">
+                    <span>💬 12 评论</span>
+                    <span>19:13</span>
+                </div>
+            </div>
+            
+            <div class="post-demo">
+                <div class="post-header">
+                    <div class="avatar"></div>
+                    <div class="username">Peter</div>
+                </div>
+                <div class="post-images">
+                    <div class="grid grid-masonry-3">
+                        <div class="item"><img src="https://picsum.photos/seed/1/300/400" alt=""></div>
+                        <div class="item"><img src="https://picsum.photos/seed/2/300/300" alt=""></div>
+                        <div class="item"><img src="https://picsum.photos/seed/3/300/300" alt=""></div>
+                    </div>
+                </div>
+                <div class="post-footer">
+                    <span>💬 12 评论</span>
+                    <span>19:13</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 4张图片效果展示 -->
+        <div class="preview-card">
+            <div class="section-title">4 张图片效果对比</div>
+            
+            <div class="post-demo" style="margin-bottom: 16px;">
+                <div class="post-header">
+                    <div class="avatar"></div>
+                    <div class="username">小兔兔</div>
+                </div>
+                <div class="post-images">
+                    <div class="grid grid-uniform-4">
+                        <div class="item"><img src="https://picsum.photos/seed/4/300/300" alt=""></div>
+                        <div class="item"><img src="https://picsum.photos/seed/5/300/300" alt=""></div>
+                        <div class="item"><img src="https://picsum.photos/seed/6/300/300" alt=""></div>
+                        <div class="item"><img src="https://picsum.photos/seed/7/300/300" alt=""></div>
+                    </div>
+                </div>
+                <div class="post-footer">
+                    <span>💬 8 评论</span>
+                    <span>19:08</span>
+                </div>
+            </div>
+            
+            <div class="post-demo">
+                <div class="post-header">
+                    <div class="avatar"></div>
+                    <div class="username">小兔兔</div>
+                </div>
+                <div class="post-images">
+                    <div class="grid grid-featured-4">
+                        <div class="item"><img src="https://picsum.photos/seed/4/300/500" alt=""></div>
+                        <div class="item"><img src="https://picsum.photos/seed/5/300/300" alt=""></div>
+                        <div class="item"><img src="https://picsum.photos/seed/6/300/300" alt=""></div>
+                        <div class="item"><img src="https://picsum.photos/seed/7/300/300" alt=""></div>
+                    </div>
+                </div>
+                <div class="post-footer">
+                    <span>💬 8 评论</span>
+                    <span>19:08</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 5-6张图片效果展示 -->
+        <div class="preview-card">
+            <div class="section-title">5-6 张图片效果（错落有致布局）</div>
+            
+            <div class="post-demo" style="margin-bottom: 16px;">
+                <div class="post-header">
+                    <div class="avatar"></div>
+                    <div class="username">周末时光</div>
+                </div>
+                <div class="post-images">
+                    <div class="grid grid-masonry-6">
+                        <div class="item"><img src="https://picsum.photos/seed/8/300/400" alt=""></div>
+                        <div class="item"><img src="https://picsum.photos/seed/9/300/300" alt=""></div>
+                        <div class="item"><img src="https://picsum.photos/seed/10/300/300" alt=""></div>
+                        <div class="item"><img src="https://picsum.photos/seed/11/300/400" alt=""></div>
+                        <div class="item"><img src="https://picsum.photos/seed/12/300/300" alt=""></div>
+                        <div class="item"><img src="https://picsum.photos/seed/13/300/300" alt=""></div>
+                    </div>
+                </div>
+                <div class="post-footer">
+                    <span>💬 5 评论</span>
+                    <span>18:30</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="preview-card" style="background: #f0f9ff;">
+            <p style="margin: 0; font-size: 13px; color: #0369a1; text-align: center;">
+                💡 发布分享时，上传多张照片后可选择排列方式<br>
+                布局选择会保存到帖子中，在时间轴展示
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        function selectLayout(element, layout) {
+            document.querySelectorAll('.layout-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+    </script>
+</body>
+</html>

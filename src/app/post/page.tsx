@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import ImageUploader from '@/components/ImageUploader'
+import PhotoLayoutEditor, { LayoutConfig } from '@/components/PhotoLayoutEditor'
 import { MAX_POST_IMAGES } from '@/lib/constants'
 
 interface Post {
@@ -13,6 +14,7 @@ interface Post {
   latitude?: number | null
   longitude?: number | null
   location?: string | null
+  layoutConfig?: any | null
 }
 
 interface User {
@@ -32,6 +34,7 @@ export default function PostPage() {
   const [date, setDate] = useState('')
   const [title, setTitle] = useState('')
   const [imageUrls, setImageUrls] = useState<string[] | null>(null)
+  const [layoutConfig, setLayoutConfig] = useState<LayoutConfig | null>(null)
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -100,6 +103,7 @@ export default function PostPage() {
           date,
           title: title || null,
           imageUrls: imageUrls || [],
+          layoutConfig: layoutConfig || null,
           text: text || null,
           latitude: latitude || null,
           longitude: longitude || null,
@@ -115,6 +119,7 @@ export default function PostPage() {
       window.location.href = '/timeline'
       // 重置表单
       setImageUrls(null)
+      setLayoutConfig(null)
       setText('')
       setLatitude(null)
       setLongitude(null)
@@ -306,19 +311,32 @@ export default function PostPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                图片
-              </label>
-              <ImageUploader
-                value={imageUrls}
-                onChange={setImageUrls}
-                previewSize="w-full h-48"
-                placeholder="选择图片"
-                accept="image/*"
-                maxCount={MAX_POST_IMAGES}
-              />
-            </div>
+             <div>
+               <label className="block text-sm font-medium text-gray-700 mb-1">
+                 图片
+               </label>
+               <ImageUploader
+                 value={imageUrls}
+                 onChange={setImageUrls}
+                 previewSize="w-full h-48"
+                 placeholder="选择图片"
+                 accept="image/*"
+                 maxCount={MAX_POST_IMAGES}
+               />
+             </div>
+
+             {/* 照片排版编辑器 */}
+             {imageUrls && imageUrls.length > 0 && (
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                   照片排版
+                 </label>
+                 <PhotoLayoutEditor
+                   imageUrls={imageUrls}
+                   onChange={setLayoutConfig}
+                 />
+               </div>
+             )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
