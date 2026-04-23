@@ -248,32 +248,51 @@ export default function ImageUploader({
         </div>
       )}
 
-      {/* 顶部状态栏：进度条 + 上传状态 + 清空按钮 */}
+      {/* 图片上传状态卡片 */}
       {images.length > 0 && (
-        <div className="flex items-center gap-3 bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-3">
-          {/* 进度条 */}
-          <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-pink-500 to-purple-500 rounded-full transition-all duration-300"
-              style={{ width: `${(images.length / maxCount) * 100}%` }}
-            />
+        <div className="bg-white rounded-2xl border border-gray-200 p-4">
+          {/* 顶部信息行 */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              {/* 图片图标 */}
+              <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              {/* 文字信息 */}
+              <div>
+                <p className="text-sm font-medium text-gray-700">
+                  已上传 {images.length}/{maxCount} 张图片
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  可添加 {maxCount - images.length} 张
+                </p>
+              </div>
+            </div>
+            {/* 清空按钮 */}
+            {showRemove && !uploading && (
+              <button
+                type="button"
+                onClick={handleRemoveAll}
+                className="text-sm text-gray-400 hover:text-gray-600 transition"
+              >
+                清空
+              </button>
+            )}
           </div>
-          {/* 上传状态 */}
-          <span className="text-sm text-gray-600 whitespace-nowrap">
-            已上传 {images.length}/{maxCount} 张图片
-          </span>
-          {/* 清空按钮 */}
-          {showRemove && !uploading && (
+          {/* 添加图片按钮 */}
+          {!isMaxReached && (
             <button
               type="button"
-              onClick={handleRemoveAll}
-              className="text-gray-400 hover:text-red-500 transition flex items-center gap-1 text-sm"
-              title="清空所有图片"
+              onClick={handleButtonClick}
+              disabled={disabled || uploading}
+              className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-gray-400 hover:text-gray-600 transition disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              清空
+              添加图片（{maxCount - images.length} 张）
             </button>
           )}
         </div>
@@ -281,16 +300,12 @@ export default function ImageUploader({
 
       {/* 未选择图片时显示上传按钮 */}
       {images.length === 0 && (
-        <div className="flex items-center gap-3">
-          <input
-            ref={fileInputRef}
-            {...inputProps}
-          />
+        <div className="bg-white rounded-2xl border border-gray-200 p-4">
           <button
             type="button"
             onClick={handleButtonClick}
             disabled={disabled || uploading}
-            className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition disabled:opacity-50 flex items-center gap-2"
+            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-gray-400 hover:text-gray-600 transition disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
           >
             {uploading ? (
               <>
@@ -303,29 +318,13 @@ export default function ImageUploader({
             ) : (
               <>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                {placeholder}
+                选择图片
               </>
             )}
           </button>
-          <span className="text-sm text-gray-500">最多 {maxCount} 张</span>
         </div>
-      )}
-
-      {/* 已选择图片时显示添加图片按钮 */}
-      {images.length > 0 && !isMaxReached && (
-        <button
-          type="button"
-          onClick={handleButtonClick}
-          disabled={disabled || uploading}
-          className="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl hover:from-pink-600 hover:to-purple-600 transition disabled:opacity-50 flex items-center justify-center gap-2 font-medium shadow-lg shadow-pink-200"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          添加图片 ({maxCount - images.length} 张)
-        </button>
       )}
 
       {/* 达到最大张数时显示提示 */}
