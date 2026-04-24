@@ -486,7 +486,7 @@ export default function ProfilePage() {
     <main className="min-h-screen bg-white pb-20">
       {/* 顶部导航 */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-[400px] mx-auto px-3 py-2.5 flex items-center justify-between">
+        <div className="max-w-[400px] mx-auto px-3 py-2.5 flex items-center justify-center">
           <h1 className="text-base font-bold text-gray-900">UsOnly</h1>
         </div>
       </header>

@@ -1293,7 +1293,7 @@ export default function TimelinePage() {
           )}
           
           {/* 中间：标题 */}
-          <h1 className="text-base font-bold text-gray-900">UsOnly</h1>
+          <h1 className="text-base font-bold text-gray-900 flex-1 text-center">UsOnly</h1>
           
           {/* 右侧：发布 + 通知 */}
           <div className="flex items-center gap-0.5">
