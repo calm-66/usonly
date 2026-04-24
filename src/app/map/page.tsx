@@ -217,7 +217,7 @@ export default function MapPage() {
       {/* 顶部导航 */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-[400px] mx-auto px-3 py-2.5 flex items-center justify-center">
-          <h1 className="text-base font-bold text-primary">UsOnly</h1>
+          <h1 className="text-base font-bold text-gray-900">UsOnly</h1>
         </div>
       </header>
 
@@ -235,7 +235,7 @@ export default function MapPage() {
             <Avatar username={user.username} avatarUrl={user.avatarUrl} size="sm" />
             <span className="text-xs text-gray-600 truncate">{user.username}</span>
           </div>
-          <div className="text-base font-bold text-primary">{myPostsCount}</div>
+          <div className="text-base font-bold text-gray-900">{myPostsCount}</div>
         </button>
         
         {/* TA 的打卡 */}
@@ -256,7 +256,7 @@ export default function MapPage() {
               <div className="w-6 h-6 rounded-full bg-gray-300" />
             )}
           </div>
-          <div className="text-base font-bold text-primary">{partnerPostsCount}</div>
+          <div className="text-base font-bold text-gray-900">{partnerPostsCount}</div>
         </button>
         
         {/* 地点数 - 显示两人的头像 */}
@@ -270,7 +270,7 @@ export default function MapPage() {
             <Avatar username={user.username} avatarUrl={user.avatarUrl} size="sm" />
             {user.partner && <Avatar username={user.partner.username} avatarUrl={user.partner.avatarUrl} size="sm" />}
           </div>
-          <div className="text-base font-bold text-primary">{allLocationsMap.size}</div>
+          <div className="text-base font-bold text-gray-900">{allLocationsMap.size}</div>
         </button>
       </div>
 
@@ -357,7 +357,7 @@ export default function MapPage() {
                             />
                             <span className="text-xs text-gray-500">{postUser.username}</span>
                           </div>
-                          <div className="font-bold text-primary text-center border-t pt-2">
+                          <div className="font-bold text-gray-900 text-center border-t pt-2">
                             {post.location || '打卡地点'}
                           </div>
                         </div>

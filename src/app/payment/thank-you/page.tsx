@@ -71,7 +71,7 @@ function ThankYouContent() {
         ) : orderStatus === 'PAID' ? (
           <>
             {money && (
-              <p className="text-xl font-bold text-primary mb-4">
+              <p className="text-xl font-bold text-gray-900 mb-4">
                 ¥{parseFloat(money).toFixed(2)}
               </p>
             )}

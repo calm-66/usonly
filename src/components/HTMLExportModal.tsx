@@ -806,7 +806,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
         className="bg-white w-full max-w-md rounded-xl p-6 animate-slideUp"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-lg font-bold text-primary mb-4">导出回忆 HTML</h3>
+        <h3 className="text-lg font-bold text-gray-900 mb-4">导出回忆 HTML</h3>
         
         {/* 日期范围选择 */}
         <div className="mb-4">
@@ -881,7 +881,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
               type="checkbox"
               checked={includeComments}
               onChange={(e) => setIncludeComments(e.target.checked)}
-              className="w-4 h-4 text-primary rounded focus:ring-gray-500"
+              className="w-4 h-4 text-gray-600 rounded focus:ring-gray-500"
             />
             <span className="text-sm text-gray-700">包含评论</span>
           </label>
@@ -893,8 +893,8 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
             <p className="text-sm text-gray-500">加载中...</p>
           ) : (
             <p className="text-sm text-gray-600">
-              将导出 <span className="font-medium text-primary">{postsData.length}</span> 天的分享，
-              共 <span className="font-medium text-primary">{previewCount}</span> 条内容
+              将导出 <span className="font-medium text-gray-900">{postsData.length}</span> 天的分享，
+              共 <span className="font-medium text-gray-900">{previewCount}</span> 条内容
             </p>
           )}
         </div>

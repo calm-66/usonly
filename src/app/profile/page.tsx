@@ -521,7 +521,7 @@ export default function ProfilePage() {
                         handleCancelEditUsername()
                       }
                     }}
-                    className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 text-primary text-sm"
+                    className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 text-gray-900 text-sm"
                     placeholder="输入新用户名"
                     autoFocus
                   />
@@ -591,7 +591,7 @@ export default function ProfilePage() {
               {(user.partner.pairedAt || user.pairedAt) && (
                 <div className="bg-gray-50 rounded-lg p-3 text-center">
                   <p className="text-xs text-gray-600 mb-1">💕 已配对</p>
-                  <p className="text-2xl font-bold text-primary">
+                  <p className="text-2xl font-bold text-gray-900">
                     {calculatePairDays(user.partner.pairedAt || user.pairedAt)}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">天</p>
@@ -727,7 +727,7 @@ export default function ProfilePage() {
             className="bg-white w-full max-w-sm rounded-xl p-6 animate-slideUp"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-bold text-primary mb-3">取消配对</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-3">取消配对</h3>
             <p className="text-gray-600 text-sm mb-4">
               确定要取消配对吗？
             </p>
@@ -765,7 +765,7 @@ export default function ProfilePage() {
             className="bg-white w-full max-w-sm rounded-xl p-6 animate-slideUp"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-bold text-primary mb-3">确认解除配对</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-3">确认解除配对</h3>
             <p className="text-gray-600 text-sm mb-4">
               确认后将立即解除配对关系，双方的互动记录将被归档。
             </p>
@@ -821,7 +821,7 @@ export default function ProfilePage() {
             className="bg-white w-full max-w-xs rounded-xl p-6 animate-slideUp"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-bold text-primary mb-4 text-center">更换头像</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">更换头像</h3>
             <div className="space-y-3">
               <button
                 onClick={() => {

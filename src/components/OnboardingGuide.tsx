@@ -126,7 +126,7 @@ export default function OnboardingGuide({ onComplete }: OnboardingGuideProps) {
           {step.illustration}
 
           {/* 标题 */}
-          <h2 className="text-2xl font-bold text-center text-primary mb-3">
+          <h2 className="text-2xl font-bold text-center text-gray-900 mb-3">
             {step.title}
           </h2>
 

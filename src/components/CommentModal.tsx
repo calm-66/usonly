@@ -261,7 +261,7 @@ export default function CommentModal({
       >
         {/* 顶部栏 */}
         <div className="flex items-center justify-between p-3 border-b border-gray-200">
-          <h3 className="font-semibold text-primary">评论</h3>
+          <h3 className="font-semibold text-gray-900">评论</h3>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 text-xl w-8 h-8 flex items-center justify-center"

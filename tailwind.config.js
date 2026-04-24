@@ -8,12 +8,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // 主按钮颜色 (Primary Button)
+        // 主按钮颜色 (Primary Button) - 粉色系
         primary: 'var(--color-primary)',
         'primary-hover': 'var(--color-primary-hover)',
-        // 次要按钮颜色 (Secondary Button)
+        // 次要按钮颜色 (Secondary Button) - 浅粉色
         secondary: 'var(--color-secondary)',
-        // 强调色 (Accent Color)
+        // 强调色 (Accent Color) - 玫瑰红
         accent: 'var(--color-accent)',
         // 背景色 (Background Colors)
         'bg-pink-light': 'var(--color-bg-pink-light)',
@@ -25,13 +25,7 @@ module.exports = {
         'border-purple': 'var(--color-border-purple)',
         'border-gray-light': 'var(--color-border-gray-light)',
         'border-gray': 'var(--color-border-gray)',
-        // 文字颜色 (Text Colors)
-        'text-primary': 'var(--color-text-primary)',
-        'text-secondary': 'var(--color-text-secondary)',
-        'text-tertiary': 'var(--color-text-tertiary)',
-        'text-body': 'var(--color-text-body)',
         // 其他颜色 (Other Colors)
-        'purple-username': 'var(--color-purple-username)',
         'bg-comment': 'var(--color-bg-comment)',
         'bg-empty': 'var(--color-bg-empty)',
       },

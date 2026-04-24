@@ -348,7 +348,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </a>
-          <h1 className="text-lg font-bold text-primary flex-1 text-center">归档回忆</h1>
+          <h1 className="text-lg font-bold text-gray-900 flex-1 text-center">归档回忆</h1>
           <div className="w-5" />
         </div>
       </header>
@@ -361,7 +361,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
             {archiveInfo.pairedAt && (
               <div className="bg-gray-50 rounded-lg p-3 text-center mb-3 border border-gray-100">
                 <p className="text-sm text-gray-600 mb-1">💕 已配对</p>
-                <p className="text-2xl font-bold text-primary">
+                <p className="text-2xl font-bold text-gray-900">
                   {calculatePairDays(archiveInfo.pairedAt, archiveInfo.archivedAt)}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">天</p>
@@ -371,7 +371,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
             <div className="flex items-center gap-3 mb-3">
               {renderAvatar(archiveInfo.partnerAvatarUrl, archiveInfo.partnerUsername, 'w-10 h-10')}
               <div className="flex-1">
-                <p className="font-medium text-primary">{archiveInfo.partnerUsername}</p>
+                <p className="font-medium text-gray-900">{archiveInfo.partnerUsername}</p>
                 <p className="text-xs text-gray-500">
                   归档时间：{new Date(archiveInfo.archivedAt).toLocaleDateString('zh-CN')}
                 </p>
@@ -404,7 +404,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                 {/* 日期头部 */}
                 <div className="bg-gray-50 px-4 py-3 border-b border-gray-100">
                   <div className="flex items-center gap-2">
-                    <span className="text-base font-bold text-primary">
+                    <span className="text-base font-bold text-gray-900">
                       {formatDate(day.date)}
                     </span>
                     <span className="text-xs text-gray-500">
@@ -420,7 +420,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                     <div className="flex-1 space-y-3 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
                         {renderAvatar(user.avatarUrl, user.username, 'w-7 h-7')}
-                        <span className="text-sm font-medium text-primary">{user.username}</span>
+                        <span className="text-sm font-medium text-gray-900">{user.username}</span>
                       </div>
                       {day.myPosts.length === 0 ? (
                         <div className="text-center py-4 text-gray-400 text-sm bg-gray-50 rounded-lg border border-gray-100">
@@ -496,7 +496,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
                     <div className="flex-1 space-y-3 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
                         {renderAvatar(archiveInfo?.partnerAvatarUrl || null, archiveInfo?.partnerUsername || 'TA', 'w-7 h-7')}
-                        <span className="text-sm font-medium text-primary">
+                        <span className="text-sm font-medium text-gray-900">
                           {archiveInfo?.partnerUsername || 'TA'}
                         </span>
                       </div>
@@ -621,7 +621,7 @@ export default function ArchivePage({ searchParams }: { searchParams: Promise<{ 
             className="bg-white w-full max-w-sm rounded-xl border border-gray-100 p-6 animate-slideUp"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-bold text-primary mb-3">确认删除归档</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-3">确认删除归档</h3>
             <p className="text-gray-600 text-sm mb-4">
               删除后将无法恢复，确定要永久删除这段回忆吗？
             </p>
