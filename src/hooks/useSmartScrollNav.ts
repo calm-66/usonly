@@ -16,7 +16,7 @@ interface UseSmartScrollNavReturn {
  * 功能：
  * - 向上滚动时隐藏导航栏，向下滚动时显示
  * - 滚动到顶部时始终显示
- * - 使用 requestAnimationFrame 优化性能
+ * - 使用 debounce 优化性能，兼容移动端浏览器
  * 
  * @param options 配置选项
  * @returns showNav 状态和 navClassName 类名
@@ -28,47 +28,43 @@ export function useSmartScrollNav(
   
   const [showNav, setShowNav] = useState(initialShow)
   const lastScrollTopRef = useRef(0)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    let ticking = false
-
-    const getScrollTop = (): number => {
-      // 优先使用 document.scrollingElement（更可靠，支持多种浏览器和框架）
-      const scrollingElement = document.scrollingElement || document.documentElement
-      return scrollingElement.scrollTop
-    }
-
     const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const scrollTop = getScrollTop()
-          
-          // 滚动到顶部时，始终显示导航栏
-          if (scrollTop < 10) {
-            setShowNav(true)
-            lastScrollTopRef.current = scrollTop
-          } else {
-            const scrollDiff = scrollTop - lastScrollTopRef.current
-            // 向下滚动（显示），向上滚动（隐藏）
-            if (Math.abs(scrollDiff) > threshold) {
-              setShowNav(scrollDiff < 0)
-              lastScrollTopRef.current = scrollTop
-            }
-          }
-          
-          ticking = false
-        })
-        ticking = true
+      // 清除之前的 timeout，实现 debounce 效果
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
       }
+
+      timeoutRef.current = setTimeout(() => {
+        // 获取滚动位置，兼容多种浏览器
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop || 0
+        
+        // 滚动到顶部时，始终显示导航栏
+        if (scrollTop < 50) {
+          setShowNav(true)
+        } else {
+          const scrollDiff = scrollTop - lastScrollTopRef.current
+          // 向下滚动（隐藏），向上滚动（显示）
+          if (Math.abs(scrollDiff) > threshold) {
+            setShowNav(scrollDiff < 0)
+            lastScrollTopRef.current = scrollTop
+          }
+        }
+      }, 50) // 50ms debounce
     }
 
-    // 同时监听 window 和 document 的滚动事件，确保兼容性
+    // 同时监听 window 和 document 的滚动事件
     window.addEventListener('scroll', handleScroll, { passive: true })
     document.addEventListener('scroll', handleScroll, { passive: true })
     
     return () => {
       window.removeEventListener('scroll', handleScroll)
       document.removeEventListener('scroll', handleScroll)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
     }
   }, [threshold])
 
