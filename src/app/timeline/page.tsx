@@ -1255,36 +1255,36 @@ export default function TimelinePage() {
     <main className="min-h-screen bg-white">
       {/* 顶部导航 */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-[500px] mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-[400px] mx-auto px-3 py-2.5 flex items-center justify-between">
           {/* 左侧：时间筛选图标 */}
           {user?.partnerId && (
             <div className="flex items-center relative">
               <button
                 onClick={() => setShowDateFilter(true)}
-                className="p-2 hover:bg-gray-50 rounded-full transition"
+                className="p-1.5 hover:bg-gray-50 rounded-full transition"
                 title="时间筛选"
               >
-                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
               </button>
               {timeFilter !== 'all' && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-gray-800 rounded-full"></span>
+                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-gray-800 rounded-full"></span>
               )}
             </div>
           )}
           
           {/* 中间：标题 */}
-          <h1 className="text-lg font-bold text-gray-900">UsOnly</h1>
+          <h1 className="text-base font-bold text-gray-900">UsOnly</h1>
           
           {/* 右侧：发布 + 通知 */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             <a
               href="/post"
-              className="p-2 hover:bg-gray-50 rounded-full transition"
+              className="p-1.5 hover:bg-gray-50 rounded-full transition"
               title="发布分享"
             >
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
             </a>
@@ -1299,13 +1299,13 @@ export default function TimelinePage() {
                     await loadNotifications(user)
                   }
                 }}
-                className="relative p-2 hover:bg-gray-50 rounded-full transition"
+                className="relative p-1.5 hover:bg-gray-50 rounded-full transition"
               >
-                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
                 {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                  <span className="absolute top-0.5 right-0.5 bg-red-500 text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
@@ -1572,7 +1572,7 @@ export default function TimelinePage() {
 
       {/* 挽回配对横幅 */}
       {showAppealBanner && user?.partnerId && (
-        <div className="max-w-[500px] mx-auto px-4 mb-4">
+        <div className="max-w-[400px] mx-auto px-4 mb-4">
           <div className="bg-gray-800 rounded-xl shadow-lg p-4 text-white">
             <div className="flex items-center justify-between">
               <div>
@@ -1592,7 +1592,7 @@ export default function TimelinePage() {
       )}
 
       {/* 时间轴内容 */}
-      <div className="max-w-[500px] mx-auto pb-24">
+      <div className="max-w-[400px] mx-auto pb-24">
         {loading ? (
           <div className="text-center py-8 text-gray-500">加载中...</div>
         ) : dayPosts.length === 0 ? (
