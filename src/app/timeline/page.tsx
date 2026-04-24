@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import CommentModal from '@/components/CommentModal'
 import ImageGallery from '@/components/ImageGallery'
 import BottomNav from '@/components/BottomNav'
+import SidebarDrawer from '@/components/SidebarDrawer'
 
 interface Post {
   id: string
@@ -114,9 +115,11 @@ export default function TimelinePage() {
   const [showCommentModal, setShowCommentModal] = useState(false)
   
   // 通知相关状态
-  const [showNotifications, setShowNotifications] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
+  
+  // 侧边栏状态
+  const [showSidebar, setShowSidebar] = useState(false)
   
   // 挽回配对相关状态
   const [showAppealBanner, setShowAppealBanner] = useState(false)
@@ -727,17 +730,16 @@ export default function TimelinePage() {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setSelectedPostImages(null)
-        setShowNotifications(false)
         closeCommentModal()
       }
     }
-    if (selectedPostImages || showNotifications || showCommentModal) {
+    if (selectedPostImages || showCommentModal) {
       window.addEventListener('keydown', handleEsc)
     }
     return () => {
       window.removeEventListener('keydown', handleEsc)
     }
-  }, [selectedPostImages, showNotifications, showCommentModal])
+  }, [selectedPostImages, showCommentModal])
 
   if (!user) {
     return (
@@ -1274,145 +1276,73 @@ export default function TimelinePage() {
       {/* 顶部导航 */}
       <header ref={headerRef} className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-[400px] mx-auto px-3 py-2.5 flex items-center justify-between">
-          {/* 左侧：时间筛选图标 */}
-          {user?.partnerId && (
-            <div className="flex items-center relative">
-              <button
-                onClick={() => setShowDateFilter(true)}
-                className="p-1.5 hover:bg-gray-50 rounded-full transition"
-                title="时间筛选"
-              >
-                <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                </svg>
-              </button>
-              {timeFilter !== 'all' && (
-                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-primary rounded-full"></span>
-              )}
-            </div>
-          )}
+          {/* 左侧：汉堡菜单 */}
+          <button
+            onClick={async () => {
+              setShowSidebar(true)
+              if (user) {
+                await loadNotifications(user)
+              }
+            }}
+            className="p-1.5 hover:bg-gray-50 rounded-full transition"
+            title="菜单"
+          >
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
           
           {/* 中间：标题 */}
-          <h1 className="text-base font-bold text-gray-900 flex-1 text-center">UsOnly</h1>
+          <h1 className="text-base font-bold text-primary flex-1 text-center">UsOnly</h1>
           
-          {/* 右侧：发布 + 通知 */}
-          <div className="flex items-center gap-0.5">
-            <a
-              href="/post"
-              className="p-1.5 hover:bg-gray-50 rounded-full transition"
-              title="发布分享"
-            >
-              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            </a>
-
-            {/* 通知图标 */}
-            <div className="relative inline-flex items-center">
-              <button
-                onClick={async () => {
-                  const newState = !showNotifications
-                  setShowNotifications(newState)
-                  if (newState && user) {
-                    await loadNotifications(user)
-                  }
-                }}
-                className="relative p-1.5 hover:bg-gray-50 rounded-full transition"
-              >
-                <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                {unreadCount > 0 && (
-                  <span className="absolute top-0.5 right-0.5 bg-red-500 text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
-              </button>
-
-              {showNotifications && (
-                <div 
-                  className="fixed inset-0 z-40"
-                  onClick={() => setShowNotifications(false)}
-                />
-              )}
-              
-              {/* 通知下拉面板 */}
-              {showNotifications && (
-                <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 z-50 max-h-[80vh] overflow-y-auto">
-                  <div className="p-3 border-b border-gray-100 flex justify-between items-center">
-                    <h3 className="font-semibold text-gray-900">通知</h3>
-                    <div className="flex gap-2">
-                      {unreadCount > 0 && (
-                        <button
-                          onClick={handleMarkAllNotificationsAsRead}
-                          className="text-xs text-gray-600 hover:underline"
-                        >
-                          全部已读
-                        </button>
-                      )}
-                      {notifications.length > 0 && (
-                        <button
-                          onClick={handleDeleteAllNotifications}
-                          className="text-xs text-red-600 hover:underline"
-                        >
-                          一键删除
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  {notifications.length === 0 ? (
-                    <div className="p-4 text-center text-gray-500 text-sm">
-                      暂无通知
-                    </div>
-                  ) : (
-                    <div>
-                      {notifications.map(notification => {
-                        const isClickable = (notification.type === 'comment' || notification.type === 'comment_reply' || notification.type === 'new_post') && notification.post
-                        const isAppealClickable = notification.type === 'breakup_appeal'
-                        
-                        return (
-                          <div
-                            key={notification.id}
-                            onClick={() => {
-                              if (isClickable) handleNotificationClick(notification)
-                              else if (isAppealClickable) handleAppealNotificationClick(notification)
-                            }}
-                            className={`p-3 border-b border-gray-100 last:border-b-0 transition relative ${
-                              !notification.isRead ? 'bg-gray-50' : ''
-                            } ${(isClickable || isAppealClickable) ? 'hover:bg-gray-50 cursor-pointer' : 'hover:bg-gray-50'}`}
-                          >
-                            <div className="flex gap-2">
-                              <span className="text-lg">{getNotificationIcon(notification.type)}</span>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm text-gray-900 truncate">
-                                  {notification.sender && (
-                                    <span className="font-medium">{notification.sender.username}</span>
-                                  )}
-                                  {' '}{notification.content}
-                                </p>
-                                <p className="text-xs text-gray-500">{formatRelativeTime(notification.createdAt)}</p>
-                              </div>
-                            </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleDeleteNotification(notification.id)
-                              }}
-                              className="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xs"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+          {/* 右侧：发布 */}
+          <a
+            href="/post"
+            className="p-1.5 hover:bg-gray-50 rounded-full transition"
+            title="发布分享"
+          >
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </a>
         </div>
       </header>
+
+      {/* 侧边栏 */}
+      <SidebarDrawer
+        isOpen={showSidebar}
+        onClose={() => setShowSidebar(false)}
+        user={user}
+        timeFilter={timeFilter}
+        onTimeFilterChange={(filter) => {
+          setTimeFilter(filter)
+          setFilteredPosts(filterPostsByDate(posts))
+        }}
+        showCustomDateRange={() => setShowCustomDateRange(true)}
+        unreadCount={unreadCount}
+        notifications={notifications}
+        onNotificationClick={async (notification) => {
+          if ((notification.type === 'comment' || notification.type === 'comment_reply' || notification.type === 'new_post') && notification.post) {
+            const targetPost = posts.find(p => p.id === notification.post!.id)
+            if (targetPost) {
+              setSelectedPost(targetPost)
+              setShowCommentModal(true)
+              setNewComment('')
+              setReplyTo(undefined)
+              await loadComments(targetPost.id)
+              await markNotificationAsRead(notification.id)
+            }
+          }
+        }}
+        onMarkAllAsRead={handleMarkAllNotificationsAsRead}
+        onDeleteNotification={handleDeleteNotification}
+        onDeleteAllNotifications={handleDeleteAllNotifications}
+        onAppealNotificationClick={(notification) => {
+          setSelectedAppealNotification(notification)
+          setShowAppealResponseModal(true)
+          markNotificationAsRead(notification.id)
+        }}
+      />
 
       {/* 日期筛选弹窗 */}
       {showDateFilter && (
