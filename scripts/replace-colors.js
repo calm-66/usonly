@@ -22,13 +22,11 @@ const path = require('path');
 
 // 颜色替换映射表 (Color Replacement Mapping)
 // 键：原颜色 (Original Color)，值：新颜色 (New Color)
+// 注意：只替换明确的按钮/激活状态颜色，不替换普通文字
 const colorReplacements = [
   // Tailwind 类名替换 - 主按钮背景色 (Main Button Background)
   { old: 'bg-gray-800', new: 'bg-primary', desc: '主按钮背景 (Main Button Background)' },
   { old: 'bg-gray-900', new: 'bg-primary-hover', desc: '主按钮 hover 背景 (Main Button Hover Background)' },
-  // Tailwind 类名替换 - 主按钮文字颜色 (Main Button Text Color)
-  { old: 'text-gray-800', new: 'text-primary', desc: '主文字颜色 (Primary Text Color)' },
-  { old: 'text-gray-900', new: 'text-primary', desc: '主文字颜色 (Primary Text Color)' },
   // HEX 颜色替换
   { old: '#db2777', new: '#EC4899', desc: '主按钮 HEX (Primary Button HEX)' },
   { old: '#be185d', new: '#E11D74', desc: '主按钮 hover HEX (Primary Button Hover HEX)' },
