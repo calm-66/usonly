@@ -1236,7 +1236,7 @@ export default function TimelinePage() {
             )}
             {post.location && (
               <div className="flex items-center gap-1 text-xs text-gray-500">
-                <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 text-[#F43F5E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -1251,18 +1251,15 @@ export default function TimelinePage() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => openCommentModal(post)}
-              className={`flex items-center gap-1.5 text-sm ${
+              className={`flex items-center gap-1.5 text-sm transition ${
                 comments[post.id]?.length > 0 
-                  ? 'text-gray-500'
+                  ? 'text-[#FBCFE8]'
                   : 'text-gray-400'
-              } hover:text-gray-600 transition`}
+              } hover:text-[#F9A8D4]`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
-              {comments[post.id]?.length > 0 && (
-                <span>{comments[post.id].length}</span>
-              )}
             </button>
           </div>
           <span className="text-xs text-gray-400">{formatTime(post.createdAt)}</span>
