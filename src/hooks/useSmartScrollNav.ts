@@ -32,14 +32,21 @@ export function useSmartScrollNav(
   useEffect(() => {
     let ticking = false
 
+    const getScrollTop = (): number => {
+      // 优先使用 document.scrollingElement（更可靠，支持多种浏览器和框架）
+      const scrollingElement = document.scrollingElement || document.documentElement
+      return scrollingElement.scrollTop
+    }
+
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+          const scrollTop = getScrollTop()
           
           // 滚动到顶部时，始终显示导航栏
           if (scrollTop < 10) {
             setShowNav(true)
+            lastScrollTopRef.current = scrollTop
           } else {
             const scrollDiff = scrollTop - lastScrollTopRef.current
             // 向下滚动（显示），向上滚动（隐藏）
@@ -55,13 +62,17 @@ export function useSmartScrollNav(
       }
     }
 
+    // 同时监听 window 和 document 的滚动事件，确保兼容性
     window.addEventListener('scroll', handleScroll, { passive: true })
+    document.addEventListener('scroll', handleScroll, { passive: true })
+    
     return () => {
       window.removeEventListener('scroll', handleScroll)
+      document.removeEventListener('scroll', handleScroll)
     }
   }, [threshold])
 
-  const navClassName = `fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-lg z-50 transition-transform duration-300 ${
+  const navClassName = `fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-lg z-40 transition-transform duration-300 ${
     showNav ? 'translate-y-0' : 'translate-y-full'
   }`
 
