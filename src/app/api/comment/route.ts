@@ -11,9 +11,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'postId is required' }, { status: 400 });
     }
 
-    // 获取所有顶级评论（parentId 为 null）
-    const comments = await prisma.comment.findMany({
-      where: { postId, parentId: null },
+    // 获取该帖子的所有评论（不分层级）
+    const allComments = await prisma.comment.findMany({
+      where: { postId },
       include: {
         user: {
           select: {
@@ -22,21 +22,25 @@ export async function GET(request: NextRequest) {
             avatarUrl: true,
           },
         },
-        replies: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                username: true,
-                avatarUrl: true,
-              },
-            },
-          },
-          orderBy: { createdAt: 'asc' },
-        },
       },
       orderBy: { createdAt: 'asc' },
     });
+
+    // 递归构建评论树
+    const buildCommentTree = (
+      comments: typeof allComments,
+      parentId: string | null = null
+    ): any[] => {
+      return comments
+        .filter((comment) => comment.parentId === parentId)
+        .map((comment) => ({
+          ...comment,
+          replies: buildCommentTree(comments, comment.id),
+        }));
+    };
+
+    // 获取顶级评论（parentId 为 null）及其所有子评论
+    const comments = buildCommentTree(allComments, null);
 
     return NextResponse.json({ comments });
   } catch (error) {

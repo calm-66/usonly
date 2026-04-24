@@ -114,6 +114,79 @@ const formatTime = (dateStr: string): string => {
   return `${hours}:${minutes}`
 }
 
+// 递归评论组件
+interface CommentItemProps {
+  comment: Comment
+  depth: number
+  onReply: (commentId: string, username: string) => void
+  onDelete: (commentId: string) => void
+  canDelete: (comment: Comment) => boolean
+  readonly: boolean
+}
+
+const CommentItem = ({ comment, depth, onReply, onDelete, canDelete, readonly }: CommentItemProps) => {
+  // 每层缩进
+  const indentClass = depth > 0 ? 'ml-4 border-l-2 border-gray-200 pl-3' : ''
+  
+  return (
+    <div className={`${depth > 0 ? 'bg-gray-50 rounded-lg p-3' : 'bg-white'}`}>
+      <div className={`${indentClass}`}>
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            {renderAvatar(
+              comment.user.avatarUrl, 
+              comment.user.username, 
+              depth === 0 ? 'w-7 h-7 shrink-0' : 'w-6 h-6 shrink-0'
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-medium text-gray-700">{comment.user.username}</span>
+                <span className="text-xs text-gray-400">{formatRelativeTime(comment.createdAt)}</span>
+              </div>
+            </div>
+          </div>
+          {!readonly && (
+            <div className="flex items-center gap-2 shrink-0 ml-2">
+              <button
+                onClick={() => onReply(comment.id, comment.user.username)}
+                className="text-xs text-gray-600 hover:underline"
+              >
+                回复
+              </button>
+              {canDelete(comment) && (
+                <button
+                  onClick={() => onDelete(comment.id)}
+                  className="text-xs text-gray-400 hover:text-red-500"
+                >
+                  删除
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+        <p className="text-gray-700 break-words text-sm">{comment.content}</p>
+      </div>
+      
+      {/* 递归渲染子评论 */}
+      {comment.replies && comment.replies.length > 0 && (
+        <div className="mt-2 space-y-2">
+          {comment.replies.map((reply) => (
+            <CommentItem
+              key={reply.id}
+              comment={reply}
+              depth={depth + 1}
+              onReply={onReply}
+              onDelete={onDelete}
+              canDelete={canDelete}
+              readonly={readonly}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function CommentModal({
   post,
   user,
@@ -281,83 +354,23 @@ export default function CommentModal({
         </div>
         
         {/* 评论列表 */}
-        <div className="flex-1 overflow-y-auto space-y-3 p-3">
+        <div className="flex-1 overflow-y-auto p-3">
           {comments.length === 0 ? (
             <div className="text-center py-8 text-gray-400">暂无评论，快来抢沙发吧～</div>
           ) : (
-            comments.map((comment) => (
-              <div key={comment.id} className="bg-white rounded-lg">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    {renderAvatar(comment.user.avatarUrl, comment.user.username, 'w-7 h-7 shrink-0')}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium text-gray-700">{comment.user.username}</span>
-                        <span className="text-xs text-gray-400">{formatRelativeTime(comment.createdAt)}</span>
-                      </div>
-                    </div>
-                  </div>
-                  {!readonly && (
-                    <div className="flex items-center gap-2 shrink-0 ml-2">
-                      <button
-                        onClick={() => handleReplyClick(comment.id, comment.user.username)}
-                        className="text-xs text-gray-600 hover:underline"
-                      >
-                        回复
-                      </button>
-                      {canDeleteComment(comment) && (
-                        <button
-                          onClick={() => handleDeleteComment(comment.id)}
-                          className="text-xs text-gray-400 hover:text-red-500"
-                        >
-                          删除
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <p className="text-gray-700 break-words text-sm mb-2">{comment.content}</p>
-                {/* 回复列表 */}
-                {comment.replies && comment.replies.length > 0 && (
-                  <div className="mt-3 space-y-2 ml-4 border-l-2 border-gray-200 pl-3">
-                    {comment.replies.map((reply) => (
-                      <div key={reply.id} className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            {renderAvatar(reply.user.avatarUrl, reply.user.username, 'w-6 h-6 shrink-0')}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-medium text-gray-700">{reply.user.username}</span>
-                                <span className="text-xs text-gray-400">{formatRelativeTime(reply.createdAt)}</span>
-                              </div>
-                            </div>
-                          </div>
-                          {!readonly && (
-                            <div className="flex items-center gap-2 shrink-0 ml-2">
-                              <button
-                                onClick={() => handleReplyClick(reply.id, reply.user.username)}
-                                className="text-xs text-gray-600 hover:underline"
-                              >
-                                回复
-                              </button>
-                              {canDeleteComment(reply) && (
-                                <button
-                                  onClick={() => handleDeleteComment(reply.id)}
-                                  className="text-xs text-gray-400 hover:text-red-500"
-                                >
-                                  删除
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-gray-700 break-words text-sm">{reply.content}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))
+            <div className="space-y-3">
+              {comments.map((comment) => (
+                <CommentItem
+                  key={comment.id}
+                  comment={comment}
+                  depth={0}
+                  onReply={handleReplyClick}
+                  onDelete={handleDeleteComment}
+                  canDelete={canDeleteComment}
+                  readonly={readonly}
+                />
+              ))}
+            </div>
           )}
         </div>
         
