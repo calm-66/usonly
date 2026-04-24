@@ -2,6 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   主题配色变量 (Theme Colors)
+   主要颜色：主按钮、次要按钮、强调色
+   ============================================ */
+:root {
+  /* 主按钮颜色 (Primary Button) */
+  --color-primary: #EC4899;
+  /* 主按钮 hover 状态 (Primary Button Hover) */
+  --color-primary-hover: #E11D74;
+  /* 次要按钮颜色 (Secondary Button) */
+  --color-secondary: #FBCFE8;
+  /* 强调色 (Accent Color) */
+  --color-accent: #F43F5E;
+  
+  /* 背景色系 (Background Colors) */
+  --color-bg-pink-light: #FCE7F3;
+  --color-bg-purple-light: #F3E8FF;
+  --color-bg-pink-card: #FFF1F2;
+  --color-bg-purple-card: #FAF5FF;
+  
+  /* 边框颜色 (Border Colors) */
+  --color-border-pink: #FBCFE8;
+  --color-border-purple: #E9D5FF;
+  --color-border-gray-light: #E5E7EB;
+  --color-border-gray: #F3F4F6;
+  
+  /* 文字颜色 (Text Colors) */
+  --color-text-primary: #374151;
+  --color-text-secondary: #6B7280;
+  --color-text-tertiary: #9CA3AF;
+  --color-text-body: #4B5563;
+  
+  /* 其他颜色 (Other Colors) */
+  --color-purple-username: #9333EA;
+  --color-bg-comment: #FAFAFA;
+  --color-bg-empty: #F9FAFB;
+}
+
 /* 自定义动画 */
 @keyframes slideUp {
   from {

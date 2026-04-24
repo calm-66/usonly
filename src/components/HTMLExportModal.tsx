@@ -209,7 +209,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
     
     .cover h1 {
       font-size: 42px;
-      color: #db2777;
+      color: #EC4899;
       margin-bottom: 40px;
       display: flex;
       align-items: center;
@@ -294,7 +294,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
     }
     
     .column-header .username.my {
-      color: #db2777;
+      color: #EC4899;
     }
     
     .column-header .username.partner {
@@ -303,7 +303,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
     
     /* 帖子卡片样式 */
     .post-card {
-      background: #fef2f2;
+      background: #FFF1F2;
       border: 1px solid #fbcfe8;
       border-radius: 12px;
       padding: 12px;
@@ -421,22 +421,22 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
       bottom: 30px;
       right: 30px;
       padding: 16px 32px;
-      background: #db2777;
+      background: #EC4899;
       color: white;
       border: none;
       border-radius: 50px;
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
-      box-shadow: 0 4px 20px rgba(219, 39, 119, 0.4);
+      box-shadow: 0 4px 20px rgba(236, 72, 153, 0.4);
       transition: all 0.3s ease;
       z-index: 100;
     }
     
     .print-btn:hover {
-      background: #be185d;
+      background: #E11D74;
       transform: translateY(-2px);
-      box-shadow: 0 6px 25px rgba(219, 39, 119, 0.5);
+      box-shadow: 0 6px 25px rgba(236, 72, 153, 0.5);
     }
     
     /* 空状态 */
@@ -506,7 +506,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
       }
       
       .post-card {
-        background: #fef2f2 !important;
+        background: #FFF1F2 !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
