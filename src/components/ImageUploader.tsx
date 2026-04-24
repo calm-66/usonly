@@ -375,7 +375,7 @@ export default function ImageUploader({
             className="bg-white w-full max-w-xs rounded-xl p-6 animate-slideUp"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">选择图片</h3>
+            <h3 className="text-lg font-bold text-primary mb-4 text-center">选择图片</h3>
             <div className="space-y-3">
               <button
                 onClick={() => handleSelectCamera('environment')}

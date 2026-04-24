@@ -806,7 +806,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
         className="bg-white w-full max-w-md rounded-xl p-6 animate-slideUp"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-lg font-bold text-gray-800 mb-4">导出回忆 HTML</h3>
+        <h3 className="text-lg font-bold text-primary mb-4">导出回忆 HTML</h3>
         
         {/* 日期范围选择 */}
         <div className="mb-4">
@@ -818,7 +818,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
               onClick={() => setDateRange('7days')}
               className={`px-3 py-2 text-sm rounded-lg transition ${
                 dateRange === '7days' 
-                  ? 'bg-gray-800 text-white' 
+                  ? 'bg-primary text-white' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -828,7 +828,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
               onClick={() => setDateRange('30days')}
               className={`px-3 py-2 text-sm rounded-lg transition ${
                 dateRange === '30days' 
-                  ? 'bg-gray-800 text-white' 
+                  ? 'bg-primary text-white' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -838,7 +838,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
               onClick={() => setDateRange('all')}
               className={`px-3 py-2 text-sm rounded-lg transition ${
                 dateRange === 'all' 
-                  ? 'bg-gray-800 text-white' 
+                  ? 'bg-primary text-white' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -848,7 +848,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
               onClick={() => setDateRange('custom')}
               className={`px-3 py-2 text-sm rounded-lg transition ${
                 dateRange === 'custom' 
-                  ? 'bg-gray-800 text-white' 
+                  ? 'bg-primary text-white' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -881,7 +881,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
               type="checkbox"
               checked={includeComments}
               onChange={(e) => setIncludeComments(e.target.checked)}
-              className="w-4 h-4 text-gray-800 rounded focus:ring-gray-500"
+              className="w-4 h-4 text-primary rounded focus:ring-gray-500"
             />
             <span className="text-sm text-gray-700">包含评论</span>
           </label>
@@ -893,8 +893,8 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
             <p className="text-sm text-gray-500">加载中...</p>
           ) : (
             <p className="text-sm text-gray-600">
-              将导出 <span className="font-medium text-gray-800">{postsData.length}</span> 天的分享，
-              共 <span className="font-medium text-gray-800">{previewCount}</span> 条内容
+              将导出 <span className="font-medium text-primary">{postsData.length}</span> 天的分享，
+              共 <span className="font-medium text-primary">{previewCount}</span> 条内容
             </p>
           )}
         </div>
@@ -917,7 +917,7 @@ export default function HTMLExportModal({ isOpen, onClose, user }: HTMLExportMod
           <button
             onClick={handleExportHTML}
             disabled={loading || exporting || postsData.length === 0}
-            className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-gray-900 disabled:opacity-50 transition"
+            className="flex-1 px-4 py-2 bg-primary text-white rounded-full hover:bg-primary-hover disabled:opacity-50 transition"
           >
             {exporting ? '导出中...' : '导出 HTML'}
           </button>

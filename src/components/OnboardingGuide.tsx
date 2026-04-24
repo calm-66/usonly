@@ -126,7 +126,7 @@ export default function OnboardingGuide({ onComplete }: OnboardingGuideProps) {
           {step.illustration}
 
           {/* 标题 */}
-          <h2 className="text-2xl font-bold text-center text-gray-800 mb-3">
+          <h2 className="text-2xl font-bold text-center text-primary mb-3">
             {step.title}
           </h2>
 
@@ -166,7 +166,7 @@ export default function OnboardingGuide({ onComplete }: OnboardingGuideProps) {
               onClick={() => setCurrentStep(index)}
               className={`w-2 h-2 rounded-full transition ${
                 index === currentStep
-                  ? 'bg-gray-800 w-6'
+                  ? 'bg-primary w-6'
                   : 'bg-gray-300 hover:bg-gray-400'
               }`}
               aria-label={`跳转到第${index + 1}步`}

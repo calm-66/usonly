@@ -142,7 +142,7 @@ export default function Home() {
     <>
       <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-white">
         <div className="bg-white rounded-xl border border-gray-100 p-8 w-full max-w-[500px]">
-        <h1 className="text-2xl font-bold text-center text-gray-900 mb-2">UsOnly</h1>
+        <h1 className="text-2xl font-bold text-center text-primary mb-2">UsOnly</h1>
         <p className="text-center text-gray-500 mb-6">只属于两个人的私密空间</p>
         
         {/* 产品介绍区域 */}
@@ -177,7 +177,7 @@ export default function Home() {
             onClick={() => setIsLogin(true)}
             className={`flex-1 py-2 text-center font-medium transition ${
               isLogin
-                ? 'text-gray-800 border-b-2 border-gray-800'
+                ? 'text-primary border-b-2 border-gray-800'
                 : 'text-gray-400'
             }`}
           >
@@ -187,7 +187,7 @@ export default function Home() {
             onClick={() => setIsLogin(false)}
             className={`flex-1 py-2 text-center font-medium transition ${
               !isLogin
-                ? 'text-gray-800 border-b-2 border-gray-800'
+                ? 'text-primary border-b-2 border-gray-800'
                 : 'text-gray-400'
             }`}
           >
@@ -281,7 +281,7 @@ export default function Home() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition disabled:opacity-50"
+            className="w-full py-3 px-4 bg-primary text-white rounded-lg hover:bg-primary-hover transition disabled:opacity-50"
           >
             {loading ? '加载中...' : isLogin ? '登录' : '注册'}
           </button>
@@ -316,12 +316,12 @@ export default function Home() {
             </button>
             
             <div className="text-center mb-4">
-              <div className="w-14 h-14 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-14 h-14 bg-primary rounded-full flex items-center justify-center mx-auto mb-3">
                 <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">注册成功！</h3>
+              <h3 className="text-lg font-bold text-primary mb-2">注册成功！</h3>
               <p className="text-sm text-gray-600">
                 下面是你的专属邀请码，分享给 TA 后即可完成配对
               </p>
@@ -330,7 +330,7 @@ export default function Home() {
             <div className="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-100">
               <p className="text-xs text-gray-500 text-center mb-2">你的专属邀请码</p>
               <div className="flex items-center justify-center gap-2">
-                <span className="text-2xl font-mono font-bold text-gray-800 tracking-wider">
+                <span className="text-2xl font-mono font-bold text-primary tracking-wider">
                   {userInviteCode}
                 </span>
                 <button

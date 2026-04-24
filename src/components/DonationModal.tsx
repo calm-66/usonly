@@ -185,7 +185,7 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
                     }}
                     className={`py-2 px-3 rounded-lg border-2 transition-colors ${
                       amount === val && customAmount === val.toString()
-                        ? 'border-gray-800 bg-gray-50 text-gray-800'
+                        ? 'border-gray-800 bg-gray-50 text-primary'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
@@ -206,7 +206,7 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
                 />
               </div>
               {amount > 0 && (
-                <p className="text-sm text-gray-800 mt-2 font-medium">
+                <p className="text-sm text-primary mt-2 font-medium">
                   当前金额：¥{amount.toFixed(2)}
                 </p>
               )}
@@ -247,7 +247,7 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
                   type="checkbox"
                   checked={isAnonymous}
                   onChange={(e) => setIsAnonymous(e.target.checked)}
-                  className="w-4 h-4 text-gray-800 rounded focus:ring-gray-500"
+                  className="w-4 h-4 text-primary rounded focus:ring-gray-500"
                 />
                 <span className="text-sm text-gray-600">匿名打赏</span>
               </label>
@@ -324,7 +324,7 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
               {h5Data?.payurl && (
                 <button
                   onClick={handlePayNow}
-                  className="w-full py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition"
+                  className="w-full py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition"
                 >
                   点击跳转支付
                 </button>

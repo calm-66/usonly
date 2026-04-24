@@ -356,7 +356,7 @@ export default function PhotoLayoutEditor({ imageUrls, onChange }: PhotoLayoutEd
                   onMouseDown={(e) => handleResizeStart(e, index)}
                   onTouchStart={(e) => handleResizeStart(e, index)}
                 >
-                  <div className="w-4 h-4 bg-gray-800 rounded-full flex items-center justify-center shadow-lg">
+                  <div className="w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-lg">
                     <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                       <path d="M21 15v4a2 2 0 01-2 2H5" strokeLinecap="round" strokeLinejoin="round"/>
                       <path d="M15 21l6-6" strokeLinecap="round" strokeLinejoin="round"/>

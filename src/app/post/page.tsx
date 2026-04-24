@@ -265,7 +265,7 @@ export default function PostPage() {
       {/* 顶部导航 */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-[500px] mx-auto px-4 py-3 flex justify-between items-center">
-          <h1 className="text-lg font-bold text-gray-900">发布分享</h1>
+          <h1 className="text-lg font-bold text-primary">发布分享</h1>
           <a href="/timeline" className="text-gray-400 hover:text-gray-600">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -412,7 +412,7 @@ export default function PostPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition disabled:opacity-50"
+              className="w-full py-3 px-4 bg-primary text-white rounded-lg hover:bg-primary-hover transition disabled:opacity-50"
             >
               {loading ? '发布中...' : '发布分享'}
             </button>
@@ -421,7 +421,7 @@ export default function PostPage() {
 
         {/* 今日分享列表 */}
         <div className="bg-white rounded-xl border border-gray-100 p-4">
-          <h2 className="text-base font-bold text-gray-900 mb-3">今日分享</h2>
+          <h2 className="text-base font-bold text-primary mb-3">今日分享</h2>
           {posts.filter(p => p.date === today).length === 0 ? (
             <p className="text-center text-gray-500 py-4">今日还没有分享</p>
           ) : (

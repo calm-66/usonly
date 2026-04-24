@@ -49,7 +49,7 @@ function ThankYouContent() {
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm max-w-sm w-full p-6 text-center">
         {/* 图标 */}
-        <div className="w-16 h-16 mx-auto mb-4 bg-gray-800 rounded-full flex items-center justify-center">
+        <div className="w-16 h-16 mx-auto mb-4 bg-primary rounded-full flex items-center justify-center">
           <svg
             className="w-8 h-8 text-white"
             fill="none"
@@ -71,7 +71,7 @@ function ThankYouContent() {
         ) : orderStatus === 'PAID' ? (
           <>
             {money && (
-              <p className="text-xl font-bold text-gray-800 mb-4">
+              <p className="text-xl font-bold text-primary mb-4">
                 ¥{parseFloat(money).toFixed(2)}
               </p>
             )}
@@ -103,7 +103,7 @@ function ThankYouContent() {
         {/* 返回按钮 */}
         <Link
           href="/profile"
-          className="inline-block w-full py-2.5 px-6 bg-gray-800 text-white font-medium rounded-lg hover:bg-gray-900 transition-colors"
+          className="inline-block w-full py-2.5 px-6 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors"
         >
           返回
         </Link>

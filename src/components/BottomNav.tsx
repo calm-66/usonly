@@ -57,9 +57,9 @@ export default function BottomNav({ activePage }: BottomNavProps) {
             <a
               key={item.id}
               href={item.href}
-              className={`flex-1 flex flex-col items-center justify-center py-2.5 ${
-                isActive ? 'text-gray-800' : 'text-gray-400'
-              }`}
+               className={`flex-1 flex flex-col items-center justify-center py-2.5 transition-colors ${
+                 isActive ? 'text-primary' : 'text-gray-400'
+               }`}
             >
               {item.icon}
               <span className="text-[10px] mt-0.5">{item.label}</span>

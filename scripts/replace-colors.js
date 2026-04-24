@@ -23,14 +23,17 @@ const path = require('path');
 // 颜色替换映射表 (Color Replacement Mapping)
 // 键：原颜色 (Original Color)，值：新颜色 (New Color)
 const colorReplacements = [
-  // 主按钮颜色 (Primary Button)
-  { old: '#db2777', new: '#EC4899', desc: '主按钮 (Primary Button)' },
-  // 主按钮 hover 状态 (Primary Button Hover)
-  { old: '#be185d', new: '#E11D74', desc: '主按钮 hover (Primary Button Hover)' },
-  // 我的帖子卡片背景 (My Post Card Background)
+  // Tailwind 类名替换 - 主按钮背景色 (Main Button Background)
+  { old: 'bg-gray-800', new: 'bg-primary', desc: '主按钮背景 (Main Button Background)' },
+  { old: 'bg-gray-900', new: 'bg-primary-hover', desc: '主按钮 hover 背景 (Main Button Hover Background)' },
+  // Tailwind 类名替换 - 主按钮文字颜色 (Main Button Text Color)
+  { old: 'text-gray-800', new: 'text-primary', desc: '主文字颜色 (Primary Text Color)' },
+  { old: 'text-gray-900', new: 'text-primary', desc: '主文字颜色 (Primary Text Color)' },
+  // HEX 颜色替换
+  { old: '#db2777', new: '#EC4899', desc: '主按钮 HEX (Primary Button HEX)' },
+  { old: '#be185d', new: '#E11D74', desc: '主按钮 hover HEX (Primary Button Hover HEX)' },
   { old: '#fef2f2', new: '#FFF1F2', desc: '我的帖子卡片背景 (My Post Card Background)' },
   // RGBA 颜色替换 (RGBA Color Replacements)
-  // rgba(219, 39, 119, X) 是 #db2777 的 RGB 表示
   { old: 'rgba(219, 39, 119, 0.4)', new: 'rgba(236, 72, 153, 0.4)', desc: '主按钮阴影 (Primary Button Shadow)' },
   { old: 'rgba(219, 39, 119, 0.5)', new: 'rgba(236, 72, 153, 0.5)', desc: '主按钮 hover 阴影 (Primary Button Hover Shadow)' },
   { old: 'rgba(219, 39, 119,', new: 'rgba(236, 72, 153,', desc: '主按钮 RGBA 通用 (Primary Button RGBA)' },

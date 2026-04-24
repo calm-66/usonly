@@ -900,7 +900,7 @@ export default function TimelinePage() {
         <button
           onClick={() => handleSendComment(postId)}
           disabled={!newComment.trim()}
-          className="px-4 py-2 text-sm bg-gray-800 text-white rounded-full hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+          className="px-4 py-2 text-sm bg-primary text-white rounded-full hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
         >
           发送
         </button>
@@ -922,7 +922,7 @@ export default function TimelinePage() {
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between p-3 border-b border-gray-200">
-            <h3 className="font-semibold text-gray-800">评论</h3>
+            <h3 className="font-semibold text-primary">评论</h3>
             <button
               onClick={closeCommentModal}
               className="text-gray-400 hover:text-gray-600 text-xl w-8 h-8 flex items-center justify-center"
@@ -1212,7 +1212,7 @@ export default function TimelinePage() {
         {/* 头部 - 用户信息 */}
         <div className="flex items-center gap-3 mb-3 pt-4">
           {renderAvatar(postOwner?.avatarUrl || null, postOwner?.username || '未知', 'w-10 h-10')}
-          <span className="font-semibold text-gray-900 text-base">
+          <span className="font-semibold text-primary text-base">
             {postOwner?.username || '未知'}
           </span>
         </div>
@@ -1228,7 +1228,7 @@ export default function TimelinePage() {
         {(post.text || post.location) && (
           <div className="mb-3">
             {post.text && (
-              <p className="text-gray-900 text-sm leading-relaxed whitespace-pre-wrap break-words mb-2">
+              <p className="text-primary text-sm leading-relaxed whitespace-pre-wrap break-words mb-2">
                 {post.text}
               </p>
             )}
@@ -1287,13 +1287,13 @@ export default function TimelinePage() {
                 </svg>
               </button>
               {timeFilter !== 'all' && (
-                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-gray-800 rounded-full"></span>
+                <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-primary rounded-full"></span>
               )}
             </div>
           )}
           
           {/* 中间：标题 */}
-          <h1 className="text-base font-bold text-gray-900 flex-1 text-center">UsOnly</h1>
+          <h1 className="text-base font-bold text-primary flex-1 text-center">UsOnly</h1>
           
           {/* 右侧：发布 + 通知 */}
           <div className="flex items-center gap-0.5">
@@ -1340,7 +1340,7 @@ export default function TimelinePage() {
               {showNotifications && (
                 <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 z-50 max-h-[80vh] overflow-y-auto">
                   <div className="p-3 border-b border-gray-100 flex justify-between items-center">
-                    <h3 className="font-semibold text-gray-800">通知</h3>
+                    <h3 className="font-semibold text-primary">通知</h3>
                     <div className="flex gap-2">
                       {unreadCount > 0 && (
                         <button
@@ -1384,7 +1384,7 @@ export default function TimelinePage() {
                             <div className="flex gap-2">
                               <span className="text-lg">{getNotificationIcon(notification.type)}</span>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm text-gray-800 truncate">
+                                <p className="text-sm text-primary truncate">
                                   {notification.sender && (
                                     <span className="font-medium">{notification.sender.username}</span>
                                   )}
@@ -1425,7 +1425,7 @@ export default function TimelinePage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-800">时间筛选</h3>
+              <h3 className="text-lg font-bold text-primary">时间筛选</h3>
               <button
                 onClick={() => setShowDateFilter(false)}
                 className="text-gray-400 hover:text-gray-600 text-xl"
@@ -1441,7 +1441,7 @@ export default function TimelinePage() {
                 }}
                 className={`w-full py-3 px-4 rounded-lg text-left flex items-center justify-between ${
                   timeFilter === 'all' 
-                    ? 'bg-gray-200 text-gray-800'
+                    ? 'bg-gray-200 text-primary'
                     : 'hover:bg-gray-50'
                 }`}
               >
@@ -1459,7 +1459,7 @@ export default function TimelinePage() {
                 }}
                 className={`w-full py-3 px-4 rounded-lg text-left flex items-center justify-between ${
                   timeFilter === '7days' 
-                    ? 'bg-gray-200 text-gray-800' 
+                    ? 'bg-gray-200 text-primary' 
                     : 'hover:bg-gray-50'
                 }`}
               >
@@ -1477,7 +1477,7 @@ export default function TimelinePage() {
                 }}
                 className={`w-full py-3 px-4 rounded-lg text-left flex items-center justify-between ${
                   timeFilter === '30days' 
-                    ? 'bg-gray-200 text-gray-800' 
+                    ? 'bg-gray-200 text-primary' 
                     : 'hover:bg-gray-50'
                 }`}
               >
@@ -1495,7 +1495,7 @@ export default function TimelinePage() {
                 }}
                 className={`w-full py-3 px-4 rounded-lg text-left flex items-center justify-between ${
                   timeFilter === 'custom' 
-                    ? 'bg-gray-200 text-gray-800' 
+                    ? 'bg-gray-200 text-primary' 
                     : 'hover:bg-gray-50'
                 }`}
               >
@@ -1530,7 +1530,7 @@ export default function TimelinePage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-800">自定义时间范围</h3>
+              <h3 className="text-lg font-bold text-primary">自定义时间范围</h3>
               <button
                 onClick={() => setShowCustomDateRange(false)}
                 className="text-gray-400 hover:text-gray-600 text-xl"
@@ -1579,7 +1579,7 @@ export default function TimelinePage() {
                     alert('请选择开始和结束日期')
                   }
                 }}
-                className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-gray-900"
+                className="flex-1 px-4 py-2 bg-primary text-white rounded-full hover:bg-primary-hover"
               >
                 确定
               </button>
@@ -1591,7 +1591,7 @@ export default function TimelinePage() {
       {/* 挽回配对横幅 */}
       {showAppealBanner && user?.partnerId && (
         <div className="max-w-[400px] mx-auto px-4 mb-4">
-          <div className="bg-gray-800 rounded-xl shadow-lg p-4 text-white">
+          <div className="bg-primary rounded-xl shadow-lg p-4 text-white">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-semibold text-lg mb-1">💕 挽回配对</p>
@@ -1600,7 +1600,7 @@ export default function TimelinePage() {
               <button
                 onClick={handleAppeal}
                 disabled={appealLoading}
-                className="px-6 py-2 bg-white text-gray-800 rounded-full font-medium hover:bg-gray-100 disabled:opacity-50 shrink-0 ml-4"
+                className="px-6 py-2 bg-white text-primary rounded-full font-medium hover:bg-gray-100 disabled:opacity-50 shrink-0 ml-4"
               >
                 {appealLoading ? '发送中...' : '发送挽回请求'}
               </button>
@@ -1682,7 +1682,7 @@ export default function TimelinePage() {
           >
             <div className="text-center mb-4">
               <span className="text-4xl">💌</span>
-              <h3 className="text-lg font-bold text-gray-800 mt-2">挽回配对请求</h3>
+              <h3 className="text-lg font-bold text-primary mt-2">挽回配对请求</h3>
             </div>
             <p className="text-gray-600 text-sm mb-2">
               {selectedAppealNotification.sender?.username} 发送了挽回请求
@@ -1701,7 +1701,7 @@ export default function TimelinePage() {
               <button
                 onClick={() => handleAppealResponse(true)}
                 disabled={appealLoading}
-                className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-full hover:bg-gray-900 disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-primary text-white rounded-full hover:bg-primary-hover disabled:opacity-50"
               >
                 {appealLoading ? '处理中...' : '接受'}
               </button>
