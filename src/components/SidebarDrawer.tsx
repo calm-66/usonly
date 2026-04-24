@@ -194,51 +194,40 @@ export default function SidebarDrawer({
       
       {/* 侧边栏 */}
       <div
-        className="fixed left-0 top-14 w-56 bg-white z-50 rounded-b-xl shadow-lg animate-slideRight"
+        className="fixed left-0 top-14 bg-white z-50 rounded-b-xl shadow-lg animate-slideRight w-fit"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 菜单项 */}
-        <div className="p-1">
-          {/* 通知 */}
+        {/* 图标组 */}
+        <div className="flex items-center gap-2 p-2">
+          {/* 通知按钮 */}
           <button
             onClick={() => setShowNotifications(true)}
-            className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition"
+            className="relative w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-50 transition"
           >
-            <div className="flex items-center gap-3">
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-            </div>
-            <div className="flex items-center gap-2">
-              {unreadCount > 0 && (
-                <span className="bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] min-w-[16px] h-4 rounded-full flex items-center justify-center px-1">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
           </button>
 
-          {/* 时间筛选 */}
+          {/* 分隔线 */}
+          <div className="w-px h-5 bg-gray-200"></div>
+
+          {/* 时间筛选按钮 */}
           <button
             onClick={() => setShowTimeFilter(true)}
-            className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition"
+            className="relative w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-50 transition"
           >
-            <div className="flex items-center gap-3">
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-            </div>
-            <div className="flex items-center gap-2">
-              {timeFilter !== 'all' && (
-                <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-              )}
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            {timeFilter !== 'all' && (
+              <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+            )}
           </button>
         </div>
       </div>
