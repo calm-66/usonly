@@ -1277,23 +1277,28 @@ export default function TimelinePage() {
       <header ref={headerRef} className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-[400px] mx-auto px-3 py-2.5 flex items-center justify-between">
           {/* 左侧：汉堡菜单 */}
-          <button
-            onClick={async () => {
-              setShowSidebar(true)
-              if (user) {
-                await loadNotifications(user)
-              }
-            }}
-            className="p-1.5 hover:bg-gray-50 rounded-full transition"
-            title="菜单"
-          >
-            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+          <div className="relative">
+            <button
+              onClick={async () => {
+                setShowSidebar(true)
+                if (user) {
+                  await loadNotifications(user)
+                }
+              }}
+              className="p-1.5 hover:bg-gray-50 rounded-full transition"
+              title="菜单"
+            >
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            {(unreadCount > 0 || timeFilter !== 'all') && (
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            )}
+          </div>
           
           {/* 中间：标题 */}
-          <h1 className="text-base font-bold text-primary flex-1 text-center">UsOnly</h1>
+          <h1 className="text-base font-bold text-gray-900 flex-1 text-center">UsOnly</h1>
           
           {/* 右侧：发布 */}
           <a
