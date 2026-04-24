@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import CommentModal from '@/components/CommentModal'
 import ImageGallery from '@/components/ImageGallery'
 import BottomNav from '@/components/BottomNav'
@@ -82,9 +82,27 @@ interface ReplyToState {
 }
 
 export default function TimelinePage() {
+  const headerRef = useRef<HTMLElement>(null)
   const [user, setUser] = useState<User | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
+  const [headerHeight, setHeaderHeight] = useState(42) // 默认 42px
+  
+  // 计算 header 高度
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      if (headerRef.current) {
+        setHeaderHeight(headerRef.current.offsetHeight)
+      }
+    }
+    
+    // 初始测量
+    updateHeaderHeight()
+    
+    // 监听窗口大小变化
+    window.addEventListener('resize', updateHeaderHeight)
+    return () => window.removeEventListener('resize', updateHeaderHeight)
+  }, [])
   
   // 评论相关状态
   const [comments, setComments] = useState<Record<string, Comment[]>>({})
@@ -1254,7 +1272,7 @@ export default function TimelinePage() {
   return (
     <main className="min-h-screen bg-white">
       {/* 顶部导航 */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+      <header ref={headerRef} className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-[400px] mx-auto px-3 py-2.5 flex items-center justify-between">
           {/* 左侧：时间筛选图标 */}
           {user?.partnerId && (
@@ -1612,7 +1630,7 @@ export default function TimelinePage() {
             {dayPosts.map((day) => (
               <div key={day.date}>
                 {/* 日期标签 */}
-                <div className="sticky top-14 z-30 bg-white/90 backdrop-blur-sm py-2 px-4 border-b border-gray-100">
+                <div className="sticky z-30 bg-white/90 backdrop-blur-sm py-2 px-4 border-b border-gray-100" style={{ top: `${headerHeight}px` }}>
                   <span className="text-sm font-semibold text-gray-700">
                     {formatDate(day.date)}
                   </span>
