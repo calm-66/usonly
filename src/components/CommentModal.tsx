@@ -324,11 +324,11 @@ export default function CommentModal({
       onClick={onClose}
     >
       <div
-        className="bg-white w-full max-h-[90vh] sm:max-w-lg sm:rounded-xl sm:max-h-[80vh] flex flex-col animate-slideUp"
+        className="bg-white w-full sm:max-w-lg sm:rounded-xl max-h-[85vh] sm:max-h-[80vh] flex flex-col animate-slideUp"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 顶部栏 */}
-        <div className="flex items-center justify-between p-3 border-b border-gray-200">
+        {/* 顶部栏 - 添加移动端安全区域适配 */}
+        <div className="flex items-center justify-between p-3 pt-safe border-b border-gray-200 shrink-0">
           <h3 className="font-semibold text-gray-900">评论</h3>
           <button
             onClick={onClose}
