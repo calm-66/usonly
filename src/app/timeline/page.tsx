@@ -1239,15 +1239,19 @@ export default function TimelinePage() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => openCommentModal(post)}
-              className={`flex items-center gap-1.5 text-sm transition ${
-                comments[post.id]?.length > 0 
-                  ? 'text-[#FBCFE8]'
-                  : 'text-gray-400'
-              } hover:text-[#F9A8D4]`}
+              className="flex items-center gap-1.5 text-sm transition text-gray-400 hover:text-gray-500"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
+              {comments[post.id]?.length > 0 ? (
+                // 有评论：显示带三个点的对话气泡
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              ) : (
+                // 无评论：显示空的对话气泡
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              )}
             </button>
           </div>
           <span className="text-xs text-gray-400">{formatTime(post.createdAt)}</span>
