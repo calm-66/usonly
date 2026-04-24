@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface UseSmartScrollNavOptions {
   threshold?: number
@@ -11,7 +11,7 @@ interface UseSmartScrollNavReturn {
 }
 
 /**
- * 自定义 Hook：智能滚动导航栏
+ * 自定义 Hook：智能滚动导航栏 (Smart Scroll Navigation Bar)
  * 
  * 功能：
  * - 向上滚动时隐藏导航栏，向下滚动时显示
@@ -27,10 +27,10 @@ export function useSmartScrollNav(
   const { threshold = 10, initialShow = true } = options
   
   const [showNav, setShowNav] = useState(initialShow)
+  const lastScrollTopRef = useRef(0)
 
   useEffect(() => {
     let ticking = false
-    let lastScrollTop = 0
 
     const handleScroll = () => {
       if (!ticking) {
@@ -41,11 +41,11 @@ export function useSmartScrollNav(
           if (scrollTop < 10) {
             setShowNav(true)
           } else {
-            const scrollDiff = scrollTop - lastScrollTop
+            const scrollDiff = scrollTop - lastScrollTopRef.current
             // 向下滚动（显示），向上滚动（隐藏）
             if (Math.abs(scrollDiff) > threshold) {
               setShowNav(scrollDiff < 0)
-              lastScrollTop = scrollTop
+              lastScrollTopRef.current = scrollTop
             }
           }
           
