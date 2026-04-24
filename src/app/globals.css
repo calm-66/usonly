@@ -4,16 +4,29 @@
 
 /* ============================================
    主题配色变量 (Theme Colors)
-   主要颜色：主按钮、次要按钮、强调色
+   
+   主色调 (Primary Colors): 灰白系
+   - text-gray-900: 主要标题、用户名、页面标题等常规文本
+   - text-gray-700: 次级标题、按钮文字等
+   
+   按钮配色 (Button Colors): 粉色系
+   - primary (#EC4899): 主按钮（提交、保存、继续配对等）
+   - primary-hover (#E11D74): 主按钮 hover 状态
+   - secondary (#FBCFE8): 次要按钮
+   
+   语义色 (Semantic Colors): 红色系保留
+   - 用于警示/危险操作（取消配对、退出登录、删除、确认解除等）
+   - 保持 red-500/red-600 以符合用户对危险操作的认知
+   
    ============================================ */
 :root {
-  /* 主按钮颜色 (Primary Button) */
+  /* 主按钮颜色 (Primary Button) - 粉色系 */
   --color-primary: #EC4899;
-  /* 主按钮 hover 状态 (Primary Button Hover) */
+  /* 主按钮 hover 状态 (Primary Button Hover) - 深粉色 */
   --color-primary-hover: #E11D74;
-  /* 次要按钮颜色 (Secondary Button) */
+  /* 次要按钮颜色 (Secondary Button) - 浅粉色 */
   --color-secondary: #FBCFE8;
-  /* 强调色 (Accent Color) */
+  /* 强调色 (Accent Color) - 玫瑰红 */
   --color-accent: #F43F5E;
   
   /* 背景色系 (Background Colors) */
@@ -39,6 +52,21 @@
   --color-bg-comment: #FAFAFA;
   --color-bg-empty: #F9FAFB;
 }
+
+/* ============================================
+   配色使用规范 (Color Usage Guidelines)
+   
+   ✅ 正确用法:
+   - 标题/用户名/页面标题: text-gray-900 (灰白系)
+   - 主按钮: bg-primary text-white hover:bg-primary-hover (粉色系)
+   - 危险操作: text-red-600 hover:bg-red-50 (红色系)
+   - 配对天数强调: text-primary (粉色系)
+   
+   ❌ 错误用法:
+   - 标题/用户名不应使用 text-primary
+   - 危险操作不应改为粉色
+   
+   ============================================ */
 
 /* 自定义动画 */
 @keyframes slideUp {

@@ -487,7 +487,7 @@ export default function ProfilePage() {
       {/* 顶部导航 */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-[400px] mx-auto px-3 py-2.5 flex items-center justify-center">
-          <h1 className="text-base font-bold text-primary">UsOnly</h1>
+          <h1 className="text-base font-bold text-gray-900">UsOnly</h1>
         </div>
       </header>
 
@@ -541,7 +541,7 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-bold text-primary">{user.username}</h2>
+                  <h2 className="text-lg font-bold text-gray-900">{user.username}</h2>
                   <button
                     onClick={handleStartEditUsername}
                     className="p-1.5 text-gray-400 hover:text-gray-600 transition"
@@ -583,7 +583,7 @@ export default function ProfilePage() {
 
         {/* 配对状态卡片 */}
         <div className="bg-white rounded-xl border border-gray-100 p-4">
-          <h3 className="text-base font-bold text-primary mb-4">配对状态</h3>
+          <h3 className="text-base font-bold text-gray-900 mb-4">配对状态</h3>
 
           {user.partnerId && user.partner ? (
             <div className="space-y-3">
@@ -602,7 +602,7 @@ export default function ProfilePage() {
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 {renderAvatar(user.partner.avatarUrl, user.partner.username, 'w-10 h-10')}
                 <div className="flex-1">
-                  <p className="font-medium text-primary text-sm">{user.partner.username}</p>
+                  <p className="font-medium text-gray-900 text-sm">{user.partner.username}</p>
                   <p className="text-xs text-gray-500">你们的配对</p>
                 </div>
               </div>
@@ -683,7 +683,7 @@ export default function ProfilePage() {
 
         {/* 设置卡片 */}
         <div className="bg-white rounded-xl border border-gray-100 p-4">
-          <h3 className="text-base font-bold text-primary mb-3">设置</h3>
+          <h3 className="text-base font-bold text-gray-900 mb-3">设置</h3>
           
           {/* 联系作者 */}
           <button
