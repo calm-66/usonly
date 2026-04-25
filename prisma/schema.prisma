@@ -154,6 +154,19 @@ enum PaymentStatus {
   REFUNDED   // 已退款
 }
 
+// 登录页配置表
+model LandingConfig {
+  id            String    @id @default(uuid())
+  userId        String    @unique
+  backgroundUrl String?   // 自定义背景图 URL
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
 // 支付订单表（整合了原 Donation 表的功能）
 model PaymentOrder {
   id             String        @id @default(cuid())

@@ -6,6 +6,7 @@ import FeedbackModal from '@/components/FeedbackModal'
 import DonationModal from '@/components/DonationModal'
 import BottomNav from '@/components/BottomNav'
 import { uploadImage } from '@/lib/imageUpload'
+import BackgroundPicker from '@/components/BackgroundPicker'
 
 // 检测是否为移动端设备
 function isMobile(): boolean {
@@ -62,6 +63,10 @@ export default function ProfilePage() {
   const [currentCapture, setCurrentCapture] = useState<'user' | 'environment' | undefined>(undefined)
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const [showDonationModal, setShowDonationModal] = useState(false)
+  
+  // 背景图替换相关状态
+  const [showBackgroundPicker, setShowBackgroundPicker] = useState(false)
+  const [currentBackgroundUrl, setCurrentBackgroundUrl] = useState<string | null>(null)
 
   // 计算配对天数
   const calculatePairDays = (pairedAt: string | null | undefined): number => {
@@ -124,10 +129,51 @@ export default function ProfilePage() {
       checkBreakupStatus(parsedUser)
       // 从服务器获取最新用户信息
       fetchLatestUserInfo(parsedUser)
+      // 加载背景图配置
+      loadBackgroundConfig(parsedUser)
     } else {
       setLoading(false)
     }
   }, [])
+
+  // 加载背景图配置
+  const loadBackgroundConfig = async (userData: User) => {
+    try {
+      const res = await fetch('/api/landing-config', {
+        headers: { 'x-user-id': userData.id }
+      })
+      const data = await res.json()
+      if (data.config?.backgroundUrl) {
+        setCurrentBackgroundUrl(data.config.backgroundUrl)
+      }
+    } catch (error) {
+      console.error('加载背景图配置失败:', error)
+    }
+  }
+
+  // 更新背景图
+  const handleUpdateBackground = async (imageUrl: string) => {
+    if (!user?.id) return
+    
+    try {
+      const res = await fetch('/api/landing-config', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user.id,
+        },
+        body: JSON.stringify({ backgroundUrl: imageUrl || null }),
+      })
+      
+      const data = await res.json()
+      if (data.config) {
+        setCurrentBackgroundUrl(data.config.backgroundUrl)
+      }
+    } catch (error) {
+      console.error('更新背景图失败:', error)
+      alert('更新失败，请重试')
+    }
+  }
 
   // 冷静期倒计时定时器 - 每分钟更新一次
   useEffect(() => {
@@ -708,6 +754,17 @@ export default function ProfilePage() {
             请作者喝咖啡
           </button>
           
+          {/* 更换登录页背景 */}
+          <button
+            onClick={() => setShowBackgroundPicker(true)}
+            className="w-full py-2.5 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition flex items-center justify-center gap-2 mb-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            更换登录页背景
+          </button>
+          
           <button
             onClick={handleLogout}
             className="w-full py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
@@ -809,6 +866,14 @@ export default function ProfilePage() {
       <DonationModal
         isOpen={showDonationModal}
         onClose={() => setShowDonationModal(false)}
+      />
+
+      {/* 背景图选择器 */}
+      <BackgroundPicker
+        isOpen={showBackgroundPicker}
+        onClose={() => setShowBackgroundPicker(false)}
+        onConfirm={handleUpdateBackground}
+        currentImageUrl={currentBackgroundUrl}
       />
 
       {/* 移动端头像选择弹窗 */}
