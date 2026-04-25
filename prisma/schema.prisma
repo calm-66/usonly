@@ -41,6 +41,7 @@ model User {
   updatedAt   DateTime @updatedAt
   lastLoginAt DateTime? // 最后登录时间
   sessions    SessionToken[] // 关联的 session token
+  landingConfig LandingConfig? // 登录页配置（一对一关系）
 }
 
 // Session Token 表 - 用于自动登录
