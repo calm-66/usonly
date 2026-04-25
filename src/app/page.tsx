@@ -102,7 +102,7 @@ export default function Home() {
 
   return (
     <>
-        <main className="min-h-screen relative overflow-hidden flex items-center justify-center"
+        <main className="min-h-screen relative overflow-hidden flex flex-col justify-between"
           style={{
             backgroundImage: 'url(/images/landing_page_background.png)',
             backgroundSize: 'cover',
@@ -111,33 +111,35 @@ export default function Home() {
           }}
         >
         {/* 背景遮罩层 */}
-        <div className="absolute inset-0 bg-black/30"></div>
+        <div className="absolute inset-0 bg-black/10"></div>
 
-        {/* 主内容 */}
-        <div className={`relative z-10 w-full max-w-[420px] px-4 transition-all duration-700 ${showLoginCard ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          
-          {/* 品牌区域 */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">UsOnly</h1>
-            <div className="flex items-center justify-center gap-1 mb-3">
-              <span className="text-white/90 text-sm">只属于两个人的私密空间</span>
-              <svg className="w-4 h-4 text-pink-400 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+        {/* 品牌区域 - 顶部 */}
+        <div className="relative z-10 pt-12 pb-4">
+          <div className="text-center px-4">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2 tracking-tight">UsOnly</h1>
+            <div className="flex items-center justify-center gap-1 mb-2">
+              <span className="text-gray-600 text-sm">只属于两个人的私密空间</span>
+              <svg className="w-4 h-4 text-pink-400" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
               </svg>
             </div>
             {/* 手写体文字 */}
-            <p className="text-white/60 text-sm italic font-light" style={{ fontFamily: 'cursive' }}>
+            <p className="text-gray-500 text-sm italic font-light" style={{ fontFamily: 'cursive' }}>
               记录只属于你们的日常 ♡
             </p>
           </div>
+        </div>
 
+        {/* 登录表单区域 - 底部 */}
+        <div className={`relative z-10 w-full max-w-[420px] mx-auto px-4 pb-8 transition-all duration-700 ${showLoginCard ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          
           {/* 登录/注册表单卡片 */}
-          <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
+          <div className="backdrop-blur-xl bg-gray-900/85 border border-gray-700 rounded-2xl p-6 shadow-2xl">
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* 注册时的用户名 */}
               {!isLogin && (
                 <div className="relative">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                   <input
@@ -146,14 +148,14 @@ export default function Home() {
                     onChange={(e) => setUsername(e.target.value)}
                     required
                     placeholder="用户名（支持中文）"
-                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-transparent text-sm"
+                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/50 focus:border-transparent text-sm"
                   />
                 </div>
               )}
 
               {/* 邮箱 */}
               <div className="relative">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 <input
@@ -162,13 +164,13 @@ export default function Home() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="邮箱地址"
-                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-transparent text-sm"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/50 focus:border-transparent text-sm"
                 />
               </div>
 
               {/* 密码 */}
               <div className="relative">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
                 <input
@@ -177,13 +179,13 @@ export default function Home() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="输入密码"
-                  className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-transparent text-sm"
+                  className="w-full pl-10 pr-12 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/50 focus:border-transparent text-sm"
                 />
                 {/* 显示/隐藏密码按钮 */}
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
                 >
                   {showPassword ? (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,7 +203,7 @@ export default function Home() {
               {/* 注册时的邀请码 */}
               {!isLogin && (
                 <div className="relative">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                   </svg>
                   <input
@@ -209,7 +211,7 @@ export default function Home() {
                     value={inviteCode}
                     onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
                     placeholder="邀请码（可选）"
-                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-transparent text-sm uppercase"
+                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/50 focus:border-transparent text-sm uppercase"
                     maxLength={8}
                   />
                 </div>
@@ -226,7 +228,7 @@ export default function Home() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl hover:from-pink-600 hover:to-rose-600 transition disabled:opacity-50 font-medium shadow-lg text-sm"
+                className="w-full py-3 bg-gray-800 text-white rounded-xl hover:bg-gray-700 transition disabled:opacity-50 font-medium shadow-lg text-sm"
               >
                 {loading ? '加载中...' : isLogin ? '登录' : '注册'}
               </button>
@@ -237,7 +239,7 @@ export default function Home() {
               <div className="text-center mt-4">
                 <button
                   onClick={() => window.location.href = '/forgot-password'}
-                  className="text-white/60 hover:text-white text-xs transition"
+                  className="text-gray-400 hover:text-gray-300 text-xs transition"
                 >
                   忘记密码？
                 </button>
@@ -246,15 +248,15 @@ export default function Home() {
 
             {/* 分隔线 */}
             <div className="flex items-center gap-3 my-4">
-              <div className="flex-1 h-px bg-white/10"></div>
-              <span className="text-white/40 text-xs">或</span>
-              <div className="flex-1 h-px bg-white/10"></div>
+              <div className="flex-1 h-px bg-gray-600"></div>
+              <span className="text-gray-500 text-xs">或</span>
+              <div className="flex-1 h-px bg-gray-600"></div>
             </div>
 
             {/* 注册/登录切换链接 */}
             <div className="text-center">
               {isLogin ? (
-                <p className="text-white/60 text-xs">
+                <p className="text-gray-400 text-xs">
                   还没有账号？{' '}
                   <button
                     onClick={() => { setIsLogin(false); setError(''); }}
@@ -264,7 +266,7 @@ export default function Home() {
                   </button>
                 </p>
               ) : (
-                <p className="text-white/60 text-xs">
+                <p className="text-gray-400 text-xs">
                   已有账号？{' '}
                   <button
                     onClick={() => { setIsLogin(true); setError(''); }}
