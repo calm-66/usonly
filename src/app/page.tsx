@@ -102,14 +102,14 @@ export default function Home() {
 
   return (
     <>
-      <main className="min-h-screen relative overflow-hidden flex items-center justify-center"
-        style={{
-          backgroundImage: 'url(/pics/landing/landing_page_background.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      >
+        <main className="min-h-screen relative overflow-hidden flex items-center justify-center"
+          style={{
+            backgroundImage: 'url(/pics/landing/landing_page_background.png)',
+            backgroundSize: '100% 100%',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        >
         {/* 背景遮罩层 */}
         <div className="absolute inset-0 bg-black/30"></div>
 
