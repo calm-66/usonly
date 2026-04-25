@@ -41,7 +41,6 @@ model User {
   updatedAt   DateTime @updatedAt
   lastLoginAt DateTime? // 最后登录时间
   sessions    SessionToken[] // 关联的 session token
-  landingConfig LandingConfig? // 登录页配置（一对一关系）
 }
 
 // Session Token 表 - 用于自动登录
@@ -153,19 +152,6 @@ enum PaymentStatus {
   PAID       // 已支付
   FAILED     // 支付失败
   REFUNDED   // 已退款
-}
-
-// 登录页配置表
-model LandingConfig {
-  id            String    @id @default(uuid())
-  userId        String    @unique
-  backgroundUrl String?   // 自定义背景图 URL
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
 }
 
 // 支付订单表（整合了原 Donation 表的功能）

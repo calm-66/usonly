@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { setLoggedInUserId } from '@/lib/monitor'
 import OnboardingGuide from '@/components/OnboardingGuide'
-import AboutModal from '@/components/AboutModal'
 
 export default function Home() {
   const [isLogin, setIsLogin] = useState(true)
@@ -17,33 +16,11 @@ export default function Home() {
   const [isNewUser, setIsNewUser] = useState(false)
   const [showInviteCode, setShowInviteCode] = useState(false)
   const [userInviteCode, setUserInviteCode] = useState('')
-  const [showAboutModal, setShowAboutModal] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [backgroundUrl, setBackgroundUrl] = useState<string | null>(null)
   const [showLoginCard, setShowLoginCard] = useState(false)
 
-  // 加载背景图配置
+  // 页面加载动画
   useEffect(() => {
-    const loadBackgroundConfig = async () => {
-      try {
-        const userData = localStorage.getItem('user')
-        if (userData) {
-          const user = JSON.parse(userData)
-          const res = await fetch('/api/landing-config', {
-            headers: { 'x-user-id': user.id }
-          })
-          const data = await res.json()
-          if (data.config?.backgroundUrl) {
-            setBackgroundUrl(data.config.backgroundUrl)
-          }
-        }
-      } catch (error) {
-        console.error('加载背景图配置失败:', error)
-      }
-    }
-    loadBackgroundConfig()
-
-    // 页面加载后显示登录卡片
     const timer = setTimeout(() => setShowLoginCard(true), 100)
     return () => clearTimeout(timer)
   }, [])
@@ -123,27 +100,18 @@ export default function Home() {
     }
   }
 
-  // 默认背景（如果没有自定义背景）
-  const defaultBackground = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 30%, #0f3460 60%, #1a1a2e 100%)'
-
   return (
     <>
       <main className="min-h-screen relative overflow-hidden flex items-center justify-center"
         style={{
-          background: backgroundUrl 
-            ? `url(${backgroundUrl}) center/cover no-repeat` 
-            : defaultBackground
+          backgroundImage: 'url(/pics/landing/landing_page_background.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
         }}
       >
         {/* 背景遮罩层 */}
         <div className="absolute inset-0 bg-black/30"></div>
-
-        {/* 背景装饰光效 */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-pink-500 rounded-full opacity-20 blur-3xl"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500 rounded-full opacity-20 blur-3xl"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-rose-500 rounded-full opacity-10 blur-3xl"></div>
-        </div>
 
         {/* 主内容 */}
         <div className={`relative z-10 w-full max-w-[420px] px-4 transition-all duration-700 ${showLoginCard ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
@@ -165,31 +133,6 @@ export default function Home() {
 
           {/* 登录/注册表单卡片 */}
           <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
-            
-            {/* 登录/注册切换 */}
-            <div className="flex mb-6 bg-white/5 rounded-xl p-1">
-              <button
-                onClick={() => { setIsLogin(true); setError(''); }}
-                className={`flex-1 py-2.5 text-center text-sm font-medium rounded-lg transition ${
-                  isLogin
-                    ? 'bg-white/20 text-white shadow-lg'
-                    : 'text-white/60 hover:text-white/80'
-                }`}
-              >
-                登录
-              </button>
-              <button
-                onClick={() => { setIsLogin(false); setError(''); }}
-                className={`flex-1 py-2.5 text-center text-sm font-medium rounded-lg transition ${
-                  !isLogin
-                    ? 'bg-white/20 text-white shadow-lg'
-                    : 'text-white/60 hover:text-white/80'
-                }`}
-              >
-                注册
-              </button>
-            </div>
-
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* 注册时的用户名 */}
               {!isLogin && (
@@ -334,18 +277,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 了解更多按钮 */}
-          <div className="text-center mt-6">
-            <button
-              onClick={() => setShowAboutModal(true)}
-              className="inline-flex items-center gap-2 text-white/60 hover:text-white transition text-sm"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              了解更多
-            </button>
-          </div>
         </div>
       </main>
 
@@ -416,11 +347,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* 了解更多弹窗 */}
-      <AboutModal
-        isOpen={showAboutModal}
-        onClose={() => setShowAboutModal(false)}
-      />
     </>
   )
 }
