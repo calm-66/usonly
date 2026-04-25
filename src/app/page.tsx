@@ -104,9 +104,9 @@ export default function Home() {
     <>
         <main className="min-h-screen relative overflow-hidden flex items-center justify-center"
           style={{
-            backgroundImage: 'url(/pics/landing/landing_page_background.png)',
-            backgroundSize: '100% 100%',
-            backgroundPosition: 'center',
+            backgroundImage: 'url(/images/landing_page_background.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center bottom',
             backgroundRepeat: 'no-repeat'
           }}
         >
