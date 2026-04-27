@@ -234,7 +234,7 @@ export default function Home() {
                     还没有账号？{' '}
                     <button
                       onClick={() => { setIsLogin(false); setError(''); }}
-                      className="text-pink-300 hover:text-pink-200 font-medium transition"
+                      className="text-white/60 hover:text-white font-medium transition"
                     >
                       去注册
                     </button>
@@ -245,7 +245,7 @@ export default function Home() {
                   已有账号？{' '}
                   <button
                     onClick={() => { setIsLogin(true); setError(''); }}
-                    className="text-pink-300 hover:text-pink-200 font-medium transition"
+                    className="text-white/60 hover:text-white font-medium transition"
                   >
                     去登录
                   </button>
