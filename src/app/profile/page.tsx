@@ -60,6 +60,7 @@ export default function ProfilePage() {
 
   // 取消配对相关状态
   const [showBreakupModal, setShowBreakupModal] = useState(false)
+  const [showPairManageModal, setShowPairManageModal] = useState(false)
   const [breakupLoading, setBreakupLoading] = useState(false)
   const [showBreakupConfirm, setShowBreakupConfirm] = useState(false)
   const [breakupDaysLeft, setBreakupDaysLeft] = useState<number | null>(null)
@@ -552,11 +553,12 @@ export default function ProfilePage() {
     )
   }
 
+  const isPaired = Boolean(user.partnerId && user.partner)
   const pairedAt = user.partner?.pairedAt || user.pairedAt
-  const pairDays = user.partnerId && user.partner ? calculatePairDays(pairedAt) : 0
+  const pairDays = isPaired ? calculatePairDays(pairedAt) : 0
   const pairManagementLabel = timeLeft !== null
     ? '冷静期管理'
-    : user.partnerId && user.partner
+    : isPaired
       ? '配对管理'
       : '去寻找伴侣'
 
@@ -566,16 +568,6 @@ export default function ProfilePage() {
       <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/95 backdrop-blur">
         <div className="relative mx-auto flex max-w-[400px] items-center justify-center px-4 py-3">
           <h1 className="text-base font-bold text-gray-900">UsOnly</h1>
-          <button
-            type="button"
-            onClick={handleStartEditUsername}
-            className="absolute right-4 rounded-full p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-            title="编辑资料"
-          >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-          </button>
         </div>
       </header>
 
@@ -598,7 +590,19 @@ export default function ProfilePage() {
                   </svg>
                 </button>
               </div>
-              <p className="mt-2 max-w-full truncate text-xs font-medium text-gray-900">{user.username}</p>
+              <div className="mt-2 flex max-w-full items-center justify-center gap-1">
+                <p className="truncate text-xs font-medium text-gray-900">{user.username}</p>
+                <button
+                  type="button"
+                  onClick={handleStartEditUsername}
+                  className="shrink-0 rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+                  title="修改用户名"
+                >
+                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <div className="relative mt-6 flex items-center justify-center">
@@ -667,12 +671,27 @@ export default function ProfilePage() {
               </div>
             ) : null}
 
-            <p className="text-xs text-gray-500">{user.partner ? '我们在一起' : '等待遇见彼此'}</p>
-            <div className="mt-1 flex items-end justify-center gap-1">
-              <span className="text-[34px] font-bold leading-none text-gray-950">{pairDays || 0}</span>
-              <span className="pb-1 text-sm font-medium text-gray-500">天</span>
-            </div>
-            <p className="mt-2 text-xs text-gray-400">{formatPairDate(pairedAt)}</p>
+            {isPaired ? (
+              <>
+                <p className="text-xs text-gray-500">我们在一起</p>
+                <div className="mt-1 flex items-end justify-center gap-1">
+                  <span className="text-[34px] font-bold leading-none text-gray-950">{pairDays || 0}</span>
+                  <span className="pb-1 text-sm font-medium text-gray-500">天</span>
+                </div>
+                <p className="mt-2 text-xs text-gray-400">{formatPairDate(pairedAt)}</p>
+              </>
+            ) : (
+              <>
+                <p className="text-xs text-gray-500">还没有配对</p>
+                <p className="mt-2 text-xl font-bold text-gray-900">等待遇见彼此</p>
+                <a
+                  href="/pair"
+                  className="mt-3 inline-flex rounded-full bg-primary px-4 py-2 text-xs font-medium text-white transition hover:bg-primary-hover"
+                >
+                  去寻找伴侣
+                </a>
+              </>
+            )}
             <p className="mt-1 truncate text-xs text-gray-400">{user.email}</p>
           </div>
 
@@ -763,9 +782,9 @@ export default function ProfilePage() {
             type="button"
             onClick={() => {
               if (timeLeft !== null) {
-                setShowBreakupConfirm(true)
-              } else if (user.partnerId && user.partner) {
-                setShowBreakupModal(true)
+                setShowPairManageModal(true)
+              } else if (isPaired) {
+                setShowPairManageModal(true)
               } else {
                 window.location.href = '/pair'
               }
@@ -862,6 +881,105 @@ export default function ProfilePage() {
           退出登录
         </button>
       </div>
+
+      {/* 配对管理弹窗 */}
+      {showPairManageModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
+          onClick={() => setShowPairManageModal(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl animate-slideUp"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-gray-900">配对管理</h3>
+              <button
+                type="button"
+                onClick={() => setShowPairManageModal(false)}
+                className="rounded-full p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+                title="关闭"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="mt-4 rounded-xl bg-gray-50 p-4">
+              <div className="flex items-center justify-center gap-3">
+                {renderAvatar(user.avatarUrl, user.username, 'w-10 h-10')}
+                <span className="text-primary">
+                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                  </svg>
+                </span>
+                {user.partner
+                  ? renderAvatar(user.partner.avatarUrl, user.partner.username, 'w-10 h-10')
+                  : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-300 ring-1 ring-gray-200">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                    </div>
+                  )}
+              </div>
+              <p className="mt-3 text-center text-sm font-medium text-gray-900">
+                {user.partner ? `已和 ${user.partner.username} 配对` : '当前没有配对'}
+              </p>
+              <p className="mt-1 text-center text-xs text-gray-500">
+                {pairDays > 0 ? `已经一起记录 ${pairDays} 天` : '开始记录后会在这里显示天数'}
+              </p>
+            </div>
+
+            {timeLeft !== null ? (
+              <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50 p-3">
+                <p className="text-sm font-medium text-amber-800">冷静期中</p>
+                <p className="mt-1 text-xs leading-5 text-amber-700">
+                  还剩 {timeLeft.days} 天 {timeLeft.hours} 小时。你可以继续配对，也可以在冷静期结束后确认解除。
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCancelBreakup}
+                    disabled={breakupLoading}
+                    className="flex-1 rounded-full bg-primary px-4 py-2 text-sm font-medium text-white transition hover:bg-primary-hover disabled:opacity-50"
+                  >
+                    继续配对
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowPairManageModal(false)
+                      setShowBreakupConfirm(true)
+                    }}
+                    disabled={breakupLoading}
+                    className="flex-1 rounded-full bg-white px-4 py-2 text-sm font-medium text-red-500 ring-1 ring-red-100 transition hover:bg-red-50 disabled:opacity-50"
+                  >
+                    确认解除
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4">
+                <p className="text-xs leading-5 text-gray-500">
+                  配对关系会影响双方回忆、足迹和照片的共同展示。取消配对前会先进入 7 天冷静期，期间可以随时恢复。
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPairManageModal(false)
+                    setShowBreakupModal(true)
+                  }}
+                  className="mt-4 w-full rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-500 transition hover:bg-red-100"
+                >
+                  取消配对
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* 取消配对确认弹窗 */}
       {showBreakupModal && (

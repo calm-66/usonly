@@ -1,0 +1,88 @@
+<svg width="390" height="844" viewBox="0 0 390 844" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="390" height="844" fill="#FBFBFB"/>
+  <rect y="0" width="390" height="48" fill="white"/>
+  <line y1="47.5" x2="390" y2="47.5" stroke="#F3F4F6"/>
+  <text x="195" y="31" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="16" font-weight="700" fill="#111827">UsOnly</text>
+
+  <rect x="17" y="65" width="356" height="244" rx="18" fill="white"/>
+  <rect x="17.5" y="65.5" width="355" height="243" rx="17.5" stroke="#F3F4F6"/>
+  <circle cx="83" cy="116" r="28" fill="#FCE7F3"/>
+  <circle cx="83" cy="116" r="27.5" stroke="#F3F4F6"/>
+  <text x="83" y="124" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="20" font-weight="700" fill="#EC4899">P</text>
+  <circle cx="102" cy="136" r="14" fill="#EC4899"/>
+  <path d="M96 136.5H108M99 132.5H105L106.2 135H109V142H95V135H97.8L99 132.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="83" y="164" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="13" font-weight="700" fill="#111827">Peter</text>
+  <text x="108" y="164" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="13" fill="#9CA3AF">✎</text>
+
+  <line x1="147" y1="118" x2="243" y2="118" stroke="#FBCFE8"/>
+  <circle cx="195" cy="118" r="14" fill="white" stroke="#FCE7F3"/>
+  <text x="195" y="124" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="18" fill="#EC4899">♥</text>
+
+  <circle cx="307" cy="116" r="28" fill="#F9FAFB"/>
+  <circle cx="307" cy="116" r="27.5" stroke="#F3F4F6"/>
+  <text x="307" y="124" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="20" font-weight="700" fill="#6B7280">兔</text>
+  <text x="307" y="164" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="13" font-weight="700" fill="#111827">小兔兔</text>
+
+  <text x="195" y="202" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="13" fill="#6B7280">我们在一起</text>
+  <text x="183" y="238" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="34" font-weight="800" fill="#111827">0</text>
+  <text x="207" y="238" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="14" font-weight="600" fill="#6B7280">天</text>
+  <text x="195" y="264" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="12" fill="#9CA3AF">等待开始记录</text>
+  <text x="195" y="288" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="12" fill="#9CA3AF">peter@163.com</text>
+
+  <rect x="17" y="324" width="356" height="108" rx="18" fill="white"/>
+  <rect x="17.5" y="324.5" width="355" height="107" rx="17.5" stroke="#F3F4F6"/>
+  <line x1="136" y1="324" x2="136" y2="432" stroke="#F3F4F6"/>
+  <line x1="254" y1="324" x2="254" y2="432" stroke="#F3F4F6"/>
+  <circle cx="76" cy="354" r="14" fill="#FDF2F8"/>
+  <text x="76" y="359" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="15" fill="#EC4899">⌖</text>
+  <text x="76" y="384" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="12" fill="#6B7280">一起去过</text>
+  <text x="76" y="410" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="20" font-weight="700" fill="#111827">2</text>
+  <text x="91" y="410" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="11" fill="#9CA3AF">个</text>
+  <circle cx="195" cy="354" r="14" fill="#EFF6FF"/>
+  <text x="195" y="359" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="14" fill="#3B82F6">▤</text>
+  <text x="195" y="384" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="12" fill="#6B7280">记录</text>
+  <text x="195" y="410" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="20" font-weight="700" fill="#111827">25</text>
+  <text x="215" y="410" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="11" fill="#9CA3AF">条</text>
+  <circle cx="314" cy="354" r="14" fill="#ECFDF5"/>
+  <text x="314" y="359" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="14" fill="#10B981">▣</text>
+  <text x="314" y="384" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="12" fill="#6B7280">照片</text>
+  <text x="314" y="410" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="20" font-weight="700" fill="#111827">41</text>
+  <text x="335" y="410" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="11" fill="#9CA3AF">张</text>
+
+  <rect x="17" y="448" width="356" height="128" rx="18" fill="white"/>
+  <rect x="17.5" y="448.5" width="355" height="127" rx="17.5" stroke="#F3F4F6"/>
+  <line x1="17" y1="512" x2="373" y2="512" stroke="#F3F4F6"/>
+  <circle cx="76" cy="480" r="16" fill="#FDF2F8"/>
+  <text x="76" y="485" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="15" fill="#EC4899">⇩</text>
+  <text x="106" y="486" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="15" font-weight="700" fill="#1F2937">导出回忆</text>
+  <text x="345" y="486" text-anchor="middle" font-family="Arial" font-size="24" fill="#D1D5DB">›</text>
+  <circle cx="76" cy="544" r="16" fill="#EFF6FF"/>
+  <text x="76" y="549" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="15" fill="#3B82F6">⚙</text>
+  <text x="106" y="550" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="15" font-weight="700" fill="#1F2937">配对管理</text>
+  <text x="345" y="550" text-anchor="middle" font-family="Arial" font-size="24" fill="#D1D5DB">›</text>
+
+  <rect x="17" y="594" width="356" height="128" rx="18" fill="white"/>
+  <rect x="17.5" y="594.5" width="355" height="127" rx="17.5" stroke="#F3F4F6"/>
+  <line x1="17" y1="658" x2="373" y2="658" stroke="#F3F4F6"/>
+  <circle cx="76" cy="626" r="16" fill="#F3F4F6"/>
+  <text x="76" y="631" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="15" fill="#6B7280">✉</text>
+  <text x="106" y="632" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="15" font-weight="700" fill="#1F2937">联系作者</text>
+  <text x="345" y="632" text-anchor="middle" font-family="Arial" font-size="24" fill="#D1D5DB">›</text>
+  <circle cx="76" cy="690" r="16" fill="#ECFDF5"/>
+  <text x="76" y="695" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="15" fill="#10B981">☕</text>
+  <text x="106" y="696" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="15" font-weight="700" fill="#1F2937">请作者喝咖啡</text>
+  <text x="345" y="696" text-anchor="middle" font-family="Arial" font-size="24" fill="#D1D5DB">›</text>
+
+  <rect x="17" y="738" width="356" height="46" rx="16" fill="white"/>
+  <rect x="17.5" y="738.5" width="355" height="45" rx="15.5" stroke="#FEE2E2"/>
+  <text x="195" y="767" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="14" font-weight="700" fill="#EF4444">退出登录</text>
+
+  <rect x="0" y="784" width="390" height="60" fill="white"/>
+  <line y1="783.5" x2="390" y2="783.5" stroke="#F3F4F6"/>
+  <text x="64" y="809" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="20" fill="#9CA3AF">◷</text>
+  <text x="64" y="830" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="11" fill="#9CA3AF">时间轴</text>
+  <text x="195" y="809" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="20" fill="#9CA3AF">⌖</text>
+  <text x="195" y="830" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="11" fill="#9CA3AF">足迹</text>
+  <text x="322" y="809" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="20" fill="#EC4899">♙</text>
+  <text x="322" y="830" text-anchor="middle" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="11" font-weight="700" fill="#EC4899">我的</text>
+</svg>
