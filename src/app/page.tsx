@@ -102,7 +102,7 @@ export default function Home() {
 
   return (
     <>
-        <main className="h-[100svh] relative overflow-hidden bg-[url('/images/landing_page_background.png')] bg-cover bg-[center_bottom] bg-no-repeat sm:bg-[center_38%]">
+        <main className="h-[100svh] relative overflow-hidden bg-[url('/images/landing_page_background.png')] bg-cover bg-[center_bottom] bg-no-repeat sm:bg-[url('/images/landing_page_background_desktop.png')] sm:bg-center">
         {/* 背景遮罩层 */}
         <div className="absolute inset-0 bg-black/10"></div>
 
