@@ -102,7 +102,7 @@ export default function Home() {
 
   return (
     <>
-        <main className="min-h-[100svh] relative overflow-x-hidden overflow-y-auto flex flex-col justify-between"
+        <main className="h-[100svh] relative overflow-x-hidden overflow-y-auto flex flex-col justify-between"
           style={{
             backgroundImage: 'url(/images/landing_page_background.png)',
             backgroundSize: 'cover',
