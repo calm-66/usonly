@@ -607,8 +607,8 @@ export default function ProfilePage() {
 
             <div className="relative mt-5 flex h-10 items-center justify-center">
               <svg className="h-8 w-full text-[#F08ABC]" viewBox="0 0 112 32" fill="none" preserveAspectRatio="none" aria-hidden="true">
-                <path d="M2 16H12L16 10L21 22L27 6L33 16H44" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M68 16H79L83 10L88 22L94 6L100 16H110" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M2 16H12L16 10L21 22L26 6L30 16H44" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M68 16H82L86 6L91 22L96 10L100 16H110" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <span className="profile-heart-pulse absolute flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-[0_4px_14px_rgba(236,72,153,0.12)] ring-1 ring-pink-100">
                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
