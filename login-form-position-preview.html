@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录表单位置对比预览</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            background: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .preview-container {
+            width: 375px;
+            height: 812px;
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            position: relative;
+            background-size: cover;
+            background-position: center bottom;
+            background-repeat: no-repeat;
+        }
+        
+        /* 模拟背景图效果 */
+        .preview-container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                #e8ddd4 0%,
+                #d4c5b5 30%,
+                #c4b5a5 50%,
+                #a89888 60%,
+                #8a7a6a 70%,
+                #6a5a4a 100%
+            );
+        }
+        
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 模拟人物剪影 */
+        .silhouette {
+            position: absolute;
+            bottom: 200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 150px;
+            background: linear-gradient(to top, #5a4a3a, #7a6a5a);
+            border-radius: 50% 50% 0 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+        
+        .silhouette::before {
+            content: '';
+            width: 60px;
+            height: 80px;
+            background: #6a5a4a;
+            border-radius: 50% 50% 0 0;
+            margin: 0 10px;
+        }
+        
+        .silhouette::after {
+            content: '';
+            width: 60px;
+            height: 80px;
+            background: #6a5a4a;
+            border-radius: 50% 50% 0 0;
+            margin: 0 10px;
+        }
+        
+        .brand-area {
+            position: relative;
+            z-index: 2;
+            padding: 48px 16px 16px;
+            text-align: center;
+        }
+        
+        .brand-area h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        .brand-area .subtitle {
+            font-size: 14px;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+        
+        .brand-area .heart {
+            color: #ec4899;
+        }
+        
+        .brand-area .handwrite {
+            font-size: 14px;
+            color: #9ca3af;
+            font-style: italic;
+            font-family: cursive;
+        }
+        
+        .form-area {
+            position: relative;
+            z-index: 2;
+            padding: 0 16px;
+        }
+        
+        /* 当前方案：表单位置较高 */
+        .form-current {
+            padding-bottom: 32px; /* pb-8 */
+            padding-top: 32px; /* pt-8 */
+        }
+        
+        /* 新方案：表单贴底 */
+        .form-new {
+            margin-top: auto;
+            padding-bottom: 16px; /* pb-4 */
+        }
+        
+        .form-card {
+            padding: 16px;
+        }
+        
+        .input-group {
+            position: relative;
+            margin-bottom: 16px;
+        }
+        
+        .input-group .icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            color: #9ca3af;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #1f2937;
+        }
+        
+        .input-group input::placeholder {
+            color: #9ca3af;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #1f2937;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .extra-links {
+            text-align: center;
+            margin-top: 16px;
+        }
+        
+        .extra-links .forgot {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            display: block;
+            margin-bottom: 16px;
+        }
+        
+        .extra-links .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .extra-links .divider::before,
+        .extra-links .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .extra-links .divider span {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+        }
+        
+        .extra-links .register {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+        }
+        
+        .extra-links .register a {
+            color: #ec4899;
+            text-decoration: none;
+        }
+        
+        .label {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 10;
+        }
+        
+        .label.current {
+            background: rgba(239, 68, 68, 0.8);
+        }
+        
+        .label.new {
+            background: rgba(34, 197, 94, 0.8);
+        }
+        
+        .arrow-indicator {
+            position: absolute;
+            bottom: 220px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ef4444;
+            font-size: 24px;
+            z-index: 5;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+        
+        .page-title {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-title">登录表单位置对比预览</div>
+    
+    <!-- 当前方案 -->
+    <div class="preview-container">
+        <span class="label current">当前效果</span>
+        <div class="overlay"></div>
+        <div class="silhouette"></div>
+        <div class="arrow-indicator">⬇️ 表单遮挡人物</div>
+        
+        <div class="brand-area">
+            <h1>UsOnly</h1>
+            <div class="subtitle">
+                只属于两个人的私密空间
+                <span class="heart">♥</span>
+            </div>
+            <div class="handwrite">记录只属于你们的日常 ♡</div>
+        </div>
+        
+        <div class="form-area form-current">
+            <div class="form-card">
+                <div class="input-group">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    <input type="email" placeholder="邮箱地址">
+                </div>
+                <div class="input-group">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                    <input type="password" placeholder="输入密码">
+                </div>
+                <button class="login-btn">登录</button>
+                
+                <div class="extra-links">
+                    <span class="forgot">忘记密码？</span>
+                    <div class="divider"><span>或</span></div>
+                    <span class="register">还没有账号？<a href="#">去注册</a></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 新方案 -->
+    <div class="preview-container">
+        <span class="label new">新效果（推荐）</span>
+        <div class="overlay"></div>
+        <div class="silhouette"></div>
+        
+        <div class="brand-area">
+            <h1>UsOnly</h1>
+            <div class="subtitle">
+                只属于两个人的私密空间
+                <span class="heart">♥</span>
+            </div>
+            <div class="handwrite">记录只属于你们的日常 ♡</div>
+        </div>
+        
+        <div class="form-area form-new">
+            <div class="form-card">
+                <div class="input-group">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    <input type="email" placeholder="邮箱地址">
+                </div>
+                <div class="input-group">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                    <input type="password" placeholder="输入密码">
+                </div>
+                <button class="login-btn">登录</button>
+                
+                <div class="extra-links">
+                    <span class="forgot">忘记密码？</span>
+                    <div class="divider"><span>或</span></div>
+                    <span class="register">还没有账号？<a href="#">去注册</a></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
