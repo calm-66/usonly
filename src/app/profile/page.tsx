@@ -31,10 +31,27 @@ interface User {
   archivedPartnerId?: string | null
 }
 
+interface Post {
+  id: string
+  imageUrls: string[] | null
+  location?: string | null
+}
+
+interface ProfileStats {
+  places: number
+  records: number
+  photos: number
+}
+
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
+  const [stats, setStats] = useState<ProfileStats>({
+    places: 0,
+    records: 0,
+    photos: 0,
+  })
   
   // 用户名编辑相关状态
   const [editingUsername, setEditingUsername] = useState(false)
@@ -69,6 +86,58 @@ export default function ProfilePage() {
     const now = new Date()
     const diffTime = now.getTime() - start.getTime()
     return Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1 // +1 因为当天也算 1 天
+  }
+
+  const formatPairDate = (pairedAt: string | null | undefined): string => {
+    if (!pairedAt) return '等待开始记录'
+
+    const date = new Date(pairedAt)
+    if (Number.isNaN(date.getTime())) return '等待开始记录'
+
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}.${month}.${day} 开始记录`
+  }
+
+  const fetchMemoryStats = async (currentUser: User) => {
+    try {
+      const requests = [
+        fetch('/api/post', {
+          headers: { 'x-user-id': currentUser.id },
+        }),
+      ]
+
+      if (currentUser.partnerId) {
+        requests.push(
+          fetch(`/api/post?partnerId=${currentUser.partnerId}`, {
+            headers: { 'x-user-id': currentUser.id },
+          })
+        )
+      }
+
+      const responses = await Promise.all(requests)
+      const payloads = await Promise.all(
+        responses.map(async (res) => (res.ok ? res.json() : { posts: [] }))
+      )
+      const posts: Post[] = payloads.flatMap((payload) => payload.posts || [])
+      const places = new Set(
+        posts
+          .map((post) => post.location?.trim())
+          .filter((location): location is string => Boolean(location))
+      )
+      const photos = posts.reduce((total, post) => {
+        return total + (Array.isArray(post.imageUrls) ? post.imageUrls.length : 0)
+      }, 0)
+
+      setStats({
+        places: places.size,
+        records: posts.length,
+        photos,
+      })
+    } catch (error) {
+      console.error('获取回忆统计失败:', error)
+    }
   }
 
   // 生成默认头像颜色（根据用户 ID 哈希）
@@ -121,6 +190,7 @@ export default function ProfilePage() {
       const parsedUser = JSON.parse(userData)
       setUser(parsedUser)
       checkBreakupStatus(parsedUser)
+      fetchMemoryStats(parsedUser)
       // 从服务器获取最新用户信息
       fetchLatestUserInfo(parsedUser)
     } else {
@@ -172,6 +242,7 @@ export default function ProfilePage() {
         localStorage.setItem('user', JSON.stringify(serverUser))
         setUser(serverUser)
         checkBreakupStatus(serverUser)
+        fetchMemoryStats(serverUser)
       }
     } catch (error) {
       console.error('获取用户信息失败:', error)
@@ -481,79 +552,128 @@ export default function ProfilePage() {
     )
   }
 
+  const pairedAt = user.partner?.pairedAt || user.pairedAt
+  const pairDays = user.partnerId && user.partner ? calculatePairDays(pairedAt) : 0
+  const pairManagementLabel = timeLeft !== null
+    ? '冷静期管理'
+    : user.partnerId && user.partner
+      ? '配对管理'
+      : '去寻找伴侣'
+
   return (
-    <main className="min-h-screen bg-white pb-20">
+    <main className="min-h-screen bg-[#FBFBFB] pb-24">
       {/* 顶部导航 */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-[400px] mx-auto px-3 py-2.5 flex items-center justify-center">
+      <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/95 backdrop-blur">
+        <div className="relative mx-auto flex max-w-[400px] items-center justify-center px-4 py-3">
           <h1 className="text-base font-bold text-gray-900">UsOnly</h1>
+          <button
+            type="button"
+            onClick={handleStartEditUsername}
+            className="absolute right-4 rounded-full p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+            title="编辑资料"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </button>
         </div>
       </header>
 
-      <div className="max-w-[400px] mx-auto px-4 py-4 space-y-4">
-        {/* 个人信息卡片 */}
-        <div className="bg-white rounded-xl border border-gray-100 p-4">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              {renderAvatar(user.avatarUrl, user.username)}
-              <button
-                type="button"
-                onClick={() => isMobile() ? setShowAvatarDialog(true) : avatarInputRef.current?.click()}
-                className="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full cursor-pointer hover:bg-primary-hover transition"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                </svg>
-              </button>
+      <div className="mx-auto max-w-[400px] space-y-3 px-4 py-4">
+        {/* 关系纪念卡 */}
+        <section className="rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+          <div className="grid grid-cols-[1fr_88px_1fr] items-start gap-2">
+            <div className="flex min-w-0 flex-col items-center">
+              <div className="relative">
+                {renderAvatar(user.avatarUrl, user.username, 'w-14 h-14')}
+                <button
+                  type="button"
+                  disabled={uploading}
+                  onClick={() => isMobile() ? setShowAvatarDialog(true) : avatarInputRef.current?.click()}
+                  className="absolute -bottom-1 -right-1 rounded-full bg-primary p-1.5 text-white shadow-sm transition hover:bg-primary-hover disabled:opacity-60"
+                  title="更换头像"
+                >
+                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  </svg>
+                </button>
+              </div>
+              <p className="mt-2 max-w-full truncate text-xs font-medium text-gray-900">{user.username}</p>
             </div>
-            <div className="flex-1">
-              {editingUsername ? (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={usernameInput}
-                    onChange={(e) => setUsernameInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleSaveUsername()
-                      } else if (e.key === 'Escape') {
-                        handleCancelEditUsername()
-                      }
-                    }}
-                    className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 text-gray-900 text-sm"
-                    placeholder="输入新用户名"
-                    autoFocus
-                  />
+
+            <div className="relative mt-6 flex items-center justify-center">
+              <span className="h-px w-full bg-gradient-to-r from-pink-100 via-primary to-pink-100" />
+              <span className="absolute flex h-7 w-7 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-pink-100">
+                <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+              </span>
+            </div>
+
+            <div className="flex min-w-0 flex-col items-center">
+              {user.partner ? (
+                <>
+                  {renderAvatar(user.partner.avatarUrl, user.partner.username, 'w-14 h-14')}
+                  <p className="mt-2 max-w-full truncate text-xs font-medium text-gray-900">{user.partner.username}</p>
+                </>
+              ) : (
+                <>
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full border border-dashed border-gray-200 bg-gray-50 text-gray-300">
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </div>
+                  <p className="mt-2 text-xs font-medium text-gray-400">未配对</p>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-4 text-center">
+            {editingUsername ? (
+              <div className="mb-4 rounded-xl bg-gray-50 p-3">
+                <input
+                  type="text"
+                  value={usernameInput}
+                  onChange={(e) => setUsernameInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSaveUsername()
+                    } else if (e.key === 'Escape') {
+                      handleCancelEditUsername()
+                    }
+                  }}
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-pink-100"
+                  placeholder="输入新用户名"
+                  autoFocus
+                />
+                <div className="mt-2 flex gap-2">
                   <button
+                    type="button"
                     onClick={handleSaveUsername}
                     disabled={updatingUsername}
-                    className="px-3 py-1.5 bg-primary text-white text-sm rounded-lg hover:bg-primary-hover disabled:opacity-50"
+                    className="flex-1 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white transition hover:bg-primary-hover disabled:opacity-50"
                   >
                     {updatingUsername ? '保存中...' : '保存'}
                   </button>
                   <button
+                    type="button"
                     onClick={handleCancelEditUsername}
-                    className="px-3 py-1.5 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300"
+                    className="flex-1 rounded-lg bg-white px-3 py-2 text-sm font-medium text-gray-600 ring-1 ring-gray-200 transition hover:bg-gray-50"
                   >
                     取消
                   </button>
                 </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-bold text-gray-900">{user.username}</h2>
-                  <button
-                    onClick={handleStartEditUsername}
-                    className="p-1.5 text-gray-400 hover:text-gray-600 transition"
-                    title="修改用户名"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                </div>
-              )}
-              <p className="text-gray-500 text-sm">{user.email}</p>
+              </div>
+            ) : null}
+
+            <p className="text-xs text-gray-500">{user.partner ? '我们在一起' : '等待遇见彼此'}</p>
+            <div className="mt-1 flex items-end justify-center gap-1">
+              <span className="text-[34px] font-bold leading-none text-gray-950">{pairDays || 0}</span>
+              <span className="pb-1 text-sm font-medium text-gray-500">天</span>
             </div>
+            <p className="mt-2 text-xs text-gray-400">{formatPairDate(pairedAt)}</p>
+            <p className="mt-1 truncate text-xs text-gray-400">{user.email}</p>
           </div>
 
           {/* 隐藏的文件输入 - 用于头像上传 */}
@@ -566,7 +686,7 @@ export default function ProfilePage() {
             onChange={async (e) => {
               const file = e.target.files?.[0]
               if (!file) return
-              
+
               setUploading(true)
               try {
                 const imageUrl = await uploadImage(file)
@@ -578,142 +698,169 @@ export default function ProfilePage() {
               }
             }}
           />
-        </div>
+        </section>
 
-        {/* 配对状态卡片 */}
-        <div className="bg-white rounded-xl border border-gray-100 p-4">
-          <h3 className="text-base font-bold text-gray-900 mb-4">配对状态</h3>
+        {/* 统计条 */}
+        <section className="grid grid-cols-3 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.03)]">
+          <div className="flex flex-col items-center gap-1 px-2 py-3">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-pink-50 text-primary">
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 21s7-4.35 7-11a7 7 0 10-14 0c0 6.65 7 11 7 11z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10.5h.01" />
+              </svg>
+            </span>
+            <span className="text-[11px] text-gray-500">一起去过</span>
+            <strong className="flex items-baseline gap-0.5 text-gray-900">
+              <span className="text-base font-semibold">{stats.places}</span>
+              <span className="text-[10px] font-medium text-gray-400">个</span>
+            </strong>
+          </div>
+          <div className="flex flex-col items-center gap-1 border-x border-gray-100 px-2 py-3">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-blue-500">
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 6h8M8 10h8M8 14h5M6 3h12a2 2 0 012 2v14l-4-2-4 2-4-2-4 2V5a2 2 0 012-2z" />
+              </svg>
+            </span>
+            <span className="text-[11px] text-gray-500">记录</span>
+            <strong className="flex items-baseline gap-0.5 text-gray-900">
+              <span className="text-base font-semibold">{stats.records}</span>
+              <span className="text-[10px] font-medium text-gray-400">条</span>
+            </strong>
+          </div>
+          <div className="flex flex-col items-center gap-1 px-2 py-3">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-50 text-emerald-500">
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h2l1.2-2h7.6L17 7h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </span>
+            <span className="text-[11px] text-gray-500">照片</span>
+            <strong className="flex items-baseline gap-0.5 text-gray-900">
+              <span className="text-base font-semibold">{stats.photos}</span>
+              <span className="text-[10px] font-medium text-gray-400">张</span>
+            </strong>
+          </div>
+        </section>
 
-          {user.partnerId && user.partner ? (
-            <div className="space-y-3">
-              {/* 配对天数显示 */}
-              {(user.partner.pairedAt || user.pairedAt) && (
-                <div className="bg-gray-50 rounded-lg p-3 text-center">
-                  <p className="text-xs text-gray-600 mb-1">💕 已配对</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {calculatePairDays(user.partner.pairedAt || user.pairedAt)}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">天</p>
-                </div>
-              )}
-
-              {/* 伴侣信息 */}
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                {renderAvatar(user.partner.avatarUrl, user.partner.username, 'w-10 h-10')}
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900 text-sm">{user.partner.username}</p>
-                  <p className="text-xs text-gray-500">你们的配对</p>
-                </div>
-              </div>
-
-              {/* 冷静期状态 */}
-              {timeLeft !== null ? (
-                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-yellow-800 font-medium text-sm mb-2">⚠️ 冷静期中</p>
-                  <p className="text-xs text-yellow-700 mb-3">
-                    还剩 {timeLeft.days}天{timeLeft.hours}小时 将解除配对关系
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleCancelBreakup}
-                      disabled={breakupLoading}
-                      className="flex-1 px-3 py-2 bg-primary text-white text-xs rounded-full hover:bg-primary-hover disabled:opacity-50"
-                    >
-                      继续配对
-                    </button>
-                    <button
-                      onClick={() => setShowBreakupConfirm(true)}
-                      disabled={breakupLoading}
-                      className="flex-1 px-3 py-2 bg-red-500 text-white text-xs rounded-full hover:bg-red-600 disabled:opacity-50"
-                    >
-                      确认解除
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setShowBreakupModal(true)}
-                  className="w-full py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
-                >
-                  取消配对
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="text-center py-4">
-              <p className="text-gray-500 text-sm mb-3">当前没有配对</p>
-              <a
-                href="/pair"
-                className="inline-block px-5 py-2 bg-primary text-white text-sm rounded-full hover:bg-primary-hover transition"
-              >
-                去寻找伴侣
-              </a>
-            </div>
-          )}
-
-          {/* 导出回忆 HTML */}
-          <div className="mt-3 pt-3 border-t border-gray-100">
-            <button
-              onClick={() => setShowExportModal(true)}
-              className="w-full py-2.5 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition flex items-center justify-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {/* 回忆与配对 */}
+        <section className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.03)]">
+          <button
+            type="button"
+            onClick={() => setShowExportModal(true)}
+            className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-gray-50"
+          >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-pink-50 text-primary">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              导出回忆
-            </button>
-          </div>
-
-          {/* 归档回忆入口 */}
+            </span>
+            <span className="flex-1 text-sm font-medium text-gray-800">导出回忆</span>
+            <svg className="h-4 w-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (timeLeft !== null) {
+                setShowBreakupConfirm(true)
+              } else if (user.partnerId && user.partner) {
+                setShowBreakupModal(true)
+              } else {
+                window.location.href = '/pair'
+              }
+            }}
+            className="flex w-full items-center gap-3 border-t border-gray-100 px-4 py-3.5 text-left transition hover:bg-gray-50"
+          >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-500">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15.5A3.5 3.5 0 1112 8a3.5 3.5 0 010 7.5z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06A1.65 1.65 0 0015 19.4a1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09A1.65 1.65 0 0019.4 15z" />
+              </svg>
+            </span>
+            <span className="flex-1 text-sm font-medium text-gray-800">{pairManagementLabel}</span>
+            <svg className="h-4 w-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
           {user.archivedPartnerId && (
-            <div className="mt-2 pt-2 border-t border-gray-100">
-              <button
-                onClick={handleViewArchived}
-                className="w-full py-2.5 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition flex items-center justify-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button
+              type="button"
+              onClick={handleViewArchived}
+              className="flex w-full items-center gap-3 border-t border-gray-100 px-4 py-3.5 text-left transition hover:bg-gray-50"
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                 </svg>
-                查看归档回忆
-              </button>
-            </div>
+              </span>
+              <span className="flex-1 text-sm font-medium text-gray-800">查看归档回忆</span>
+              <svg className="h-4 w-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           )}
-        </div>
+        </section>
 
-        {/* 设置卡片 */}
-        <div className="bg-white rounded-xl border border-gray-100 p-4">
-          <h3 className="text-base font-bold text-gray-900 mb-3">设置</h3>
-          
-          {/* 联系作者 */}
+        {timeLeft !== null && (
+          <section className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3">
+            <p className="text-sm font-medium text-amber-800">冷静期中</p>
+            <p className="mt-1 text-xs text-amber-700">
+              还剩 {timeLeft.days} 天 {timeLeft.hours} 小时，将解除配对关系。
+            </p>
+            <button
+              type="button"
+              onClick={handleCancelBreakup}
+              disabled={breakupLoading}
+              className="mt-3 rounded-full bg-white px-4 py-2 text-xs font-medium text-amber-800 ring-1 ring-amber-200 transition hover:bg-amber-100 disabled:opacity-50"
+            >
+              继续配对
+            </button>
+          </section>
+        )}
+
+        {/* 设置 */}
+        <section className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.03)]">
           <button
+            type="button"
             onClick={() => setShowFeedbackModal(true)}
-            className="w-full py-2.5 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition flex items-center justify-center gap-2 mb-2"
+            className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-gray-50"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </span>
+            <span className="flex-1 text-sm font-medium text-gray-800">联系作者</span>
+            <svg className="h-4 w-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-            联系作者
           </button>
-          
-          {/* 请作者喝咖啡 */}
           <button
+            type="button"
             onClick={() => setShowDonationModal(true)}
-            className="w-full py-2.5 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition flex items-center justify-center gap-2 mb-2"
+            className="flex w-full items-center gap-3 border-t border-gray-100 px-4 py-3.5 text-left transition hover:bg-gray-50"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 1v3M10 1v3M14 1v3" />
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-500">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 1v3M10 1v3M14 1v3" />
+              </svg>
+            </span>
+            <span className="flex-1 text-sm font-medium text-gray-800">请作者喝咖啡</span>
+            <svg className="h-4 w-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-            请作者喝咖啡
           </button>
-          
-          <button
-            onClick={handleLogout}
-            className="w-full py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
-          >
-            退出登录
-          </button>
-        </div>
+        </section>
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="w-full rounded-2xl border border-red-100 bg-white px-4 py-3 text-sm font-medium text-red-500 transition hover:bg-red-50"
+        >
+          退出登录
+        </button>
       </div>
 
       {/* 取消配对确认弹窗 */}
