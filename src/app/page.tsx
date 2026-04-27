@@ -220,47 +220,36 @@ export default function Home() {
               </button>
             </form>
 
-            {/* 忘记密码链接（仅登录模式） */}
-            {isLogin && (
-              <div className="text-center mt-4">
-                <button
-                  onClick={() => window.location.href = '/forgot-password'}
-                  className="text-white/60 hover:text-white/80 text-xs transition"
-                >
-                  忘记密码？
-                </button>
-              </div>
-            )}
-
-            {/* 分隔线 */}
-            <div className="flex items-center gap-3 my-4">
-              <div className="flex-1 h-px bg-white/20"></div>
-              <span className="text-white/40 text-xs">或</span>
-              <div className="flex-1 h-px bg-white/20"></div>
-            </div>
-
-            {/* 注册/登录切换链接 */}
-            <div className="text-center">
+            {/* 辅助操作 */}
+            <div className="mt-5 flex items-center justify-between px-1 text-xs">
               {isLogin ? (
-                <p className="text-white/60 text-xs">
-                  还没有账号？{' '}
+                <>
                   <button
-                    onClick={() => { setIsLogin(false); setError(''); }}
-                    className="text-pink-400 hover:text-pink-300 font-medium transition"
+                    onClick={() => window.location.href = '/forgot-password'}
+                    className="text-white/70 hover:text-white transition"
                   >
-                    去注册
+                    忘记密码？
                   </button>
-                </p>
+                  <span className="text-white/60">
+                    还没有账号？{' '}
+                    <button
+                      onClick={() => { setIsLogin(false); setError(''); }}
+                      className="text-pink-300 hover:text-pink-200 font-medium transition"
+                    >
+                      去注册
+                    </button>
+                  </span>
+                </>
               ) : (
-                <p className="text-white/60 text-xs">
+                <span className="ml-auto text-white/60">
                   已有账号？{' '}
                   <button
                     onClick={() => { setIsLogin(true); setError(''); }}
-                    className="text-pink-400 hover:text-pink-300 font-medium transition"
+                    className="text-pink-300 hover:text-pink-200 font-medium transition"
                   >
                     去登录
                   </button>
-                </p>
+                </span>
               )}
             </div>
           </div>
