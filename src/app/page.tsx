@@ -102,7 +102,7 @@ export default function Home() {
 
   return (
     <>
-        <main className="h-[100svh] relative overflow-x-hidden overflow-y-auto flex flex-col justify-between"
+        <main className="h-[100svh] relative overflow-hidden"
           style={{
             backgroundImage: 'url(/images/landing_page_background.png)',
             backgroundSize: 'cover',
@@ -114,7 +114,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-black/10"></div>
 
         {/* 品牌区域 - 顶部 */}
-        <div className="relative z-10 pt-12 pb-4">
+        <div className="absolute inset-x-0 top-0 z-20 pt-12 pb-4 pointer-events-none">
           <div className="text-center px-4">
             <h1 className="text-3xl font-bold text-gray-800 mb-2 tracking-tight">UsOnly</h1>
             <div className="flex items-center justify-center gap-1 mb-2">
@@ -131,10 +131,10 @@ export default function Home() {
         </div>
 
         {/* 登录表单区域 - 底部 */}
-        <div className={`relative z-10 w-full max-w-[420px] mx-auto px-4 pb-[calc(140px+env(safe-area-inset-bottom))] sm:pb-10 mt-[clamp(350px,52svh,420px)] sm:mt-[clamp(190px,28vh,250px)] transition-all duration-700 ${showLoginCard ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div className={`absolute inset-x-0 top-0 bottom-0 z-10 w-full overflow-y-auto overscroll-contain px-4 pt-[clamp(350px,52svh,420px)] pb-[calc(140px+env(safe-area-inset-bottom))] sm:pt-[clamp(190px,28vh,250px)] sm:pb-10 transition-all duration-700 ${showLoginCard ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           
           {/* 登录/注册表单卡片 */}
-          <div className="px-4 pt-4 pb-0 sm:p-4">
+          <div className="w-full max-w-[420px] mx-auto px-4 pt-4 pb-0 sm:p-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* 注册时的用户名 */}
               {!isLogin && (
