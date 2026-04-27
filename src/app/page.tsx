@@ -118,15 +118,11 @@ export default function Home() {
           <div className="text-center px-4">
             <h1 className="text-3xl font-bold text-gray-800 mb-2 tracking-tight">UsOnly</h1>
             <div className="flex items-center justify-center gap-1 mb-2">
-              <span className="text-gray-600 text-sm">只属于两个人的私密空间</span>
+              <span className="text-gray-600 text-sm">只属于我们的私密空间</span>
               <svg className="w-4 h-4 text-pink-400" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
               </svg>
             </div>
-            {/* 手写体文字 */}
-            <p className="text-gray-500 text-sm italic font-light" style={{ fontFamily: 'cursive' }}>
-              记录只属于你们的日常 ♡
-            </p>
           </div>
         </div>
 
