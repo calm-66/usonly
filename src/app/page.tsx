@@ -131,7 +131,7 @@ export default function Home() {
         </div>
 
         {/* 登录表单区域 - 底部 */}
-        <div className={`relative z-10 w-full max-w-[420px] mx-auto px-4 pb-8 transition-all duration-700 ${showLoginCard ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div className={`relative z-10 w-full max-w-[420px] mx-auto px-4 pb-16 pt-8 transition-all duration-700 ${showLoginCard ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           
           {/* 登录/注册表单卡片 */}
           <div className="p-4">
