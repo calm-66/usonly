@@ -131,7 +131,7 @@ export default function Home() {
         </div>
 
         {/* 登录表单区域 - 底部 */}
-        <div className={`relative z-10 w-full max-w-[420px] mx-auto px-4 pb-0 sm:pb-10 mt-[clamp(190px,28vh,250px)] transition-all duration-700 ${showLoginCard ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div className={`relative z-10 w-full max-w-[420px] mx-auto px-4 pb-[calc(140px+env(safe-area-inset-bottom))] sm:pb-10 mt-[clamp(350px,52svh,420px)] sm:mt-[clamp(190px,28vh,250px)] transition-all duration-700 ${showLoginCard ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           
           {/* 登录/注册表单卡片 */}
           <div className="px-4 pt-4 pb-0 sm:p-4">
