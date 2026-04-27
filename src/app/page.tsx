@@ -134,7 +134,7 @@ export default function Home() {
         <div className={`relative z-10 w-full max-w-[420px] mx-auto px-4 pb-8 transition-all duration-700 ${showLoginCard ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           
           {/* 登录/注册表单卡片 */}
-          <div className="backdrop-blur-xl bg-gray-900/85 border border-gray-700 rounded-2xl p-6 shadow-2xl">
+          <div className="p-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* 注册时的用户名 */}
               {!isLogin && (
@@ -185,7 +185,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/70 transition"
                 >
                   {showPassword ? (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -239,7 +239,7 @@ export default function Home() {
               <div className="text-center mt-4">
                 <button
                   onClick={() => window.location.href = '/forgot-password'}
-                  className="text-gray-400 hover:text-gray-300 text-xs transition"
+                  className="text-white/60 hover:text-white/80 text-xs transition"
                 >
                   忘记密码？
                 </button>
@@ -248,15 +248,15 @@ export default function Home() {
 
             {/* 分隔线 */}
             <div className="flex items-center gap-3 my-4">
-              <div className="flex-1 h-px bg-gray-600"></div>
-              <span className="text-gray-500 text-xs">或</span>
-              <div className="flex-1 h-px bg-gray-600"></div>
+              <div className="flex-1 h-px bg-white/20"></div>
+              <span className="text-white/40 text-xs">或</span>
+              <div className="flex-1 h-px bg-white/20"></div>
             </div>
 
             {/* 注册/登录切换链接 */}
             <div className="text-center">
               {isLogin ? (
-                <p className="text-gray-400 text-xs">
+                <p className="text-white/60 text-xs">
                   还没有账号？{' '}
                   <button
                     onClick={() => { setIsLogin(false); setError(''); }}
@@ -266,7 +266,7 @@ export default function Home() {
                   </button>
                 </p>
               ) : (
-                <p className="text-gray-400 text-xs">
+                <p className="text-white/60 text-xs">
                   已有账号？{' '}
                   <button
                     onClick={() => { setIsLogin(true); setError(''); }}
