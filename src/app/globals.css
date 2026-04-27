@@ -114,3 +114,16 @@
 .animate-slideRight {
   animation: slideRight 0.3s ease-out;
 }
+
+@keyframes profileHeartPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+.profile-heart-pulse {
+  animation: profileHeartPulse 2.4s ease-in-out infinite;
+}

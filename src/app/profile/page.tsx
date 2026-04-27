@@ -574,7 +574,7 @@ export default function ProfilePage() {
       <div className="mx-auto max-w-[400px] space-y-3 px-4 py-4">
         {/* 关系纪念卡 */}
         <section className="rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-          <div className="grid grid-cols-[1fr_88px_1fr] items-start gap-2">
+          <div className="grid grid-cols-[1fr_112px_1fr] items-start gap-1">
             <div className="flex min-w-0 flex-col items-center">
               <div className="relative">
                 {renderAvatar(user.avatarUrl, user.username, 'w-14 h-14')}
@@ -605,12 +605,13 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="relative mt-6 flex items-center justify-center">
-              <svg className="h-4 w-full text-pink-200" viewBox="0 0 88 16" fill="none" preserveAspectRatio="none" aria-hidden="true">
-                <path d="M0 8C7 2 15 2 22 8C29 14 37 14 44 8C51 2 59 2 66 8C73 14 81 14 88 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <div className="relative mt-5 flex h-10 items-center justify-center">
+              <svg className="h-8 w-full text-[#F08ABC]" viewBox="0 0 112 32" fill="none" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M2 16H12L16 10L21 22L27 6L33 16H44" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M68 16H79L83 10L88 22L94 6L100 16H110" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span className="absolute flex h-7 w-7 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-pink-100">
-                <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
+              <span className="profile-heart-pulse absolute flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary shadow-[0_4px_14px_rgba(236,72,153,0.12)] ring-1 ring-pink-100">
+                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                 </svg>
               </span>
