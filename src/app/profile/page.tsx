@@ -606,7 +606,9 @@ export default function ProfilePage() {
             </div>
 
             <div className="relative mt-6 flex items-center justify-center">
-              <span className="h-px w-full bg-gradient-to-r from-pink-100 via-primary to-pink-100" />
+              <svg className="h-4 w-full text-pink-200" viewBox="0 0 88 16" fill="none" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M0 8C7 2 15 2 22 8C29 14 37 14 44 8C51 2 59 2 66 8C73 14 81 14 88 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
               <span className="absolute flex h-7 w-7 items-center justify-center rounded-full bg-white text-primary shadow-sm ring-1 ring-pink-100">
                 <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
@@ -673,9 +675,9 @@ export default function ProfilePage() {
 
             {isPaired ? (
               <>
-                <p className="text-xs text-gray-500">我们在一起</p>
+                <p className="text-xs text-gray-500">我们在一起已经</p>
                 <div className="mt-1 flex items-end justify-center gap-1">
-                  <span className="text-[34px] font-bold leading-none text-gray-950">{pairDays || 0}</span>
+                  <span className="text-[34px] font-bold leading-none text-primary">{pairDays || 0}</span>
                   <span className="pb-1 text-sm font-medium text-gray-500">天</span>
                 </div>
                 <p className="mt-2 text-xs text-gray-400">{formatPairDate(pairedAt)}</p>
@@ -692,7 +694,6 @@ export default function ProfilePage() {
                 </a>
               </>
             )}
-            <p className="mt-1 truncate text-xs text-gray-400">{user.email}</p>
           </div>
 
           {/* 隐藏的文件输入 - 用于头像上传 */}
