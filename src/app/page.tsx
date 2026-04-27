@@ -102,7 +102,7 @@ export default function Home() {
 
   return (
     <>
-        <main className="min-h-screen relative overflow-hidden flex flex-col justify-between"
+        <main className="min-h-screen relative overflow-hidden flex flex-col justify-end"
           style={{
             backgroundImage: 'url(/images/landing_page_background.png)',
             backgroundSize: 'cover',
@@ -114,7 +114,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-black/10"></div>
 
         {/* 品牌区域 - 顶部 */}
-        <div className="relative z-10 pt-12 pb-4">
+        <div className="relative z-10 mt-20 mb-4">
           <div className="text-center px-4">
             <h1 className="text-3xl font-bold text-gray-800 mb-2 tracking-tight">UsOnly</h1>
             <div className="flex items-center justify-center gap-1 mb-2">
@@ -131,7 +131,7 @@ export default function Home() {
         </div>
 
         {/* 登录表单区域 - 底部 */}
-        <div className={`relative z-10 w-full max-w-[420px] mx-auto px-4 pb-8 mt-[100px] transition-all duration-700 ${showLoginCard ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div className={`relative z-10 w-full max-w-[420px] mx-auto px-4 pb-24 transition-all duration-700 ${showLoginCard ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           
           {/* 登录/注册表单卡片 */}
           <div className="p-4">
